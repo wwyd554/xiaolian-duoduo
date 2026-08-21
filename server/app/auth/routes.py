@@ -9,6 +9,7 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException
 
 from ..auth.jwt import UserInfo, create_token, get_current_user
+from ..config import settings
 from ..database import db
 from ..models import RegisterRequest, RegisterResponse
 
@@ -56,6 +57,29 @@ def register(body: RegisterRequest):
 
     token = create_token(user_id, nickname, False)
     return RegisterResponse(success=True, userId=user_id, nickname=nickname, token=token, isAdmin=False)
+
+
+DEV_USER_ID = "00000000-0000-0000-0000-00000000dev1"
+DEV_NICKNAME = "开发者"
+
+
+@router.post("/dev-login", response_model=RegisterResponse)
+def dev_login():
+    """开发期直登：AUTH_DEV_BYPASS=1 时可用，复用固定开发者账号，无需邀请码。"""
+    if not settings.auth_dev_bypass:
+        raise HTTPException(403, "开发直登未开启（服务器需设置 AUTH_DEV_BYPASS=1）")
+
+    now = datetime.now(timezone.utc).isoformat()
+    with db() as conn:
+        row = conn.execute("SELECT * FROM users WHERE id = ?", (DEV_USER_ID,)).fetchone()
+        if row is None:
+            conn.execute(
+                "INSERT INTO users (id, nickname, invite_code, is_admin, created_at) VALUES (?, ?, ?, 0, ?)",
+                (DEV_USER_ID, DEV_NICKNAME, "DEV-BYPASS", now),
+            )
+
+    token = create_token(DEV_USER_ID, DEV_NICKNAME, False)
+    return RegisterResponse(success=True, userId=DEV_USER_ID, nickname=DEV_NICKNAME, token=token, isAdmin=False)
 
 
 @router.get("/me")

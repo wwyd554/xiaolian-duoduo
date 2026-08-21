@@ -37,5 +37,8 @@ class Settings:
     # 邀请码
     invite_code_count: int = int(os.getenv("INVITE_CODE_COUNT", "20"))
 
+    # 开发期认证绕过（1 = 开放 /auth/dev-login，免邀请码直登；生产必须关闭）
+    auth_dev_bypass: bool = os.getenv("AUTH_DEV_BYPASS", "0") == "1"
+
 
 settings = Settings()

@@ -19,6 +19,10 @@ export const LOCAL_BACKEND_URL =
   (import.meta.env.VITE_LOCAL_BACKEND_URL as string | undefined) ||
   "http://127.0.0.1:8000";
 
+/** 开发期认证绕过开关（VITE_DEV_BYPASS=1 时自动调用 /auth/dev-login 免邀请码直登） */
+export const DEV_BYPASS_ENABLED =
+  (import.meta.env.VITE_DEV_BYPASS as string | undefined) === "1";
+
 export function saveAuth(data: LocalAuthData): void {
   localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(data));
 }
@@ -67,6 +71,30 @@ export async function registerWithInviteCode(
     nickname: data.nickname || nickname,
     isAdmin: Boolean(data.isAdmin),
     // 后端默认 JWT 有效期；此处给一个兜底（7 天）
+    expiresAt: Date.now() + 7 * 24 * 60 * 60 * 1000,
+  };
+  saveAuth(auth);
+  return auth;
+}
+
+/**
+ * 开发期直登：调用后端 /auth/dev-login（需服务器开启 AUTH_DEV_BYPASS=1）。
+ */
+export async function devLogin(): Promise<LocalAuthData> {
+  const response = await fetch(`${LOCAL_BACKEND_URL}/auth/dev-login`, {
+    method: "POST",
+  });
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok || !data.token) {
+    throw new Error(data.detail || "开发直登失败，请检查后端 AUTH_DEV_BYPASS 配置");
+  }
+
+  const auth: LocalAuthData = {
+    token: data.token,
+    userId: data.userId,
+    nickname: data.nickname || "开发者",
+    isAdmin: Boolean(data.isAdmin),
     expiresAt: Date.now() + 7 * 24 * 60 * 60 * 1000,
   };
   saveAuth(auth);

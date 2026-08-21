@@ -12,7 +12,7 @@ import "@fontsource/roboto/700.css";
 // コンポーネントのインポート
 import AppContent from "./components/AppContent";
 import InviteLogin from "./components/InviteLogin";
-import { loadAuth } from "./services/LocalAuth";
+import { DEV_BYPASS_ENABLED, devLogin, loadAuth } from "./services/LocalAuth";
 
 // i18n関連のインポート
 import { useTranslation } from "react-i18next";
@@ -127,6 +127,19 @@ function App() {
   const languageService = LanguageService.getInstance();
   // 本地邀请码认证状态（登录成功/已有本地凭据时进入主应用）
   const [authed, setAuthed] = useState<boolean>(() => !!loadAuth());
+  // 开发期直登：DEV_BYPASS=1 时自动免邀请码进入（失败则回退到邀请码表单）
+  const [devLoginFailed, setDevLoginFailed] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (!authed && DEV_BYPASS_ENABLED && !devLoginFailed) {
+      devLogin()
+        .then(() => setAuthed(true))
+        .catch((error) => {
+          console.warn("开发直登失败，回退到邀请码登录:", error);
+          setDevLoginFailed(true);
+        });
+    }
+  }, [authed, devLoginFailed]);
 
   // 言語設定の初期化
   useEffect(() => {
