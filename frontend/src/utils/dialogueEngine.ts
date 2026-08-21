@@ -150,7 +150,7 @@ export const getSessionEndReason = (
   scenario?: Scenario,
 ): string => {
   if (metrics.angerLevel >= METRICS_MAX) {
-    return "顧客が非常に不快になり、商談が中断されました。";
+    return "客户非常不满，商谈中断了。";
   }
 
   // すべてのゴールが達成された場合
@@ -161,7 +161,7 @@ export const getSessionEndReason = (
     });
 
     if (allGoalsAchieved) {
-      return "おめでとうございます！すべての商談目標を達成しました！";
+      return "恭喜你！已达成所有商谈目标！";
     }
   }
 
@@ -170,8 +170,8 @@ export const getSessionEndReason = (
   const currentTurns = calculateCurrentTurns(messageCount);
 
   if (currentTurns >= maxTurns) {
-    return "予定していた商談時間が終了しました。お疲れ様でした。";
+    return "预定的商谈时间已结束。辛苦了。";
   }
 
-  return "商談が終了しました。";
+  return "商谈已结束。";
 };

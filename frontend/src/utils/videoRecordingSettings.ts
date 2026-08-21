@@ -10,11 +10,12 @@
 const STORAGE_KEY = "videoRecordingEnabled";
 
 /**
- * ビデオ録画設定のデフォルト値（true = 録画オン）
- * 既存動作の維持のため、未設定時は録画オンとする。
+ * ビデオ録画設定のデフォルト値（false = 録画オフ）
+ * 本プロジェクトはローカル化に伴いビデオ分析バックエンドを削除したため、
+ * 未設定時は録画オフとし、カメラ初期化なしで会話を開始できるようにする。
  * デフォルト値の単一の真実の源（Single Source of Truth）。
  */
-export const DEFAULT_VIDEO_RECORDING_ENABLED = true;
+export const DEFAULT_VIDEO_RECORDING_ENABLED = false;
 
 /**
  * ビデオ録画設定をlocalStorageから読み込む

@@ -1,7 +1,7 @@
-"""会话 API：列表 / 详情 / 创建 / 消息历史。
+"""会话 API：列表 / 详情 / 创建 / 消息历史 / 发送消息（对话轮）。
 
 契约与原 AWS Lambda（cdk/lambda/sessions/session_handlers.py, message_handlers.py）一致。
-对话链路（NPC 回复 / 实时评分）在阶段 2 接入，消息表结构已就绪。
+对话链路（NPC 回复 + 实时评分并行）在 server/app/services/conversation.py。
 """
 from __future__ import annotations
 
@@ -13,7 +13,8 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from ..auth.jwt import UserInfo, get_current_user
 from ..database import db
-from ..models import CreateSessionRequest, CreateSessionResponse
+from ..models import CreateSessionRequest, CreateSessionResponse, SendMessageRequest
+from ..services.conversation import run_conversation_turn
 
 router = APIRouter(prefix="/sessions", tags=["sessions"])
 
@@ -147,8 +148,11 @@ def list_messages(session_id: str, user: UserInfo = Depends(get_current_user)):
             "messageId": row["id"],
             "sessionId": row["session_id"],
             "role": row["role"],
+            # 前端 MessageInfo 使用 sender/timestamp（兼容旧 role/createdAt）
+            "sender": row["role"],
             "content": row["content"],
             "createdAt": row["created_at"],
+            "timestamp": row["created_at"],
         }
         if row["metrics"]:
             item["metrics"] = json.loads(row["metrics"])
@@ -157,3 +161,35 @@ def list_messages(session_id: str, user: UserInfo = Depends(get_current_user)):
         messages.append(item)
 
     return {"messages": messages, "nextToken": None}
+
+
+@router.post("/{session_id}/messages")
+def send_message(
+    session_id: str,
+    body: SendMessageRequest,
+    user: UserInfo = Depends(get_current_user),
+):
+    """发送消息 → NPC 回复 + 实时评分（每轮 2 次并行 LLM 调用）。
+
+    轮次上限 = min(场景 maxTurns, 20)，达到后返回 sessionCompleted=true
+    （后续请求将直接返回完成状态，不再调用模型）。
+    """
+    if not body.content or not body.content.strip():
+        raise HTTPException(400, "消息内容不能为空")
+
+    with db() as conn:
+        sess = conn.execute(
+            "SELECT * FROM sessions WHERE id = ? AND user_id = ?", (session_id, user.user_id)
+        ).fetchone()
+        if sess is None:
+            raise HTTPException(404, f"会话不存在: {session_id}")
+
+        try:
+            result = run_conversation_turn(conn, sess, body, user.user_id)
+        except ValueError as exc:
+            raise HTTPException(400, str(exc))
+        except Exception as exc:
+            conn.rollback()
+            raise HTTPException(500, f"对话处理失败: {exc}")
+
+    return result

@@ -1728,18 +1728,18 @@ const ResultPage: React.FC = () => {
               sx={{ mt: 4, p: 3, bgcolor: "background.default", borderRadius: 2 }}
             >
               <Typography variant="subtitle1" gutterBottom fontWeight="medium">
-                {t("compliance.explanationTitle", "コンプライアンス違反について")}
+                {t("compliance.explanationTitle", "关于合规违规")}
               </Typography>
               <Typography variant="body2" sx={{ mb: 2 }}>
                 {t(
                   "compliance.explanation1",
-                  "コンプライアンス違反は、営業活動において法令や倫理規範に反する表現や行為を示します。違反を避けることで、顧客との信頼関係を構築し、リスクを最小限に抑えることができます。",
+                  "合规违规是指销售活动中违反法律法规或伦理规范的表达或行为。避免违规有助于建立客户信任并将风险降到最低。",
                 )}
               </Typography>
               <Typography variant="body2">
                 {t(
                   "compliance.explanation2",
-                  "上記のレポートを参考に、今後の商談での表現を改善していきましょう。特に「高」重大度の違反は、法的リスクが高いため特に注意が必要です。",
+                  "请参考以上报告，在今后的商谈中改进表达。特别是「高」严重度违规，法律风险较高，需要格外注意。",
                 )}
               </Typography>
             </Box>

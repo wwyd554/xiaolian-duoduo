@@ -1,6 +1,5 @@
-// aws-amplifyモジュールとユーティリティのインポートを集約（動的インポートをすべて静的インポートに変換）
-import { post, get, put, del } from "aws-amplify/api";
-import { getCurrentUser, fetchAuthSession, signOut } from "aws-amplify/auth";
+// 本地 FastAPI 后端 —— 邀请码制认证（替代原 aws-amplify API 客户端）
+import { LOCAL_BACKEND_URL, loadAuth } from "./LocalAuth";
 import type { Message, Metrics, NPC, Goal, GoalStatus } from "../types/index";
 import type {
   FeedbackAnalysisResult,
@@ -15,8 +14,7 @@ import type {
   ImportResponse,
   SessionCompleteDataResponse,
 } from "../types/api";
-import { AgentCoreService } from "./AgentCoreService";
-import { serializeGoalStatus } from "../utils/goalUtils";
+import { mergeGoalStatus, serializeGoalStatus } from "../utils/goalUtils";
 import {
   transformImportResponse,
   transformVideoAnalysisResult,
@@ -28,6 +26,27 @@ import {
  */
 export class ApiService {
   private static instance: ApiService;
+
+  /**
+   * 本地后端一次对话返回完整结果（回复+评分）。
+   * chatWithNPC 缓存后，getRealtimeEvaluation 直接消费，避免二次调用后端。
+   */
+  private lastConversationResult: {
+    success: boolean;
+    response: string;
+    sessionId: string;
+    messageId: string;
+    metrics: Metrics;
+    analysis: string;
+    goalUpdates: Array<{ goalId: string; achieved: boolean; reason?: string }>;
+    suggestions: string[];
+    npcEmotion: string;
+    npcEmotionIntensity: number;
+    gesture: string;
+    sessionCompleted: boolean;
+    turnsUsed: number;
+    maxTurns: number;
+  } | null = null;
 
   private constructor() { }
 
@@ -42,49 +61,56 @@ export class ApiService {
   }
 
   /**
-   * 認証トークンを取得する
+   * 認証トークンを取得する（本地邀请码制 JWT）
    * @returns 認証ヘッダーを含むオブジェクト
    * @throws Error - 認証エラー時
    */
   private async getAuthHeaders(): Promise<Record<string, string>> {
-    try {
-      // 認証状態を確認
-      await getCurrentUser();
-
-      // 認証セッション情報を取得
-      const authSession = await fetchAuthSession();
-
-      // 認証ヘッダーを作成
-      const authHeaders: Record<string, string> = {
-        "Content-Type": "application/json",
-      };
-
-      if (authSession.tokens?.idToken) {
-        authHeaders["Authorization"] = authSession.tokens.idToken.toString();
-
-        // トークンのaud（Audience）クレームを確認
-        const payload = authSession.tokens.idToken.payload;
-        const expectedClientId = import.meta.env
-          .VITE_COGNITO_USER_POOL_CLIENT_ID;
-
-        if (payload.aud !== expectedClientId) {
-          console.warn(
-            "⚠️ トークンのClient IDが一致しません。再ログインが必要です。",
-          );
-          await signOut();
-          throw new Error(
-            "設定が更新されました。ページをリロードして再度ログインしてください。",
-          );
-        }
-      }
-
-      return authHeaders;
-    } catch (error) {
-      console.error("認証エラー:", error);
-      throw new Error(
-        "用户未登录。ログインしてから再度お試しください。",
-      );
+    const auth = loadAuth();
+    if (!auth?.token) {
+      console.error("認証エラー: 未登录或登录已过期");
+      throw new Error("用户未登录，请先使用邀请码登录。");
     }
+    return {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${auth.token}`,
+    };
+  }
+
+  /**
+   * 本地 FastAPI 通用请求（fetch 直连 LOCAL_BACKEND_URL）
+   */
+  private async request<T>(
+    method: "GET" | "POST" | "PUT" | "DELETE",
+    path: string,
+    body?: unknown,
+  ): Promise<T> {
+    const headers = await this.getAuthHeaders();
+    const response = await fetch(`${LOCAL_BACKEND_URL}${path}`, {
+      method,
+      headers,
+      ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
+    });
+
+    if (!response.ok) {
+      // FastAPI 错误体: {"detail": "..."}
+      const errText = await response.text().catch(() => "");
+      let detail = errText;
+      try {
+        const parsed = JSON.parse(errText);
+        if (parsed && typeof parsed === "object" && "detail" in parsed) {
+          detail = String(parsed.detail);
+        }
+      } catch {
+        // 非 JSON 错误体，原样使用
+      }
+      throw new Error(detail || `HTTP ${response.status} ${response.statusText}`);
+    }
+
+    if (response.status === 204) {
+      return "success" as T;
+    }
+    return (await response.json()) as T;
   }
 
   /**
@@ -98,9 +124,6 @@ export class ApiService {
     queryParams?: Record<string, string | number>,
   ): Promise<T> {
     try {
-      // 認証ヘッダーを取得
-      const headers = await this.getAuthHeaders();
-
       // クエリパラメータ文字列を構築
       let queryString = "";
       if (queryParams) {
@@ -113,24 +136,8 @@ export class ApiService {
         queryString = params.toString();
       }
 
-      // パスを構築（クエリ文字列付き）
       const fullPath = queryString ? `${path}?${queryString}` : path;
-
-      // API呼び出し
-      const restOperation = get({
-        apiName: "AISalesRoleplayAPI",
-        path: fullPath,
-        options: {
-          headers,
-        },
-      });
-
-      // レスポンスを処理
-      const response = await restOperation.response;
-      const responseBody = await response.body.text();
-      const data = JSON.parse(responseBody) as T;
-
-      return data;
+      return await this.request<T>("GET", fullPath);
     } catch (error) {
       console.error(`API GET エラー (${path}):`, error);
       throw error;
@@ -148,25 +155,7 @@ export class ApiService {
     requestBody: R,
   ): Promise<T> {
     try {
-      // 認証ヘッダーを取得
-      const headers = await this.getAuthHeaders();
-
-      // API呼び出し
-      const restOperation = post({
-        apiName: "AISalesRoleplayAPI",
-        path: path,
-        options: {
-          body: requestBody as never,
-          headers: headers,
-        },
-      });
-
-      // レスポンスを処理
-      const response = await restOperation.response;
-      const responseBody = await response.body.text();
-      const data = JSON.parse(responseBody) as T;
-
-      return data;
+      return await this.request<T>("POST", path, requestBody);
     } catch (error) {
       console.error(`API POST エラー (${path}):`, error);
       throw error;
@@ -184,25 +173,7 @@ export class ApiService {
     requestBody: R,
   ): Promise<T> {
     try {
-      // 認証ヘッダーを取得
-      const headers = await this.getAuthHeaders();
-
-      // API呼び出し（PUTメソッドを使用）
-      const restOperation = put({
-        apiName: "AISalesRoleplayAPI",
-        path: path,
-        options: {
-          body: requestBody as never,
-          headers: headers,
-        },
-      });
-
-      // レスポンスを処理
-      const response = await restOperation.response;
-      const responseBody = await response.body.text();
-      const data = JSON.parse(responseBody) as T;
-
-      return data;
+      return await this.request<T>("PUT", path, requestBody);
     } catch (error) {
       console.error(`API PUT エラー (${path}):`, error);
       throw error;
@@ -216,22 +187,7 @@ export class ApiService {
    */
   private async apiDelete<T>(path: string): Promise<T> {
     try {
-      // 認証ヘッダーを取得
-      const headers = await this.getAuthHeaders();
-
-      // API呼び出し（DELETEメソッドを使用）
-      const restOperation = del({
-        apiName: "AISalesRoleplayAPI",
-        path: path,
-        options: {
-          headers: headers,
-        },
-      });
-
-      // レスポンスを処理
-      await restOperation.response;
-
-      return "success" as T;
+      return await this.request<T>("DELETE", path);
     } catch (error) {
       console.error(`API DELETE エラー (${path}):`, error);
       throw error;
@@ -299,25 +255,22 @@ export class ApiService {
   }
 
   /**
-   * NPCと会話する
-   *
-   * AgentCore Runtimeを使用してNPCとの会話を行います。
-   * 会話履歴はAgentCore Memoryで管理されます。
+   * NPCと会話する（本地 FastAPI 单次调用，回复+评分一次返回）
    *
    * @param message ユーザーメッセージ
    * @param npc NPCの情報
-   * @param previousMessages 過去のメッセージ履歴（AgentCore Memoryで管理されるため未使用）
+   * @param previousMessages 過去のメッセージ履歴（后端从 SQLite 读取，未使用）
    * @param sessionId セッションID
    * @param messageId メッセージID
-   * @param emotionParams 感情パラメータ（怒りレベル、信頼レベル、進捗レベル）
+   * @param emotionParams 感情パラメータ
    * @param scenarioId シナリオID
-   * @param language 言語設定（"ja", "en"など）
+   * @param language 言語設定
    * @returns NPCの応答
    */
   public async chatWithNPC(
     message: string,
     npc: NPC,
-    previousMessages: Message[],
+    _previousMessages: Message[],
     sessionId?: string,
     messageId?: string,
     emotionParams?: {
@@ -327,32 +280,68 @@ export class ApiService {
     },
     scenarioId?: string,
     language?: string,
-    presentedSlides?: Array<{ pageNumber: number; imageKey: string }>,
+    _presentedSlides?: Array<{ pageNumber: number; imageKey: string }>,
   ): Promise<{ response: string; sessionId: string; messageId: string }> {
     try {
-      // AgentCore Runtimeを使用（会話履歴はAgentCore Memoryで管理）
-      const agentCoreService = AgentCoreService.getInstance();
-      if (!agentCoreService.isAvailable()) {
-        throw new Error("AgentCore Runtime 不可用，请检查环境配置。");
+      const auth = loadAuth();
+      if (!auth) {
+        throw new Error("用户未登录");
+      }
+      const currentSessionId = sessionId || crypto.randomUUID();
+
+      const body: Record<string, unknown> = {
+        content: message,
+        language: language || "zh",
+      };
+      // NPC 信息（后端优先使用请求传入；缺失时回退会话/场景）
+      if (npc) {
+        body.npcInfo = {
+          name: npc.name,
+          role: npc.role,
+          company: npc.company,
+          personality: npc.personality,
+          description: npc.description,
+        };
+      }
+      if (emotionParams && (emotionParams.angerLevel || emotionParams.trustLevel || emotionParams.progressLevel)) {
+        body.emotionParams = {
+          angerLevel: emotionParams.angerLevel || 1,
+          trustLevel: emotionParams.trustLevel || 1,
+          progressLevel: emotionParams.progressLevel || 1,
+        };
       }
 
-      return await agentCoreService.chatWithNPC(
-        message,
-        npc,
-        previousMessages,
-        sessionId,
-        messageId,
-        emotionParams,
-        scenarioId,
-        language,
-        presentedSlides,
-      );
+      const result = await this.request<{
+        success: boolean;
+        response: string;
+        sessionId: string;
+        messageId: string;
+        metrics: Metrics;
+        analysis: string;
+        goalUpdates: Array<{ goalId: string; achieved: boolean; reason?: string }>;
+        suggestions: string[];
+        npcEmotion: string;
+        npcEmotionIntensity: number;
+        gesture: string;
+        sessionCompleted: boolean;
+        turnsUsed: number;
+        maxTurns: number;
+      }>("POST", `/sessions/${currentSessionId}/messages`, body);
+
+      // 缓存完整结果，供 getRealtimeEvaluation 消费
+      this.lastConversationResult = result;
+
+      return {
+        response: result.response || "",
+        sessionId: result.sessionId || currentSessionId,
+        messageId: result.messageId || messageId || crypto.randomUUID(),
+      };
     } catch (error: unknown) {
       console.error("NPCとの会話中にエラーが発生:", error);
       // エラー時のフォールバック応答
       return {
         response:
-          "申し訳ありません、応答の生成中にエラーが発生しました。少し経ってからもう一度お試しください。",
+          "抱歉，回复生成时出现错误，请稍后重试。",
         sessionId: sessionId || "",
         messageId: messageId || "",
       };
@@ -360,36 +349,36 @@ export class ApiService {
   }
 
   /**
-   * リアルタイム評価を取得する
+   * リアルタイム評価を取得する（本地版：chatWithNPC 缓存的结果中直接取评分）
    *
-   * AgentCore Runtimeを使用してユーザーの発言をリアルタイムで評価し、
-   * メトリクスとゴール達成状況を更新します。
-   * 会話履歴はAgentCore Memoryで管理されます。
+   * 后端已在单次 /sessions/{id}/messages 调用中完成评分，
+   * 此处仅消费缓存并转换为前端 goalStatuses 格式，不发起新的后端请求。
    *
    * @param message ユーザーメッセージ
-   * @param previousMessages 過去のメッセージ履歴（AgentCore Memoryで管理されるため未使用）
+   * @param previousMessages 過去のメッセージ履歴（未使用）
    * @param sessionId セッションID
    * @param goalStatuses 現在のゴール達成状況（オプション）
    * @param goals シナリオのゴール定義（オプション）
-   * @param scenarioId シナリオID（コンプライアンスチェック用）
+   * @param scenarioId シナリオID（未使用）
    * @param language 言語設定（オプション）
    * @param currentScores 現在のスコア（オプション）
+   * @param scenarioDescription シナリオ説明（未使用）
    * @returns メトリクスとゴール状態を含むオブジェクト
    */
   public async getRealtimeEvaluation(
     message: string,
-    previousMessages: Message[],
+    _previousMessages: Message[],
     sessionId?: string,
     goalStatuses?: GoalStatus[],
-    goals?: Goal[],
-    scenarioId?: string,
-    language?: string,
+    _goals?: Goal[],
+    _scenarioId?: string,
+    _language?: string,
     currentScores?: {
       angerLevel: number;
       trustLevel: number;
       progressLevel: number;
     },
-    scenarioDescription?: string,
+    _scenarioDescription?: string,
   ): Promise<{
     scores?: {
       angerLevel: number;
@@ -405,35 +394,56 @@ export class ApiService {
     suggestions?: string[];
   }> {
     try {
-      // AgentCore Runtimeを使用（会話履歴はAgentCore Memoryで管理）
-      const agentCoreService = AgentCoreService.getInstance();
-      if (!agentCoreService.isAvailable()) {
-        throw new Error("AgentCore Runtime 不可用，请检查环境配置。");
+      const result = this.lastConversationResult;
+      if (!result || result.sessionId !== sessionId) {
+        console.warn(
+          "getRealtimeEvaluation 未找到对应的对话结果缓存（session 不匹配或尚未发送消息）",
+        );
+        return {
+          scores: currentScores
+            ? { ...currentScores }
+            : { angerLevel: 1, trustLevel: 1, progressLevel: 1 },
+          analysis: "",
+          compliance: undefined,
+        };
       }
 
-      return await agentCoreService.getRealtimeEvaluation(
-        message,
-        previousMessages,
-        sessionId,
-        goalStatuses,
-        goals,
-        scenarioId,
-        language,
-        currentScores,
-        scenarioDescription,
-      );
+      // goalUpdates → goalStatuses 转换（与当前前端状态合并）
+      let convertedGoalStatuses: GoalStatus[] | undefined;
+      if (Array.isArray(result.goalUpdates)) {
+        const currentStatusMap = new Map(
+          (goalStatuses || []).map((s) => [s.goalId, s]),
+        );
+        convertedGoalStatuses = result.goalUpdates.map((update) => {
+          const currentStatus = currentStatusMap.get(update.goalId);
+          const updateStatus: GoalStatus = {
+            goalId: update.goalId,
+            progress: update.achieved ? 100 : 0,
+            achieved: update.achieved,
+            reason: update.reason || "",
+          };
+          if (currentStatus) {
+            return mergeGoalStatus(currentStatus, updateStatus);
+          }
+          return updateStatus;
+        });
+      }
+
+      return {
+        scores: {
+          angerLevel: result.metrics?.angerLevel || 1,
+          trustLevel: result.metrics?.trustLevel || 1,
+          progressLevel: result.metrics?.progressLevel || 1,
+        },
+        analysis: result.analysis || "",
+        goalStatuses: convertedGoalStatuses,
+        npcEmotion: result.npcEmotion || "neutral",
+        npcEmotionIntensity: result.npcEmotionIntensity ?? 0.5,
+        gesture: result.gesture || "none",
+        suggestions: Array.isArray(result.suggestions) ? result.suggestions : [],
+      };
     } catch (error) {
-      console.error("リアルタイム評価API呼び出しエラー:", error);
-
-      // エラーの詳細をログに出力
-      if (error instanceof Error) {
-        console.error("エラーメッセージ:", error.message);
-        console.error("スタックトレース:", error.stack);
-      } else {
-        console.error("不明なエラータイプ:", typeof error);
-      }
-
-      // エラー時はデフォルトの結果を返す
+      console.error("リアルタイム評価取得エラー:", error);
       return {
         scores: {
           angerLevel: 1,

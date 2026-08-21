@@ -210,7 +210,7 @@ describe("dialogueEngine", () => {
         baseGoals,
         baseScenario,
       );
-      expect(reason).toContain("不快");
+      expect(reason).toContain("不满");
     });
 
     it("すべてのゴールが達成された場合はゴール達成に関するメッセージを返す", () => {
@@ -225,7 +225,7 @@ describe("dialogueEngine", () => {
         baseGoals,
         baseScenario,
       );
-      expect(reason).toContain("すべての商談目標を達成");
+      expect(reason).toContain("已达成所有商谈目标");
     });
 
     it("メッセージ数がシナリオで指定された最大ターン数に達した場合は時間終了に関するメッセージを返す", () => {
@@ -237,7 +237,7 @@ describe("dialogueEngine", () => {
         baseGoals,
         baseScenario,
       );
-      expect(reason).toContain("予定していた商談時間が終了");
+      expect(reason).toContain("预定的商谈时间已结束");
     });
 
     it("シナリオにmaxTurnsが指定されていない場合はデフォルト値を使用する", () => {
@@ -253,7 +253,7 @@ describe("dialogueEngine", () => {
         baseGoals,
         scenarioWithoutMaxTurns,
       );
-      expect(reason).toContain("予定していた商談時間が終了");
+      expect(reason).toContain("预定的商谈时间已结束");
     });
 
     it("他の条件が満たされていない場合は一般的なメッセージを返す", () => {
@@ -265,7 +265,7 @@ describe("dialogueEngine", () => {
         baseGoals,
         baseScenario,
       );
-      expect(reason).toBe("商談が終了しました。");
+      expect(reason).toBe("商谈已结束。");
     });
   });
 });

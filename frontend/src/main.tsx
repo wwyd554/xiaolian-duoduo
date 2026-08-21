@@ -2,14 +2,11 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
 import App from "./App";
-import { Amplify } from "aws-amplify";
-import { amplifyConfig } from "./amplifyconfiguration";
 
 // i18nの初期化を明示的にインポート（初期化を確実に行うため）
 import i18n from "./i18n/i18n";
 
-// 統合されたAmplify設定を使用
-Amplify.configure(amplifyConfig);
+// 注: 本地部署版不再初始化 aws-amplify（认证改为邀请码制 JWT，见 services/LocalAuth.ts）
 
 // i18nの初期化が完了していることを確認した上でアプリをレンダリング
 const renderApp = () => {

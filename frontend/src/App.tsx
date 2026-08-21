@@ -1,5 +1,5 @@
 // React imports
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { BrowserRouter as Router } from "react-router-dom";
 
 import { ThemeProvider, createTheme, responsiveFontSizes } from "@mui/material";
@@ -9,12 +9,10 @@ import "@fontsource/roboto/400.css";
 import "@fontsource/roboto/500.css";
 import "@fontsource/roboto/700.css";
 
-// Amplify imports
-import { Authenticator } from "@aws-amplify/ui-react";
-import "@aws-amplify/ui-react/styles.css";
-
 // コンポーネントのインポート
 import AppContent from "./components/AppContent";
+import InviteLogin from "./components/InviteLogin";
+import { loadAuth } from "./services/LocalAuth";
 
 // i18n関連のインポート
 import { useTranslation } from "react-i18next";
@@ -127,6 +125,8 @@ theme = responsiveFontSizes(theme);
 function App() {
   const { i18n } = useTranslation();
   const languageService = LanguageService.getInstance();
+  // 本地邀请码认证状态（登录成功/已有本地凭据时进入主应用）
+  const [authed, setAuthed] = useState<boolean>(() => !!loadAuth());
 
   // 言語設定の初期化
   useEffect(() => {
@@ -154,20 +154,23 @@ function App() {
     }
   }, [languageService, i18n.isInitialized, i18n.language]);
 
-  // 認証コンポーネント付きレンダリング
+  // 未登录：展示邀请码登录表单
+  if (!authed) {
+    return (
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <InviteLogin onSuccess={() => setAuthed(true)} />
+      </ThemeProvider>
+    );
+  }
+
+  // 已登录：主应用
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Authenticator
-        signUpAttributes={["email", "preferred_username"]}
-        loginMechanisms={["email"]}
-      >
-        {() => (
-          <Router>
-            <AppContent />
-          </Router>
-        )}
-      </Authenticator>
+      <Router>
+        <AppContent />
+      </Router>
     </ThemeProvider>
   );
 }

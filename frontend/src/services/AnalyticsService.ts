@@ -82,21 +82,21 @@ export class AnalyticsService {
       labels,
       datasets: [
         {
-          label: "怒りメーター",
+          label: "怒气值",
           data: angerData,
           borderColor: "rgb(255, 99, 132)",
           backgroundColor: "rgba(255, 99, 132, 0.2)",
           tension: 0.2,
         },
         {
-          label: "信頼度",
+          label: "信任度",
           data: trustData,
           borderColor: "rgb(54, 162, 235)",
           backgroundColor: "rgba(54, 162, 235, 0.2)",
           tension: 0.2,
         },
         {
-          label: "商談進捗度",
+          label: "商谈进度",
           data: progressData,
           borderColor: "rgb(75, 192, 192)",
           backgroundColor: "rgba(75, 192, 192, 0.2)",
@@ -114,50 +114,50 @@ export class AnalyticsService {
     const messages = session.messages;
     const finalMetrics = session.finalMetrics;
 
-    // 怒りメーターが高い場合
+    // 怒气值分析
     if (finalMetrics.angerLevel >= 7) {
       keyPoints.push(
-        "NPCの怒りメーターが非常に高くなっています。顧客の懸念や反応をより注意深く観察しましょう。",
+        "NPC 的怒气值非常高。请更仔细地观察客户的顾虑与反应。",
       );
     } else if (finalMetrics.angerLevel <= 2) {
       keyPoints.push(
-        "NPCの怒りメーターを低く保つことに成功しています。良好な対話を続けています。",
+        "你成功保持了较低的怒气值，对话进展良好。",
       );
     }
 
-    // 信頼度に関する分析
+    // 信任度分析
     if (finalMetrics.trustLevel >= 8) {
       keyPoints.push(
-        "高い信頼関係を構築できています。この信頼を活かして次のステップへの提案を検討しましょう。",
+        "已建立较高的信任关系。可以借此推动下一步提案。",
       );
     } else if (finalMetrics.trustLevel <= 3) {
       keyPoints.push(
-        "信頼構築に課題があります。顧客のニーズをより深く理解することから始めましょう。",
+        "信任建立存在挑战。建议从更深入地理解客户需求开始。",
       );
     }
 
-    // 進捗度に関する分析
+    // 进度分析
     if (finalMetrics.progressLevel >= 7) {
       keyPoints.push(
-        "商談の進捗状況は良好です。クロージングに向けて準備を進めましょう。",
+        "商谈进展良好。可以继续向成交推进。",
       );
     } else if (finalMetrics.progressLevel <= 3) {
       keyPoints.push(
-        "商談の進捗が遅れています。顧客が求める価値をより明確に提示することを検討しましょう。",
+        "商谈进展较慢。建议更清晰地呈现客户所需价值。",
       );
     }
 
-    // メッセージ数の分析
+    // 消息数分析
     const userMessageCount = messages.filter(
       (msg) => msg.sender === "user",
     ).length;
     if (userMessageCount > 15) {
       keyPoints.push(
-        "会話が長くなりすぎています。より簡潔かつ的確な質問と提案を心がけましょう。",
+        "对话偏长。建议尽量简洁、准确地提问和提案。",
       );
     } else if (userMessageCount < 4) {
       keyPoints.push(
-        "もう少し対話を続けることで、顧客のニーズをより深く理解できる可能性があります。",
+        "再多聊几句，可能会更深入地理解客户需求。",
       );
     }
 
@@ -191,7 +191,7 @@ export class AnalyticsService {
           borderWidth: 1,
         },
         {
-          label: "平均スコア",
+          label: "平均得分",
           data: [7, 6, 6, 7, 6],
           backgroundColor: "rgba(255, 99, 132, 0.2)",
           borderColor: "rgba(255, 99, 132, 1)",

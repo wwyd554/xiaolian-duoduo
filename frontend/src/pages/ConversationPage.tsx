@@ -536,7 +536,7 @@ const ConversationPage: React.FC = () => {
     // シナリオに定義された初期メッセージがある場合はそれを使用、なければデフォルトメッセージを表示
     const initialContent =
       scenario?.initialMessage ||
-      `こんにちは。${scenario?.npc.company}の${scenario?.npc.name}です。本日はお忙しい中、お時間をいただきありがとうございます。どのようなご提案でしょうか？`;
+      `你好，我是${scenario?.npc.company}的${scenario?.npc.name}。今天想和你聊聊，方便吗？`;
 
     // 少し遅延してからメッセージを追加（レンダリング安定化のため）
     setTimeout(() => {

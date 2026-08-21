@@ -16,6 +16,7 @@ import {
   updateUserAttributes,
   fetchUserAttributes,
 } from "aws-amplify/auth";
+import { loadAuth, clearAuth } from "./LocalAuth";
 
 export class AuthService {
   private static instance: AuthService;
@@ -46,11 +47,29 @@ export class AuthService {
   }
 
   /**
+   * ローカル（邀请码制）認証データを取得。未ログイン時は null。
+   */
+  private getLocalAuth() {
+    return loadAuth();
+  }
+
+  /**
    * ユーザー情報を取得してキャッシュする
    * @private
    */
   private async fetchAndCacheUserInfo(): Promise<void> {
     try {
+      // ローカル認証（邀请码制）が有効ならそれを使う
+      const local = this.getLocalAuth();
+      if (local) {
+        this.cachedUser = {
+          name: local.nickname,
+          email: "",
+          preferredUsername: local.nickname,
+          userId: local.userId,
+        };
+        return;
+      }
       // 現在のユーザー情報を取得
       const cognitoUser = await getCurrentUser();
       // ユーザー属性を取得
@@ -87,6 +106,15 @@ export class AuthService {
    */
   public async logout(): Promise<void> {
     try {
+      if (this.getLocalAuth()) {
+        // ローカル認証：ローカルストレージをクリア
+        clearAuth();
+        this.cachedUser = null;
+        this.cachedIsAdmin = null;
+        this.cachedIsAdminAt = 0;
+        console.log("ローカル認証ログアウト完了");
+        return;
+      }
       await signOut();
       this.cachedUser = null;
       this.cachedIsAdmin = null;
@@ -102,6 +130,9 @@ export class AuthService {
    */
   public async isLoggedIn(): Promise<boolean> {
     try {
+      if (this.getLocalAuth()) {
+        return true;
+      }
       const session = await fetchAuthSession();
       return !!session.tokens;
     } catch (error) {
@@ -137,10 +168,14 @@ export class AuthService {
 
   /**
    * 現在のユーザーが管理者グループに所属しているかを判定する
-   * CognitoのIDトークンに含まれる cognito:groups クレームを確認する。
-   * 結果はキャッシュされ、ログアウトまで保持される。
+   * ローカル認証：register 時の isAdmin を使用。Cognito：IDトークンの cognito:groups を確認。
    */
   public async isAdmin(): Promise<boolean> {
+    const local = this.getLocalAuth();
+    if (local) {
+      return local.isAdmin;
+    }
+
     // キャッシュが有効期間内ならそのまま返す
     if (
       this.cachedIsAdmin !== null &&
@@ -175,6 +210,10 @@ export class AuthService {
    */
   public async getAuthToken(): Promise<string> {
     try {
+      const local = this.getLocalAuth();
+      if (local) {
+        return local.token;
+      }
       const session = await fetchAuthSession();
       return session.tokens?.idToken?.toString() || "";
     } catch (error) {

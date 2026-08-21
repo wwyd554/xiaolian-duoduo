@@ -56,6 +56,7 @@ CREATE TABLE IF NOT EXISTS messages (
   content     TEXT NOT NULL,
   metrics     TEXT,                  -- JSON: angerLevel/trustLevel/progressLevel
   suggestions TEXT,                  -- JSON: 建议回复
+  meta        TEXT,                  -- JSON: goalUpdates/npcEmotion/gesture（评分侧会话状态持久化）
   created_at  TEXT NOT NULL
 );
 
@@ -103,7 +104,15 @@ def db():
         raise
 
 
+def _migrate(conn: sqlite3.Connection) -> None:
+    """轻量迁移：已存在的库补新增列（幂等）。"""
+    cols = {row["name"] for row in conn.execute("PRAGMA table_info(messages)")}
+    if "meta" not in cols:
+        conn.execute("ALTER TABLE messages ADD COLUMN meta TEXT")
+
+
 def init_db() -> None:
-    """建表（幂等）。"""
+    """建表（幂等）+ 迁移。"""
     with db() as conn:
         conn.executescript(SCHEMA)
+        _migrate(conn)
