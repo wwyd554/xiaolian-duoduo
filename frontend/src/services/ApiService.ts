@@ -1074,6 +1074,34 @@ export class ApiService {
   }
 
   /**
+   * 基于行业资料生成陪练场景草稿（不入库，前端预览编辑后由 createScenario 入库）。
+   * 对应后端 POST /scenarios/generate。
+   */
+  public async generateScenario(params: {
+    material: string;
+    industry?: string;
+    role?: string;
+    trainingGoals?: string;
+    difficulty?: string;
+    category?: string;
+  }): Promise<{ success: boolean; draft: Record<string, unknown> }> {
+    try {
+      const response = await this.apiPost<{
+        success: boolean;
+        draft: Record<string, unknown>;
+      }>("/scenarios/generate", params);
+      return response;
+    } catch (error) {
+      console.error("场景生成失败:", error);
+      if (error instanceof Error) {
+        throw new Error(`场景生成失败: ${error.message}`);
+      } else {
+        throw new Error("场景生成失败");
+      }
+    }
+  }
+
+  /**
    * シナリオを更新する
    * @param scenarioId 更新対象のシナリオID
    * @param scenarioData 更新するシナリオデータ

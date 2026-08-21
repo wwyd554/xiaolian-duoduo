@@ -12,6 +12,8 @@ import {
   CircularProgress,
   Alert,
   AlertTitle,
+  TextField,
+  MenuItem,
 } from "@mui/material";
 import { ApiService } from "../../services/ApiService";
 import { AvatarService } from "../../services/AvatarService";
@@ -69,6 +71,88 @@ const ScenarioCreatePage: React.FC = () => {
     goals: {},
     sharing: {},
   });
+
+  // AI 辅助生成（基于行业资料生成草稿，可选）
+  const [genMaterial, setGenMaterial] = useState("");
+  const [genIndustry, setGenIndustry] = useState("");
+  const [genRole, setGenRole] = useState("");
+  const [genTrainingGoals, setGenTrainingGoals] = useState("");
+  const [genDifficulty, setGenDifficulty] = useState("中级");
+  const [genCategory, setGenCategory] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [genError, setGenError] = useState<string | null>(null);
+  const [genDone, setGenDone] = useState(false);
+
+  // 行业资料 → AI 草稿 → 填充表单
+  const handleGenerateDraft = async () => {
+    if (!genMaterial.trim()) {
+      setGenError("请先粘贴行业/产品资料");
+      return;
+    }
+    setIsGenerating(true);
+    setGenError(null);
+    try {
+      const res = await apiService.generateScenario({
+        material: genMaterial,
+        industry: genIndustry || undefined,
+        role: genRole || undefined,
+        trainingGoals: genTrainingGoals || undefined,
+        difficulty: genDifficulty || undefined,
+        category: genCategory || undefined,
+      });
+      const draft = (res.draft || {}) as Record<string, any>;
+      const diffMap: Record<string, DifficultyLevel> = {
+        初级: "easy",
+        中级: "normal",
+        高级: "hard",
+        专家级: "expert",
+        资深: "expert",
+      };
+      const mappedDiff = diffMap[draft.difficulty as string] ?? "normal";
+      const npc = (draft.npc || {}) as Record<string, any>;
+      setFormData((prev) => ({
+        ...prev,
+        title: draft.title ?? prev.title,
+        description: draft.description ?? prev.description,
+        category: draft.category ?? prev.category,
+        difficulty: mappedDiff,
+        language: draft.language ?? prev.language,
+        initialMessage: draft.initialMessage ?? prev.initialMessage,
+        npc: {
+          name: npc.name ?? "",
+          role: npc.role ?? "",
+          company: npc.company ?? "",
+          personality: Array.isArray(npc.personality) ? npc.personality : [],
+          description: npc.description ?? "",
+        },
+        objectives:
+          typeof draft.objectives === "string" && draft.objectives
+            ? [draft.objectives]
+            : Array.isArray(draft.objectives)
+              ? draft.objectives
+              : prev.objectives,
+        goals: Array.isArray(draft.goals)
+          ? draft.goals.map((g: Record<string, any>, i: number) => ({
+              id: g.id ?? `goal-${i + 1}`,
+              description: g.description ?? "",
+              isRequired: g.isRequired ?? false,
+              priority: g.priority ?? i + 1,
+              criteria: Array.isArray(g.criteria) ? g.criteria : [],
+            }))
+          : prev.goals,
+        initialMetrics: draft.initialMetrics ?? prev.initialMetrics,
+        maxTurns: draft.maxTurns ?? prev.maxTurns,
+      }));
+      if (npc.voiceId) setVoiceId(npc.voiceId);
+      setGenDone(true);
+    } catch (err) {
+      console.error("AI 生成草稿失败:", err);
+      setGenError(err instanceof Error ? err.message : "场景生成失败");
+      setGenDone(false);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   // アバター・音声モデル管理
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
@@ -338,6 +422,94 @@ const ScenarioCreatePage: React.FC = () => {
             {error}
           </Alert>
         )}
+
+        {/* AI 辅助生成（基于行业资料一键生成草稿，可选） */}
+        <Paper variant="outlined" sx={{ p: 2, mb: 4, bgcolor: "action.hover" }}>
+          <Typography variant="h6" gutterBottom>
+            AI 辅助生成场景（可选）
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            粘贴行业/产品资料，AI 将生成一份可编辑的场景草稿并自动填充到下方表单；你也可以在生成后再手动调整。
+          </Typography>
+
+          <TextField
+            label="行业/产品资料（必填）"
+            value={genMaterial}
+            onChange={(e) => setGenMaterial(e.target.value)}
+            multiline
+            minRows={4}
+            fullWidth
+            placeholder="例如：公司简介、目标客户、典型痛点、销售要点、决策链与常见异议…"
+            sx={{ mb: 2 }}
+          />
+
+          <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", mb: 2 }}>
+            <TextField
+              label="行业"
+              value={genIndustry}
+              onChange={(e) => setGenIndustry(e.target.value)}
+              size="small"
+              sx={{ flex: "1 1 140px" }}
+            />
+            <TextField
+              label="客户角色"
+              value={genRole}
+              onChange={(e) => setGenRole(e.target.value)}
+              size="small"
+              sx={{ flex: "1 1 140px" }}
+            />
+            <TextField
+              label="分类"
+              value={genCategory}
+              onChange={(e) => setGenCategory(e.target.value)}
+              size="small"
+              sx={{ flex: "1 1 140px" }}
+            />
+            <TextField
+              label="难度"
+              value={genDifficulty}
+              onChange={(e) => setGenDifficulty(e.target.value)}
+              select
+              size="small"
+              sx={{ flex: "1 1 140px" }}
+            >
+              <MenuItem value="初级">初级</MenuItem>
+              <MenuItem value="中级">中级</MenuItem>
+              <MenuItem value="高级">高级</MenuItem>
+            </TextField>
+          </Box>
+
+          <TextField
+            label="训练目标（可选）"
+            value={genTrainingGoals}
+            onChange={(e) => setGenTrainingGoals(e.target.value)}
+            fullWidth
+            size="small"
+            placeholder="例如：练习用 ROI 切入并建立信任，应对集成复杂异议"
+            sx={{ mb: 2 }}
+          />
+
+          {genError && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {genError}
+            </Alert>
+          )}
+          {genDone && (
+            <Alert severity="success" sx={{ mb: 2 }}>
+              草稿已生成并填充到下方表单，可继续按需编辑。
+            </Alert>
+          )}
+
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={handleGenerateDraft}
+            disabled={isGenerating}
+            startIcon={isGenerating && <CircularProgress size={20} color="inherit" />}
+          >
+            {isGenerating ? "生成中…" : "AI 生成草稿"}
+          </Button>
+        </Paper>
 
         {/* ステッパー */}
         <Stepper activeStep={activeStep} sx={{ mb: 4 }} alternativeLabel>
