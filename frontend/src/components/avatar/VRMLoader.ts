@@ -54,7 +54,7 @@ export class VRMLoader {
           }
         },
         (error) => {
-          console.error('VRMロードエラー:', error);
+          console.error('VRM加载错误:', error);
           reject(error instanceof Error ? error : new Error('VRMロードに失敗しました'));
         }
       );

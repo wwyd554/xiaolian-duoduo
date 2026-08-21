@@ -141,7 +141,7 @@ const PdfUploader: React.FC<PdfUploaderProps> = ({
       setUploadProgress(100);
       onFilesChange([...files, ...newFiles]);
     } catch (err) {
-      console.error("PDFアップロードエラー:", err);
+      console.error("PDF上传错误:", err);
       setError(t("common.pdfUploader.uploadError"));
     } finally {
       setIsUploading(false);
@@ -160,7 +160,7 @@ const PdfUploader: React.FC<PdfUploaderProps> = ({
       updated.splice(index, 1);
       onFilesChange(updated);
     } catch (err) {
-      console.error("ファイル削除エラー:", err);
+      console.error("文件删除错误:", err);
       setError(t("common.pdfUploader.deleteError"));
     } finally {
       setDeletingIndices(prev => {

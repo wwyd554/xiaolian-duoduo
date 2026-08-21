@@ -194,7 +194,7 @@ const ScenarioEditPage: React.FC = () => {
 
         setIsLoading(false);
       } catch (error) {
-        console.error("データ読み込みエラー:", error);
+        console.error("数据加载错误:", error);
         setError(
           error instanceof Error
             ? error.message
@@ -378,7 +378,7 @@ const ScenarioEditPage: React.FC = () => {
           try {
             await avatarService.deleteAvatar(existingAvatarId);
           } catch (deleteError) {
-            console.warn("旧アバター削除エラー（孤立リソース）:", deleteError);
+            console.warn("旧头像删除错误（孤立资源）:", deleteError);
           }
         }
       } else if (!avatarFile && !existingAvatarFileName && existingAvatarId) {
@@ -386,7 +386,7 @@ const ScenarioEditPage: React.FC = () => {
         try {
           await avatarService.deleteAvatar(existingAvatarId);
         } catch (deleteError) {
-          console.warn("旧アバター削除エラー（続行）:", deleteError);
+          console.warn("旧头像删除错误（继续）:", deleteError);
         }
         avatarId = undefined;
       }
@@ -426,7 +426,7 @@ const ScenarioEditPage: React.FC = () => {
         },
       });
     } catch (error) {
-      console.error("シナリオ更新エラー:", error);
+      console.error("场景更新错误:", error);
       setError(
         error instanceof Error
           ? error.message

@@ -74,7 +74,7 @@ export class SilenceDetector {
     this.silenceTimer = setTimeout(() => {
       const silenceTime = Date.now() - this.lastSoundTimestamp;
       if (silenceTime >= this.timeoutMs && this.isActive && this.onSilenceDetectedCallback) {
-        console.log(`${silenceTime}ms間の無音を検出しました`);
+        console.log(`${silenceTime}ms间的静音已检测`);
         this.onSilenceDetectedCallback();
       }
     }, this.timeoutMs);

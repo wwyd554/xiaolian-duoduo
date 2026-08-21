@@ -75,7 +75,7 @@ const VRMAvatarContainer: React.FC<VRMAvatarContainerProps> = ({
         }
         await loadAvatarRef.current(targetId, avatarS3Key);
       } catch (error) {
-        console.error('アバター初期化エラー:', error);
+        console.error('头像初始化错误:', error);
       }
     };
 
@@ -140,7 +140,7 @@ const VRMAvatarContainer: React.FC<VRMAvatarContainerProps> = ({
   const handleModelError = useCallback((error: Error) => {
     setIsModelLoading(false);
     setModelError(error);
-    console.error('VRMモデル読み込みエラー:', error);
+    console.error('VRM模型加载错误:', error);
   }, []);
 
   // モデルURLの取得

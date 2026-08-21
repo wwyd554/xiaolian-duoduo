@@ -74,7 +74,7 @@ const AudioAnalysisPage: React.FC = () => {
           setScenarios(response.scenarios);
         }
       } catch (error) {
-        console.error("シナリオ取得エラー:", error);
+        console.error("场景获取错误:", error);
         setError("获取场景列表失败");
       }
     };
@@ -144,7 +144,7 @@ const AudioAnalysisPage: React.FC = () => {
       setAnalysisSessionId(result.sessionId);
       setResultDialogOpen(true);
     } catch (error) {
-      console.error("音声分析エラー:", error);
+      console.error("音频分析错误:", error);
       setError(
         error instanceof Error ? error.message : "音声分析に失敗しました"
       );

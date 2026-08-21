@@ -20,7 +20,7 @@ test.describe('3Dアバター感情表現テスト', () => {
   test('VRMアバターが表示され、感情状態が反映される', async ({ page }) => {
     // シナリオ一覧ページに遷移
     await navigateToScenarioSelect(page);
-    console.log('シナリオ一覧ページに遷移');
+    console.log('已跳转到场景列表页');
 
     // スクリーンショット: シナリオ一覧
     await page.screenshot({ path: 'test-results/01-scenario-list.png', fullPage: true });
@@ -32,7 +32,7 @@ test.describe('3Dアバター感情表現テスト', () => {
 
     // 商談画面に遷移するまで待機
     await page.waitForURL('**/conversation/**', { timeout: 30000 });
-    console.log('商談画面に遷移');
+    console.log('已跳转到商谈画面');
 
     // スクリーンショット: 商談画面（開始前）
     await page.screenshot({ path: 'test-results/02-conversation-before-start.png', fullPage: true });
@@ -44,7 +44,7 @@ test.describe('3Dアバター感情表現テスト', () => {
     // アバター表示エリア（region）が表示されるまで待機
     const avatarRegion = page.locator('[role="region"][aria-label*="アバター"], [role="region"][aria-label*="Avatar"]');
     await expect(avatarRegion.first()).toBeVisible({ timeout: 30000 });
-    console.log('アバター表示エリアが表示されています');
+    console.log('头像显示区域已显示');
 
     // canvas、エラー表示、またはローディング表示のいずれかがDOMに存在するまで待機
     const canvasOrErrorOrLoading = page.locator('canvas')
@@ -58,14 +58,14 @@ test.describe('3Dアバター感情表現テスト', () => {
     const canvas = page.locator('canvas');
     const canvasExists = await canvas.count() > 0;
     if (canvasExists) {
-      console.log('Canvas要素がDOMに存在しています（VRMアバター描画領域）');
+      console.log('Canvas元素已存在于DOM中（VRM头像绘制区域）');
       await expect(canvas.first()).toBeAttached();
     } else {
       const errorAlert = page.locator('[role="alert"]');
       if (await errorAlert.first().isVisible().catch(() => false)) {
-        console.log('アバター読み込みエラーが表示されています（ヘッドレスブラウザのWebGL制約の可能性）');
+        console.log('头像加载错误已显示（可能是无头浏览器的WebGL限制）');
       } else {
-        console.log('アバターがローディング中です');
+        console.log('头像正在加载中');
       }
     }
 
@@ -78,7 +78,7 @@ test.describe('3Dアバター感情表現テスト', () => {
       .or(page.locator('[role="progressbar"][aria-label*="Progress"]'));
 
     if (await angerProgress.count() > 0) {
-      console.log('怒りメーター表示確認');
+      console.log('愤怒仪表盘显示确认');
     }
     if (await trustProgress.count() > 0) {
       console.log('信頼度表示確認');
@@ -98,7 +98,7 @@ test.describe('3Dアバター感情表現テスト', () => {
         .or(page.getByRole('button', { name: /送信|Send/i }));
       if (await sendButton.count() > 0) {
         await sendButton.first().click();
-        console.log('メッセージ送信');
+        console.log('消息发送');
 
         // 応答を待機
         await page.waitForTimeout(15000);
@@ -109,9 +109,9 @@ test.describe('3Dアバター感情表現テスト', () => {
         // メッセージ送信後もアバター表示エリアが存在するか確認
         const regionStillVisible = await avatarRegion.first().isVisible().catch(() => false);
         if (regionStillVisible) {
-          console.log('メッセージ送信後もアバター表示エリアは正常に表示されています');
+          console.log('消息发送后头像显示区域仍正常显示');
         } else {
-          console.log('メッセージ送信後にアバター表示エリアが消失しました（APIエラーの可能性）');
+          console.log('消息发送后头像显示区域消失（可能是API错误）');
         }
       }
     }
@@ -119,6 +119,6 @@ test.describe('3Dアバター感情表現テスト', () => {
     // 最終スクリーンショット
     await page.screenshot({ path: 'test-results/05-final-state.png', fullPage: true });
 
-    console.log('テスト完了');
+    console.log('测试完成');
   });
 });

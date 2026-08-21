@@ -153,7 +153,7 @@ function App() {
     languageService
       .loadLanguageSettingFromUserProfile()
       .catch((error) =>
-        console.error("言語設定の読み込みに失敗しました:", error),
+        console.error("语言设置加载失败:", error),
       );
 
     // 開発環境でのi18n状態のデバッグログ

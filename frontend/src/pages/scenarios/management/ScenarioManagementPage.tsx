@@ -88,7 +88,7 @@ const ScenarioManagementPage: React.FC = () => {
       const adminStatus = await authService.isAdmin();
       setIsAdmin(adminStatus);
     } catch (err) {
-      console.error("ユーザー情報の取得に失敗しました:", err);
+      console.error("用户信息获取失败:", err);
     }
   }, []);
 
@@ -111,7 +111,7 @@ const ScenarioManagementPage: React.FC = () => {
       // 削除後に一覧を更新
       await fetchScenarios();
     } catch (err) {
-      console.error("シナリオの削除に失敗しました:", err);
+      console.error("场景删除失败:", err);
       setError("シナリオの削除に失敗しました");
     } finally {
       setLoading(false);
@@ -184,7 +184,7 @@ const ScenarioManagementPage: React.FC = () => {
           // インポート後に一覧を更新
           await fetchScenarios();
         } catch (parseErr) {
-          console.error("JSONのパースに失敗しました:", parseErr);
+          console.error("JSON解析失败:", parseErr);
           setError("無効なJSONファイルです");
         }
 

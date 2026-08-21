@@ -429,7 +429,7 @@ const ConversationPage: React.FC = () => {
             navigate("/scenarios");
           }
         } catch (error) {
-          console.error("シナリオ情報の取得に失敗しました:", error);
+          console.error("场景信息获取失败:", error);
           navigate("/scenarios");
         }
       }
@@ -476,7 +476,7 @@ const ConversationPage: React.FC = () => {
       if (scenario.language !== currentLang) {
         languageService
           .changeLanguage(scenario.language)
-          .catch((err) => console.error("言語設定の変更に失敗しました:", err));
+          .catch((err) => console.error("语言设置切换失败:", err));
       }
     }
   }, [scenario?.language]);
@@ -515,7 +515,7 @@ const ConversationPage: React.FC = () => {
         }
       );
     } catch (error) {
-      console.error("セッション保存エラー（会話は続行）:", error);
+      console.error("会话保存错误（对话将继续）:", error);
       // エラーが発生しても会話は続行できるようにする
     }
 
@@ -523,7 +523,7 @@ const ConversationPage: React.FC = () => {
     if (transcribeServiceRef.current) {
       transcribeServiceRef.current.initializeConnection(newSessionId, scenario?.language || 'zh')
         .catch(error => {
-          console.error("Transcribe WebSocket接続エラー:", error);
+          console.error("Transcribe WebSocket连接错误:", error);
           // エラーがあっても通常の会話は続行できるようにする
         });
     }
@@ -576,7 +576,7 @@ const ConversationPage: React.FC = () => {
           });
         })
         .catch((error) => {
-          console.error("初期メッセージの音声合成エラー:", error);
+          console.error("初始消息的语音合成错误:", error);
           const synth = window.speechSynthesis;
           if (synth) {
             const utterance = new SpeechSynthesisUtterance(initialContent);
@@ -780,7 +780,7 @@ const ConversationPage: React.FC = () => {
                 });
               })
               .catch((error) => {
-                console.error("Amazon Polly音声合成エラー:", error);
+                console.error("Amazon Polly语音合成错误:", error);
                 // エラーが発生した場合も話している状態を更新
                 setIsSpeaking(false);
               });
@@ -938,7 +938,7 @@ const ConversationPage: React.FC = () => {
                 }
               }
             } catch (error) {
-              console.error("リアルタイム評価API呼び出しエラー:", error);
+              console.error("实时评估API调用错误:", error);
             }
           }
 
@@ -951,12 +951,12 @@ const ConversationPage: React.FC = () => {
           }, 30000); // 長めのタイムアウト - 通常は音声再生が完了するはず
 
         } catch (error) {
-          console.error("=== ConversationPage: API呼び出しエラー ===");
-          console.error("エラー詳細:", error);
+          console.error("=== ConversationPage: API调用错误 ===");
+          console.error("错误详情:", error);
 
           // エラー時はセッションを終了
           setIsProcessing(false);
-          console.error("API呼び出しエラーのため、セッションを終了します");
+          console.error("由于API调用错误，结束会话");
         }
       },
       NPC_RESPONSE_BASE_DELAY + Math.random() * NPC_RESPONSE_RANDOM_DELAY,
@@ -1188,7 +1188,7 @@ const ConversationPage: React.FC = () => {
         try {
           await transcribeServiceRef.current.initializeConnection(sessionId, scenario?.language || 'zh');
         } catch (error) {
-          console.error("Transcribe WebSocket接続エラー:", error);
+          console.error("Transcribe WebSocket连接错误:", error);
           setSpeechRecognitionError("network");
           return;
         }
@@ -1246,7 +1246,7 @@ const ConversationPage: React.FC = () => {
         },
         // エラーコールバック
         (error) => {
-          console.error("音声認識エラー:", error);
+          console.error("语音识别错误:", error);
           setIsListening(false);
           setContinuousListening(false);
           setSpeechRecognitionError("network");
@@ -1257,7 +1257,7 @@ const ConversationPage: React.FC = () => {
       setContinuousListening(true);
       setSpeechRecognitionError(null);
     } catch (error) {
-      console.error("音声認識の開始に失敗:", error);
+      console.error("语音识别开始失败:", error);
       setSpeechRecognitionError("not-supported");
       setIsListening(false);
     }

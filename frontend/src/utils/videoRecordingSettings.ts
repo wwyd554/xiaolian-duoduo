@@ -33,7 +33,7 @@ export function loadVideoRecordingEnabled(): boolean {
   } catch (error) {
     // localStorageが利用できない環境（プライベートモード等）ではデフォルト値にフォールバック
     console.warn(
-      "ビデオ録画設定の読み込みに失敗しました。デフォルト値を使用します。 / Failed to load video recording setting, using default.",
+      "视频录制设置加载失败，将使用默认值。 / Failed to load video recording setting, using default.",
       error,
     );
     return DEFAULT_VIDEO_RECORDING_ENABLED;
@@ -51,7 +51,7 @@ export function saveVideoRecordingEnabled(enabled: boolean): void {
   } catch (error) {
     // 保存失敗時もアプリの動作は継続する（設定が永続化されないだけ）
     console.warn(
-      "ビデオ録画設定の保存に失敗しました。 / Failed to save video recording setting.",
+      "视频录制设置保存失败。 / Failed to save video recording setting.",
       error,
     );
   }

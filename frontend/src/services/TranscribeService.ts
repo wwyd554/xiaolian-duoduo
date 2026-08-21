@@ -193,32 +193,32 @@ export class TranscribeService {
               // Lambda側のvoiceActivityは無視（フロントエンド側の音声レベル判定を優先）
               // 実際の音声レベル検出はaudioProcessor内で行う
             } catch (error) {
-              console.error('WebSocketメッセージ解析エラー:', error);
+              console.error('WebSocket消息解析错误:', error);
             }
           };
 
           this.socket.onerror = (error) => {
-            console.error('WebSocketエラー:', error);
+            console.error('WebSocket错误:', error);
             this.setConnectionState(ConnectionState.CONNECTION_ERROR);
             reject(error);
           };
 
           this.socket.onclose = (event) => {
-            console.warn(`WebSocket切断: コード=${event.code}, wasClean=${event.wasClean}`);
+            console.warn(`WebSocket断开: 代码=${event.code}, wasClean=${event.wasClean}`);
 
             // 音声認識中だった場合は、次の音声検出時に自動再接続を準備
             if (this.isRecording) {
-              console.warn('音声認識中の切断を検出、次の音声で再接続します');
+              console.warn('语音识别中检测到断开，将在下一次语音时重新连接');
             }
             this.setConnectionState(ConnectionState.DISCONNECTED);
           };
         } catch (error) {
-          console.error('WebSocket初期化エラー:', error);
+          console.error('WebSocket初始化错误:', error);
           reject(error);
         }
       });
     } catch (error) {
-      console.error('WebSocket接続エラー:', error);
+      console.error('WebSocket连接错误:', error);
       this.setConnectionState(ConnectionState.CONNECTION_ERROR);
       if (this.onErrorCallback) {
         this.onErrorCallback(error instanceof Error ? error : new Error('WebSocket接続エラー'));
@@ -240,7 +240,7 @@ export class TranscribeService {
     }
 
     if (!this.currentSessionId) {
-      console.error('セッションIDが設定されていないため、再接続できません');
+      console.error('未设置会话ID，无法重新连接');
       return;
     }
 
@@ -343,7 +343,7 @@ export class TranscribeService {
             // 音声検出時に接続が切れていたら自動再接続
             if (!this.isConnected() && !this.isReconnecting && this.currentSessionId) {
               this.autoReconnect().catch(err => {
-                console.error('自動再接続エラー:', err);
+                console.error('自动重新连接错误:', err);
                 if (this.onErrorCallback) {
                   this.onErrorCallback(err instanceof Error ? err : new Error('自動再接続失敗'));
                 }
@@ -380,11 +380,11 @@ export class TranscribeService {
             // バッファサイズ制限
             if (this.audioBuffer.length > this.maxBufferSize) {
               this.audioBuffer.shift(); // 古いデータを削除
-              console.warn('⚠️ バッファが満杯、古いデータを削除');
+              console.warn('⚠️ 缓冲区已满，删除旧数据');
             }
           }
         } catch (error) {
-          console.error('音声データ処理エラー:', error);
+          console.error('语音数据处理错误:', error);
         }
       };
 
@@ -397,7 +397,7 @@ export class TranscribeService {
 
       this.isRecording = true;
     } catch (error) {
-      console.error('音声認識開始エラー:', error);
+      console.error('语音识别开始错误:', error);
       if (this.onErrorCallback) {
         this.onErrorCallback(error instanceof Error ? error : new Error('音声認識開始エラー'));
       }
@@ -450,7 +450,7 @@ export class TranscribeService {
         this.audioProcessor.disconnect();
         this.audioProcessor = null;
       } catch (e) {
-        console.warn('AudioProcessor停止エラー:', e);
+        console.warn('AudioProcessor停止错误:', e);
       }
     }
 
@@ -460,7 +460,7 @@ export class TranscribeService {
         this.mediaStream.getTracks().forEach(track => track.stop());
         this.mediaStream = null;
       } catch (e) {
-        console.warn('MediaStream停止エラー:', e);
+        console.warn('MediaStream停止错误:', e);
       }
     }
 
@@ -478,7 +478,7 @@ export class TranscribeService {
           this.socket.close();
         }
       } catch (e) {
-        console.warn('WebSocket切断エラー:', e);
+        console.warn('WebSocket断开错误:', e);
       }
       this.socket = null;
     }
@@ -504,7 +504,7 @@ export class TranscribeService {
       try {
         this.audioContext.close();
       } catch (e) {
-        console.warn('AudioContext停止エラー:', e);
+        console.warn('AudioContext停止错误:', e);
       }
       this.audioContext = null;
     }

@@ -335,7 +335,7 @@ const VRMAvatar: React.FC<VRMAvatarProps> = ({
         // 読み込み完了コールバック
         onLoadRef.current?.();
       } catch (error) {
-        console.error('VRMモデル読み込みエラー:', error);
+        console.error('VRM模型加载错误:', error);
         const errorObj = error instanceof Error
           ? error
           : new Error('VRMモデルの読み込みに失敗しました');

@@ -109,7 +109,7 @@ const ScenarioSelectPage: React.FC = () => {
         setError(t("errors.noScenarios"));
       }
     } catch (err) {
-      console.error("シナリオ取得エラー:", err);
+      console.error("场景获取错误:", err);
       setError(
         err instanceof Error ? err.message : t("errors.failedToLoadScenarios"),
       );
@@ -133,7 +133,7 @@ const ScenarioSelectPage: React.FC = () => {
       // ユーザーIDを設定（Cognitoのsub属性を使用）
       setCurrentUserId(user.userId);
     } catch (err) {
-      console.error("ユーザー情報取得エラー:", err);
+      console.error("用户信息获取错误:", err);
       // 認証されていない場合はnullを設定
       setCurrentUserId(null);
     }

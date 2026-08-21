@@ -70,7 +70,7 @@ test.describe('1. 3Dアバター表示・初期ポーズ', () => {
     // AvatarStage.tsxのaria-label: 日本語="アバター表示エリア", 英語="Avatar display area"
     const avatarRegion = page.locator('[role="region"][aria-label*="アバター"], [role="region"][aria-label*="Avatar"]');
     await expect(avatarRegion.first()).toBeVisible({ timeout: 15000 });
-    console.log('アバター表示エリア（region）が表示されています');
+    console.log('头像显示区域（region）已显示');
 
     // canvas、エラー表示、またはローディング表示のいずれかがDOMに存在するまで待機
     // VRMモデルの読み込みには時間がかかるため、十分なタイムアウトを設定
@@ -88,13 +88,13 @@ test.describe('1. 3Dアバター表示・初期ポーズ', () => {
     const loadingVisible = await loading.first().isVisible().catch(() => false);
 
     if (canvasExists) {
-      console.log('VRMアバターのcanvasがDOMに存在しています');
+      console.log('VRM头像的canvas已存在于DOM中');
     } else if (errorVisible) {
       const errorText = await avatarError.first().textContent().catch(() => '');
-      console.log(`アバター読み込みエラーが表示されています: ${errorText}`);
-      console.log('注意: VRMモデルの読み込みに失敗しています。ステージング環境のアバター設定を確認してください。');
+      console.log(`头像加载错误已显示: ${errorText}`);
+      console.log('注意: VRM模型加载失败。请检查预发环境的头像配置。');
     } else if (loadingVisible) {
-      console.log('アバターがローディング中です');
+      console.log('头像正在加载中');
     }
 
     // canvas、エラー表示、ローディング表示のいずれかがあればOK
@@ -127,13 +127,13 @@ test.describe('1. 3Dアバター表示・初期ポーズ', () => {
     const canvas = page.locator('canvas');
     const canvasAttached = await canvas.count() > 0;
     if (canvasAttached) {
-      console.log('VRMアバターのcanvasがDOMに存在しています');
+      console.log('VRM头像的canvas已存在于DOM中');
     } else {
       const errorAlert = page.locator('[role="alert"]');
       if (await errorAlert.first().isVisible().catch(() => false)) {
-        console.log('アバター読み込みエラーが表示されています（VRMモデルの配信設定を確認してください）');
+        console.log('头像加载错误已显示（请检查VRM模型的发布配置）');
       } else {
-        console.log('ローディング表示が確認されました');
+        console.log('加载状态已确认');
       }
     }
   });
@@ -180,12 +180,12 @@ test.describe('2. 感情トランジション', () => {
       // メトリクスが引き続き表示されていることを確認
       const metricsVisible = await angerProgress.first().isVisible().catch(() => false);
       if (metricsVisible) {
-        console.log('メッセージ送信後もメトリクスが正常に表示されています');
+        console.log('消息发送后指标仍正常显示');
       } else {
-        console.log('メトリクスが非表示になりました（レイアウト変更の可能性）');
+        console.log('指标已隐藏（可能是布局变化）');
       }
     } else {
-      console.log('メッセージ送信後にcanvasが消失しました（APIエラーまたはセッション終了の可能性）');
+      console.log('消息发送后canvas消失（可能是API错误或会话结束）');
     }
 
     await page.screenshot({ path: 'test-results/avatar-phase3-02-emotion-after-message.png' });
@@ -203,16 +203,16 @@ test.describe('2. 感情トランジション', () => {
     // タイミングによっては既に再生完了している場合もあるため、表示されなくてもOK
     const isVisible = await speakingIndicator.first().isVisible().catch(() => false);
     if (isVisible) {
-      console.log('発話インジケーターが表示されています');
+      console.log('说话指示器已显示');
       await expect(speakingIndicator.first()).toBeVisible();
 
       // role="status"属性の確認（アクセシビリティ）
       const statusElement = page.locator('[role="status"]:has-text("発話中")');
       if (await statusElement.count() > 0) {
-        console.log('発話インジケーターにrole="status"が設定されています');
+        console.log('说话指示器已设置role="status"');
       }
     } else {
-      console.log('発話インジケーターは既に非表示（音声再生完了済み）');
+      console.log('说话指示器已隐藏（语音播放已完成）');
     }
 
     await page.screenshot({ path: 'test-results/avatar-phase3-03-speaking-indicator.png' });
@@ -260,14 +260,14 @@ test.describe('3. リップシンク・音声同期', () => {
       return (window as unknown as Record<string, unknown[]>).__visemeEvents;
     });
 
-    console.log(`visemeDataイベント発火回数: ${(visemeEvents as unknown[]).length}`);
+    console.log(`visemeData事件触发次数: ${(visemeEvents as unknown[]).length}`);
     if ((visemeEvents as unknown[]).length > 0) {
-      console.log('visemeDataイベントが正常に発火しました（リップシンク同期確認）');
+      console.log('visemeData事件已正常触发（唇形同步确认）');
       // visemeデータにvisemeが含まれていることを確認
       const firstEvent = (visemeEvents as Array<{ visemeCount: number }>)[0];
-      console.log(`最初のイベントのviseme数: ${firstEvent.visemeCount}`);
+      console.log(`首个事件的viseme数: ${firstEvent.visemeCount}`);
     } else {
-      console.log('visemeDataイベントは発火しませんでした（Polly visemeが無効の可能性）');
+      console.log('visemeData事件未触发（可能是Polly viseme未启用）');
     }
   });
 });
@@ -313,7 +313,7 @@ test.describe('4. ジェスチャー', () => {
     // リアルタイム評価の完了を待機
     await page.waitForTimeout(20000);
 
-    console.log(`リアルタイム評価レスポンス数: ${evaluationResponses.length}`);
+    console.log(`实时评估响应数: ${evaluationResponses.length}`);
     if (evaluationResponses.length > 0) {
       const lastResponse = evaluationResponses[evaluationResponses.length - 1];
       console.log(`gesture: ${lastResponse.gesture}, npcEmotion: ${lastResponse.npcEmotion}`);
@@ -321,13 +321,13 @@ test.describe('4. ジェスチャー', () => {
       // gestureフィールドが存在する場合、有効な値であることを確認
       if (lastResponse.gesture) {
         expect(['nod', 'headTilt', 'none']).toContain(lastResponse.gesture);
-        console.log(`ジェスチャー "${lastResponse.gesture}" が正常に返されました`);
+        console.log(`手势 "${lastResponse.gesture}" 已正常返回`);
       }
 
       // npcEmotionフィールドが存在する場合、有効な値であることを確認
       if (lastResponse.npcEmotion) {
         expect(['happy', 'angry', 'sad', 'relaxed', 'neutral']).toContain(lastResponse.npcEmotion);
-        console.log(`NPC感情 "${lastResponse.npcEmotion}" が正常に返されました`);
+        console.log(`NPC情绪 "${lastResponse.npcEmotion}" 已正常返回`);
       }
     }
 
@@ -348,7 +348,7 @@ test.describe('5. 会話フロー全体（アバター統合）', () => {
     // Step 1: アバター表示エリア（region）が表示されていることを確認
     const avatarRegion = page.locator('[role="region"][aria-label*="アバター"], [role="region"][aria-label*="Avatar"]');
     await expect(avatarRegion.first()).toBeVisible({ timeout: 15000 });
-    console.log('Step 1: アバター表示エリアが表示されています');
+    console.log('Step 1: 头像显示区域已显示');
 
     // canvas（VRMアバター正常時）またはエラー表示を確認
     const canvas = page.locator('canvas');
@@ -357,9 +357,9 @@ test.describe('5. 会話フロー全体（アバター統合）', () => {
     const errorVisible = await avatarError.first().isVisible().catch(() => false);
 
     if (canvasVisible) {
-      console.log('Step 1: VRMアバターのcanvasが表示されています');
+      console.log('Step 1: VRM头像的canvas已显示');
     } else if (errorVisible) {
-      console.log('Step 1: アバター読み込みエラー（VRMモデル配信設定の問題）。会話フローの検証を続行します');
+      console.log('Step 1: 头像加载错误（VRM模型发布配置问题）。继续验证对话流程');
     }
 
     await page.screenshot({ path: 'test-results/avatar-phase3-05-step1-avatar.png' });
@@ -368,7 +368,7 @@ test.describe('5. 会話フロー全体（アバター統合）', () => {
     const angerProgress = page.locator('[role="progressbar"][aria-label*="怒り"]')
       .or(page.locator('[role="progressbar"][aria-label*="Anger"]'));
     await expect(angerProgress.first()).toBeVisible({ timeout: 15000 });
-    console.log('Step 2: メトリクスが表示されています');
+    console.log('Step 2: 指标已显示');
 
     // Step 3: メッセージを送信
     await page.waitForTimeout(2000);
@@ -379,7 +379,7 @@ test.describe('5. 会話フロー全体（アバター統合）', () => {
     const sendButton = page.locator('button[aria-label*="送信"]').first();
     await expect(sendButton).toBeEnabled({ timeout: 5000 });
     await sendButton.click();
-    console.log('Step 3: メッセージを送信しました');
+    console.log('Step 3: 消息已发送');
 
     // Step 4: NPC応答を待機
     await page.waitForTimeout(15000);
@@ -390,11 +390,11 @@ test.describe('5. 会話フロー全体（アバター統合）', () => {
     // Step 5: アバター表示エリアが引き続き表示されているか確認
     const regionStillVisible = await avatarRegion.first().isVisible().catch(() => false);
     if (!regionStillVisible) {
-      console.log('Step 5: メッセージ送信後にアバター表示エリアが消失しました（APIエラーまたはセッション自動終了の可能性）');
-      console.log('アバター統合テスト完了（メッセージ送信後にページ状態が変化）');
+      console.log('Step 5: 消息发送后头像显示区域消失（可能是API错误或会话自动结束）');
+      console.log('头像集成测试完成（消息发送后页面状态发生变化）');
       return;
     }
-    console.log('Step 5: アバター表示エリアは引き続き表示されています');
+    console.log('Step 5: 头像显示区域继续显示');
 
     // Step 6: 2回目のメッセージを送信
     const messageInput2 = page.locator('textarea').first();
@@ -403,7 +403,7 @@ test.describe('5. 会話フロー全体（アバター統合）', () => {
       const sendButton2 = page.locator('button[aria-label*="送信"]').first();
       if (await sendButton2.isEnabled().catch(() => false)) {
         await sendButton2.click();
-        console.log('Step 6: 2回目のメッセージを送信しました');
+        console.log('Step 6: 已发送第二条消息');
 
         // 応答待機
         await page.waitForTimeout(15000);
@@ -415,12 +415,12 @@ test.describe('5. 会話フロー全体（アバター統合）', () => {
     // Step 7: アバター表示エリアが引き続き正常に表示されているか確認
     const regionFinalVisible = await avatarRegion.first().isVisible().catch(() => false);
     if (regionFinalVisible) {
-      console.log('Step 7: 複数メッセージ後もアバター表示エリアは正常に表示されています');
+      console.log('Step 7: 多条消息后头像显示区域仍正常显示');
     } else {
-      console.log('Step 7: 2回目のメッセージ後にアバター表示エリアが消失しました');
+      console.log('Step 7: 第二条消息后头像显示区域消失');
     }
 
-    console.log('アバター統合テスト完了');
+    console.log('头像集成测试完成');
   });
 });
 
@@ -445,7 +445,7 @@ test.describe('6. アクセシビリティ', () => {
     // canvas要素にrole="img"が設定されていることを確認
     const canvasWithRole = page.locator('canvas[role="img"]');
     if (await canvasWithRole.count() > 0) {
-      console.log('canvas要素にrole="img"が設定されています');
+      console.log('canvas元素已设置role="img"');
     }
 
     // 発話インジケーターにrole="status"が設定されていることを確認

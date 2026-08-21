@@ -40,9 +40,9 @@ const LanguageSettings: React.FC = () => {
     try {
       // 言語サービスを使用して言語を変更（永続化も行う）
       await languageService.changeLanguage(newLang);
-      console.log("言語を変更しました:", newLang);
+      console.log("已切换语言:", newLang);
     } catch (error) {
-      console.error("言語変更エラー:", error);
+      console.error("语言切换错误:", error);
       // エラー時は選択を元に戻す
       setSelectedLanguage(i18n.language.split("-")[0]);
     }

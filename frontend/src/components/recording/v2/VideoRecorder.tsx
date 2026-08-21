@@ -335,7 +335,7 @@ const VideoRecorder = forwardRef<VideoRecorderRef, VideoRecorderProps>(({
     try {
       localStorage.setItem(key, value);
     } catch (storageError) {
-      console.warn(`localStorageへの保存に失敗しました（key=${key}）:`, storageError);
+      console.warn(`localStorage保存失败（key=${key}）:`, storageError);
     }
   };
 

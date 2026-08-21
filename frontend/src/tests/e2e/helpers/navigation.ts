@@ -72,7 +72,7 @@ export async function clickStartConversationButton(page: Page): Promise<void> {
 
   // ボタンが表示されるまで待機（カメラタイムアウトを考慮して長めに設定）
   await expect(startConversationButton).toBeVisible({ timeout: 60000 });
-  console.log("clickStartConversationButton: ボタンが表示されました");
+  console.log("clickStartConversationButton: 按钮已显示");
 
   // カメラタイムアウト後にボタンが有効になるまで待機
   // ステージング環境ではカメラにアクセスできないため、タイムアウト後に「商談開始（録画なし）」が有効になる
@@ -87,17 +87,17 @@ export async function clickStartConversationButton(page: Page): Promise<void> {
 
     if (isButtonEnabled) {
       // ボタンが有効な場合はクリック
-      console.log("clickStartConversationButton: ボタンが有効になりました。クリックします");
+      console.log("clickStartConversationButton: 按钮已可用。点击它");
       await startConversationButton.click();
 
       // セッションが開始されるまで待機（「セッション終了」ボタンが表示されることを確認）
       const endButton = page.locator('button:has-text("セッション終了"), button:has-text("商談終了"), button:has-text("End Conversation")').first();
       try {
         await expect(endButton).toBeVisible({ timeout: 30000 });
-        console.log("clickStartConversationButton: セッションが開始されました（セッション終了ボタンが表示）");
+        console.log("clickStartConversationButton: 会话已开始（结束会话按钮已显示）");
         return;
       } catch {
-        console.log("clickStartConversationButton: セッション終了ボタンが表示されませんでした。NPCメッセージを確認します");
+        console.log("clickStartConversationButton: 未显示结束会话按钮。确认NPC消息");
         // NPCメッセージが表示されているか確認
         const npcMessage = page.locator('.MuiPaper-root:has-text("こんにちは")')
           .or(page.locator('.MuiPaper-root:has-text("いらっしゃいませ")'))
@@ -105,7 +105,7 @@ export async function clickStartConversationButton(page: Page): Promise<void> {
           .or(page.locator('.MuiPaper-root:has-text("ご提案")'));
 
         if (await npcMessage.first().isVisible().catch(() => false)) {
-          console.log("clickStartConversationButton: NPCメッセージが表示されています。セッション開始成功");
+          console.log("clickStartConversationButton: 已显示NPC消息。会话开始成功");
           return;
         }
 
@@ -121,7 +121,7 @@ export async function clickStartConversationButton(page: Page): Promise<void> {
   }
 
   // タイムアウト後もボタンが無効な場合は、JavaScriptで強制的にクリック
-  console.log("clickStartConversationButton: ボタンが無効のままです。強制的にクリックを試みます");
+  console.log("clickStartConversationButton: 按钮仍不可用。尝试强制点击");
 
   await page.evaluate(() => {
     // data-testidでボタンを見つける
@@ -164,7 +164,7 @@ export async function clickStartConversationButton(page: Page): Promise<void> {
 
   // クリック後、セッションが開始されるまで待機
   await page.waitForTimeout(5000);
-  console.log("clickStartConversationButton: 強制クリック後の待機完了");
+  console.log("clickStartConversationButton: 强制点击后等待完成");
 }
 
 /**

@@ -119,7 +119,7 @@ const ScenarioCard: React.FC<ScenarioCardProps> = ({
         onDeleted(scenario.scenarioId);
       }
     } catch (error) {
-      console.error("シナリオ削除エラー:", error);
+      console.error("场景删除错误:", error);
       setDeleteError(
         error instanceof Error
           ? error.message

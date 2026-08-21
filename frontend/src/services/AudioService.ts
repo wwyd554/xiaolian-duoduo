@@ -156,7 +156,7 @@ export class AudioService {
         }
       }
     } catch (error) {
-      console.error("音声合成エラー:", error);
+      console.error("语音合成错误:", error);
     } finally {
       // タスクが完了したらマップから削除
       this.currentSynthesisTasks.delete(messageId);
@@ -245,7 +245,7 @@ export class AudioService {
         this.playNextAudio();
       }
     } catch (error) {
-      console.error("音声キュー追加エラー:", error);
+      console.error("语音队列添加错误:", error);
     }
   }
 
@@ -291,7 +291,7 @@ export class AudioService {
     };
 
     nextAudio.audio.onerror = (error) => {
-      console.error("音声再生エラー:", error);
+      console.error("语音播放错误:", error);
       const errorMessageId = nextAudio.id;
       this.audioQueue.shift();
 
@@ -319,7 +319,7 @@ export class AudioService {
         }));
       }
     }).catch((error) => {
-      console.error("音声再生開始エラー:", error);
+      console.error("语音播放开始错误:", error);
       const failedMessageId = nextAudio.id;
       this.audioQueue.shift();
 

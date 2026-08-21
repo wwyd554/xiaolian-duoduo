@@ -52,21 +52,21 @@ const VideoManager = forwardRef<VideoManagerRef, VideoManagerProps>(({
 
   // エラー処理
   const handleRecordingError = (error: string) => {
-    console.error(`録画エラー: ${error}`);
+    console.error(`录制错误: ${error}`);
     setRecordingError(error);
   };
 
   // videoKey が変更されたときにコンソールに記録
   useEffect(() => {
     if (videoKey) {
-      console.log(`VideoManager: 新しいvideoKey設定: ${videoKey}`);
+      console.log(`VideoManager: 已设置新的videoKey: ${videoKey}`);
     }
   }, [videoKey]);
 
   // 親コンポーネントから明示的に録画を停止するための関数を公開
   useImperativeHandle(ref, () => ({
     forceStopRecording: async () => {
-      console.log("VideoManager: 明示的な録画停止が要求されました");
+      console.log("VideoManager: 已请求显式停止录制");
       if (videoRecorderRef.current) {
         return await videoRecorderRef.current.forceStopRecording();
       }
@@ -77,7 +77,7 @@ const VideoManager = forwardRef<VideoManagerRef, VideoManagerProps>(({
   // sessionEndedが変化したときの明示的な処理
   useEffect(() => {
     if (sessionEnded && sessionStarted && videoRecorderRef.current) {
-      console.log("VideoManager: sessionEnded検知による録画停止処理");
+      console.log("VideoManager: 检测到sessionEnded，执行停止录制处理");
       
       // 録画停止処理を確実に実行
       const forceStopWithRetry = async () => {
@@ -93,7 +93,7 @@ const VideoManager = forwardRef<VideoManagerRef, VideoManagerProps>(({
               break;
             }
           } catch (error) {
-            console.error(`VideoManager: 録画停止試行 ${attempts + 1} でエラー:`, error);
+            console.error(`VideoManager: 停止录制尝试第 ${attempts + 1} 次出错:`, error);
             attempts++;
             
             if (attempts < maxAttempts) {
@@ -104,7 +104,7 @@ const VideoManager = forwardRef<VideoManagerRef, VideoManagerProps>(({
         }
         
         if (attempts >= maxAttempts) {
-          console.error("VideoManager: 録画停止が最大試行回数に達しました");
+          console.error("VideoManager: 停止录制已达到最大尝试次数");
         }
       };
       

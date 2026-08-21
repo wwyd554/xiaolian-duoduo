@@ -104,7 +104,7 @@ export class AgentCoreService {
 
       return authSession.tokens.accessToken.toString();
     } catch (error) {
-      console.error("認証エラー:", error);
+      console.error("认证错误:", error);
       throw new Error("用户未登录");
     }
   }
@@ -145,7 +145,7 @@ export class AgentCoreService {
       // 401（認証エラー）の場合のみ、トークンを強制更新して1回リトライ
       if (error instanceof AgentCoreUnauthorizedError) {
         console.warn(
-          "AgentCore Runtime 401（トークン失効間近の可能性）。トークンを強制更新して再試行します。",
+          "AgentCore Runtime 401（令牌可能即将失效）。将强制刷新令牌后重试。",
         );
         const refreshedToken = await this.getAccessToken(true);
         return await this.sendAgentCoreRequest<T>(
@@ -197,7 +197,7 @@ export class AgentCoreService {
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error(`AgentCore Runtime エラー: ${response.status}`, errorText);
+        console.error(`AgentCore Runtime 错误: ${response.status}`, errorText);
         // 401はトークン失効系のため、呼び出し元でのリトライ対象として専用エラーを投げる
         if (response.status === 401) {
           throw new AgentCoreUnauthorizedError(errorText);
@@ -317,7 +317,7 @@ export class AgentCoreService {
       const currentUser = await getCurrentUser();
       userId = currentUser.userId;
     } catch (error) {
-      console.error('ユーザーID取得エラー:', error);
+      console.error('用户ID获取错误:', error);
       throw new Error('用户未认证');
     }
 
@@ -366,7 +366,7 @@ export class AgentCoreService {
         messageId: result.messageId || currentMessageId,
       };
     } catch (error) {
-      console.error("NPC会話エージェント呼び出しエラー:", error);
+      console.error("与NPC对话智能体调用错误:", error);
       return {
         response: "申し訳ありません、応答の生成中にエラーが発生しました。少し経ってからもう一度お試しください。",
         sessionId: currentSessionId,
@@ -421,7 +421,7 @@ export class AgentCoreService {
       const currentUser = await getCurrentUser();
       userId = currentUser.userId;
     } catch (error) {
-      console.error('ユーザーID取得エラー:', error);
+      console.error('用户ID获取错误:', error);
       throw new Error('用户未认证');
     }
 
@@ -541,7 +541,7 @@ export class AgentCoreService {
         compliance: undefined,
       };
     } catch (error) {
-      console.error("リアルタイムスコアリングエージェント呼び出しエラー:", error);
+      console.error("实时评分智能体调用错误:", error);
       return {
         scores: { angerLevel: 1, trustLevel: 1, progressLevel: 1 },
         analysis: "",

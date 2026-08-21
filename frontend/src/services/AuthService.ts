@@ -33,7 +33,7 @@ export class AuthService {
 
   private constructor() {
     // シングルトンパターン
-    console.log("認証サービス初期化");
+    console.log("认证服务初始化");
   }
 
   /**
@@ -90,13 +90,13 @@ export class AuthService {
           preferredUsername: preferredUsername,
           userId: cognitoUser.userId, // Cognitoのsub属性（ユーザーID）
         };
-        console.log("ユーザー情報を取得しました:", this.cachedUser);
+        console.log("已获取用户信息:", this.cachedUser);
       } else {
         this.cachedUser = null;
-        console.log("ユーザー情報が取得できませんでした");
+        console.log("无法获取用户信息");
       }
     } catch (error) {
-      console.error("ユーザー情報の取得中にエラーが発生しました:", error);
+      console.error("获取用户信息时出错:", error);
       this.cachedUser = null;
     }
   }
@@ -112,16 +112,16 @@ export class AuthService {
         this.cachedUser = null;
         this.cachedIsAdmin = null;
         this.cachedIsAdminAt = 0;
-        console.log("ローカル認証ログアウト完了");
+        console.log("本地认证登出完成");
         return;
       }
       await signOut();
       this.cachedUser = null;
       this.cachedIsAdmin = null;
       this.cachedIsAdminAt = 0;
-      console.log("ログアウト完了");
+      console.log("登出完成");
     } catch (error) {
-      console.error("ログアウト中にエラーが発生しました:", error);
+      console.error("登出时出错:", error);
     }
   }
 
@@ -136,7 +136,7 @@ export class AuthService {
       const session = await fetchAuthSession();
       return !!session.tokens;
     } catch (error) {
-      console.error("認証状態の確認中にエラーが発生しました:", error);
+      console.error("确认认证状态时出错:", error);
       return false;
     }
   }
@@ -198,7 +198,7 @@ export class AuthService {
       this.cachedIsAdminAt = Date.now();
       return this.cachedIsAdmin;
     } catch (error) {
-      console.error("管理者判定エラー:", error);
+      console.error("管理员判定错误:", error);
       this.cachedIsAdmin = false;
       this.cachedIsAdminAt = Date.now();
       return false;
@@ -217,7 +217,7 @@ export class AuthService {
       const session = await fetchAuthSession();
       return session.tokens?.idToken?.toString() || "";
     } catch (error) {
-      console.error("認証トークンの取得中にエラーが発生しました:", error);
+      console.error("获取认证令牌时出错:", error);
       return "";
     }
   }
@@ -245,9 +245,9 @@ export class AuthService {
       // 最新のユーザー情報を再取得
       await this.fetchAndCacheUserInfo();
 
-      console.log("ユーザー名を更新しました:", preferredUsername);
+      console.log("已更新用户名:", preferredUsername);
     } catch (error) {
-      console.error("ユーザー名の更新中にエラーが発生しました:", error);
+      console.error("更新用户名时出错:", error);
       throw error;
     }
   }

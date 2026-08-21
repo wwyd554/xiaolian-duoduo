@@ -22,7 +22,7 @@ export class AudioAnalysisService {
    * コンストラクタ - シングルトンパターン
    */
   private constructor() {
-    console.log("=== 音声分析サービス初期化 ===");
+    console.log("=== 音频分析服务初始化 ===");
     this.apiService = ApiService.getInstance();
   }
 
@@ -50,8 +50,8 @@ export class AudioAnalysisService {
     language: AudioAnalysisLanguage
   ): Promise<AudioUploadUrlResponse> {
     try {
-      console.log('=== 音声アップロードURL生成開始 ===');
-      console.log(`ファイル名: ${fileName}, 形式: ${contentType}, 言語: ${language}`);
+      console.log('=== 音频上传URL生成开始 ===');
+      console.log(`文件名: ${fileName}, 格式: ${contentType}, 语言: ${language}`);
 
       const response = await this.apiService.generateAudioUploadUrl(
         fileName,
@@ -59,11 +59,11 @@ export class AudioAnalysisService {
         language
       );
 
-      console.log('音声アップロードURL生成完了:', response);
+      console.log('音频上传URL生成完成:', response);
       return response;
     } catch (error) {
-      console.error('=== 音声アップロードURL生成エラー ===');
-      console.error('エラー詳細:', error);
+      console.error('=== 音频上传URL生成错误 ===');
+      console.error('错误详情:', error);
       throw error;
     }
   }
@@ -83,8 +83,8 @@ export class AudioAnalysisService {
     onProgress?: (progress: number) => void
   ): Promise<void> {
     try {
-      console.log('=== 音声ファイルアップロード開始（POSTフォーム方式）===');
-      console.log(`ファイル名: ${file.name}, サイズ: ${file.size}`);
+      console.log('=== 音频文件上传开始（POST表单方式）===');
+      console.log(`文件名: ${file.name}, 大小: ${file.size}`);
 
       return new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
@@ -98,7 +98,7 @@ export class AudioAnalysisService {
 
         xhr.addEventListener('load', () => {
           if (xhr.status >= 200 && xhr.status < 300) {
-            console.log('音声ファイルアップロード完了');
+            console.log('音频文件上传完成');
             resolve();
           } else {
             console.error(`上传失败: ${xhr.status} - ${xhr.statusText}`);
@@ -107,7 +107,7 @@ export class AudioAnalysisService {
         });
 
         xhr.addEventListener('error', () => {
-          console.error('アップロード中にエラーが発生');
+          console.error('上传时发生错误');
           reject(new Error('アップロード中にエラーが発生しました'));
         });
 
@@ -127,8 +127,8 @@ export class AudioAnalysisService {
         xhr.send(formDataObj);
       });
     } catch (error) {
-      console.error('=== 音声ファイルアップロードエラー ===');
-      console.error('エラー詳細:', error);
+      console.error('=== 音频文件上传错误 ===');
+      console.error('错误详情:', error);
       throw error;
     }
   }
@@ -150,7 +150,7 @@ export class AudioAnalysisService {
   ): Promise<AudioAnalysisStartResponse> {
     try {
       console.log('=== 音声分析開始 ===');
-      console.log(`セッションID: ${sessionId}, シナリオID: ${scenarioId}, 言語: ${language}`);
+      console.log(`会话ID: ${sessionId}, 场景ID: ${scenarioId}, 语言: ${language}`);
 
       const response = await this.apiService.startAudioAnalysis(
         sessionId,
@@ -170,8 +170,8 @@ export class AudioAnalysisService {
         message: response.message
       };
     } catch (error) {
-      console.error('=== 音声分析開始エラー ===');
-      console.error('エラー詳細:', error);
+      console.error('=== 音频分析开始错误 ===');
+      console.error('错误详情:', error);
       throw error;
     }
   }
@@ -196,7 +196,7 @@ export class AudioAnalysisService {
         progress: response.progress as unknown as AudioAnalysisStatusResponse['progress']
       };
     } catch (error) {
-      console.error('分析状況確認エラー:', error);
+      console.error('分析状态确认错误:', error);
       throw error;
     }
   }
@@ -210,7 +210,7 @@ export class AudioAnalysisService {
   async getAnalysisResults(sessionId: string): Promise<AudioAnalysisApiResponse> {
     try {
       console.log('=== 音声分析結果取得開始 ===');
-      console.log(`セッションID: ${sessionId}`);
+      console.log(`会话ID: ${sessionId}`);
 
       const response = await this.apiService.getAudioAnalysisResults(sessionId);
 
@@ -226,8 +226,8 @@ export class AudioAnalysisService {
         createdAt: response.createdAt
       };
     } catch (error) {
-      console.error('=== 音声分析結果取得エラー ===');
-      console.error('エラー詳細:', error);
+      console.error('=== 音频分析结果获取错误 ===');
+      console.error('错误详情:', error);
       throw error;
     }
   }
@@ -244,13 +244,13 @@ export class AudioAnalysisService {
     error?: string;
     contentType?: SupportedAudioFormat;
   } {
-    console.log('=== 音声ファイルバリデーション開始 ===');
-    console.log(`ファイル名: ${file.name}, サイズ: ${file.size}, タイプ: ${file.type}`);
+    console.log('=== 音频文件校验开始 ===');
+    console.log(`文件名: ${file.name}, 大小: ${file.size}, 类型: ${file.type}`);
 
     // ファイルサイズチェック
     const maxSize = maxSizeInMB * 1024 * 1024;
     if (file.size > maxSize) {
-      console.error(`ファイルサイズ超過: ${file.size} > ${maxSize}`);
+      console.error(`文件大小超出限制: ${file.size} > ${maxSize}`);
       return {
         isValid: false,
         error: `ファイルサイズは${maxSizeInMB}MB以下にしてください`
@@ -283,9 +283,9 @@ export class AudioAnalysisService {
 
       if (extension && extensionMap[extension]) {
         contentType = extensionMap[extension];
-        console.log(`拡張子による形式判定: ${extension} -> ${contentType}`);
+        console.log(`根据扩展名判断格式: ${extension} -> ${contentType}`);
       } else {
-        console.error(`対応していない音声形式: ${file.type}, 拡張子: ${extension}`);
+        console.error(`不支持的音频格式: ${file.type}, 扩展名: ${extension}`);
         return {
           isValid: false,
           error: '対応していない音声形式です。MP3、WAV、FLAC、OGG形式をご利用ください'
@@ -293,7 +293,7 @@ export class AudioAnalysisService {
       }
     }
 
-    console.log('音声ファイルバリデーション完了:', { contentType });
+    console.log('音频文件校验完成:', { contentType });
     return {
       isValid: true,
       contentType
@@ -317,20 +317,20 @@ export class AudioAnalysisService {
   ): Promise<AudioAnalysisApiResponse> {
     let attempts = 0;
 
-    console.log('=== 音声分析ポーリング開始 ===');
-    console.log(`セッションID: ${sessionId}, 最大試行回数: ${maxAttempts}, 間隔: ${intervalMs}ms`);
+    console.log('=== 音频分析轮询开始 ===');
+    console.log(`会话ID: ${sessionId}, 最大尝试次数: ${maxAttempts}, 间隔: ${intervalMs}ms`);
 
     return new Promise((resolve, reject) => {
       const poll = async () => {
         try {
           attempts++;
-          console.log(`ポーリング試行: ${attempts}/${maxAttempts}`);
+          console.log(`轮询尝试: ${attempts}/${maxAttempts}`);
 
           const status = await this.getAnalysisStatus(sessionId);
           onProgress(status);
 
           if (status.status === 'COMPLETED') {
-            console.log('音声分析完了 - 結果を取得中');
+            console.log('音频分析完成 - 正在获取结果');
             // 完了時は結果を取得して返す
             const result = await this.getAnalysisResults(sessionId);
             console.log('音声分析結果取得完了');
@@ -341,7 +341,7 @@ export class AudioAnalysisService {
             reject(new Error(`分析に失敗しました: ${status.progress?.error || '詳細不明'}`));
             return;
           } else if (attempts >= maxAttempts) {
-            console.error('音声分析ポーリングタイムアウト');
+            console.error('音频分析轮询超时');
             reject(new Error('分析がタイムアウトしました'));
             return;
           }
@@ -350,7 +350,7 @@ export class AudioAnalysisService {
           setTimeout(poll, intervalMs);
 
         } catch (error) {
-          console.error('ポーリング中にエラー:', error);
+          console.error('轮询中出错:', error);
           reject(error);
         }
       };
@@ -422,8 +422,8 @@ export class AudioAnalysisService {
       return result;
 
     } catch (error) {
-      console.error('=== 音声分析統合処理エラー ===');
-      console.error('エラー詳細:', error);
+      console.error('=== 音频分析集成处理错误 ===');
+      console.error('错误详情:', error);
 
       if (error instanceof Error) {
         throw new Error(`语音分析处理失败: ${error.message}`);

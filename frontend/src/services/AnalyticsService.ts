@@ -9,7 +9,7 @@ export class AnalyticsService {
 
   private constructor() {
     // シングルトンパターン
-    console.log("分析サービス初期化");
+    console.log("分析服务初始化");
   }
 
   /**

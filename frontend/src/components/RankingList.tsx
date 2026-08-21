@@ -50,7 +50,7 @@ const RankingList: React.FC<RankingListProps> = ({ currentUserId }) => {
       }
     } catch (err) {
       setError(t("common.errorFetchingScenarios"));
-      console.error("シナリオ取得エラー:", err);
+      console.error("场景获取错误:", err);
     }
   }, [apiService, t]);
 
@@ -76,7 +76,7 @@ const RankingList: React.FC<RankingListProps> = ({ currentUserId }) => {
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : t("errors.server"));
-      console.error("ランキング取得エラー:", err);
+      console.error("排行榜获取错误:", err);
     } finally {
       setLoading(false);
     }

@@ -27,7 +27,7 @@ const RankingPage: React.FC = () => {
         const user = await authService.getCurrentUser();
         setCurrentUserId(user?.preferredUsername || user?.name);
       } catch (error) {
-        console.error("ユーザー情報の取得に失敗しました:", error);
+        console.error("用户信息获取失败:", error);
       }
     };
 

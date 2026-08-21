@@ -274,7 +274,7 @@ const ResultPage: React.FC = () => {
           setAnalysisProgress(t("results.analysisInProgress"));
         }
       } catch (err) {
-        console.error("ステータスポーリングエラー:", err);
+        console.error("状态轮询错误:", err);
       }
     }, 3000); // 3秒間隔でポーリング
 
@@ -333,7 +333,7 @@ const ResultPage: React.FC = () => {
         setVideoAnalysisData((completeData as any).videoAnalysis as VideoAnalysisResult);
       }
     } catch (err) {
-      console.error("音声分析セッション処理エラー:", err);
+      console.error("音频分析会话处理错误:", err);
       setError("音声分析結果の読み込み中にエラーが発生しました");
     }
   };
@@ -480,7 +480,7 @@ const ResultPage: React.FC = () => {
               }));
             }
           } catch (scenarioError) {
-            console.error("シナリオ情報からのゴール取得に失敗:", scenarioError);
+            console.error("从场景信息获取目标失败:", scenarioError);
           }
         }
 
@@ -578,7 +578,7 @@ const ResultPage: React.FC = () => {
           setVideoAnalysisData(completeData.videoAnalysis);
         }
       } catch (err) {
-        console.error("セッションデータ読み込みエラー:", err);
+        console.error("会话数据加载错误:", err);
         setError(t("errors.sessionLoadFailed"));
       } finally {
         setLoading(false);

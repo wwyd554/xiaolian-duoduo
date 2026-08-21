@@ -76,7 +76,7 @@ const SessionHistoryPage: React.FC = () => {
           loadScenarios();
         }
       } catch (error) {
-        console.error("ユーザー情報の取得に失敗しました:", error);
+        console.error("用户信息获取失败:", error);
         setError(t("history.error.userLoadFailed"));
       }
     };
@@ -114,7 +114,7 @@ const SessionHistoryPage: React.FC = () => {
         );
       }
     } catch (err) {
-      console.error("セッション履歴の読み込みに失敗しました", err);
+      console.error("会话历史加载失败", err);
       setError(t("history.error.loadFailed"));
     } finally {
       setLoading(false);
@@ -127,7 +127,7 @@ const SessionHistoryPage: React.FC = () => {
       const response = await apiService.getScenarios();
       setScenarios(response.scenarios);
     } catch (err) {
-      console.error("シナリオ一覧の読み込みに失敗しました", err);
+      console.error("场景列表加载失败", err);
     }
   };
 

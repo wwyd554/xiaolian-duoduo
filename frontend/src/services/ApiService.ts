@@ -68,7 +68,7 @@ export class ApiService {
   private async getAuthHeaders(): Promise<Record<string, string>> {
     const auth = loadAuth();
     if (!auth?.token) {
-      console.error("認証エラー: 未登录或登录已过期");
+      console.error("认证错误: 未登录或登录已过期");
       throw new Error("用户未登录，请先使用邀请码登录。");
     }
     return {
@@ -139,7 +139,7 @@ export class ApiService {
       const fullPath = queryString ? `${path}?${queryString}` : path;
       return await this.request<T>("GET", fullPath);
     } catch (error) {
-      console.error(`API GET エラー (${path}):`, error);
+      console.error(`API GET 错误 (${path}):`, error);
       throw error;
     }
   }
@@ -157,7 +157,7 @@ export class ApiService {
     try {
       return await this.request<T>("POST", path, requestBody);
     } catch (error) {
-      console.error(`API POST エラー (${path}):`, error);
+      console.error(`API POST 错误 (${path}):`, error);
       throw error;
     }
   }
@@ -175,7 +175,7 @@ export class ApiService {
     try {
       return await this.request<T>("PUT", path, requestBody);
     } catch (error) {
-      console.error(`API PUT エラー (${path}):`, error);
+      console.error(`API PUT 错误 (${path}):`, error);
       throw error;
     }
   }
@@ -189,7 +189,7 @@ export class ApiService {
     try {
       return await this.request<T>("DELETE", path);
     } catch (error) {
-      console.error(`API DELETE エラー (${path}):`, error);
+      console.error(`API DELETE 错误 (${path}):`, error);
       throw error;
     }
   }
@@ -244,7 +244,7 @@ export class ApiService {
         isNew: response.isNew,
       };
     } catch (error) {
-      console.error("セッション作成/更新エラー:", error);
+      console.error("会话创建/更新错误:", error);
       // エラーが発生しても会話は続行できるようにする
       return {
         success: false,
@@ -337,7 +337,7 @@ export class ApiService {
         messageId: result.messageId || messageId || crypto.randomUUID(),
       };
     } catch (error: unknown) {
-      console.error("NPCとの会話中にエラーが発生:", error);
+      console.error("与NPC对话时发生错误:", error);
       // エラー時のフォールバック応答
       return {
         response:
@@ -443,7 +443,7 @@ export class ApiService {
         suggestions: Array.isArray(result.suggestions) ? result.suggestions : [],
       };
     } catch (error) {
-      console.error("リアルタイム評価取得エラー:", error);
+      console.error("实时评估获取错误:", error);
       return {
         scores: {
           angerLevel: 1,
@@ -854,7 +854,7 @@ export class ApiService {
           );
           deletedFiles.push(fileToDelete);
         } catch (error) {
-          console.error(`ファイル削除エラー (${fileToDelete}):`, error);
+          console.error(`文件删除错误 (${fileToDelete}):`, error);
           errors.push(
             `${fileToDelete}: ${error instanceof Error ? error.message : "Unknown error"}`,
           );
@@ -915,7 +915,7 @@ export class ApiService {
         contentType,
       });
     } catch (error) {
-      console.error("提案資料アップロードURL取得エラー:", error);
+      console.error("演示资料上传URL获取错误:", error);
       throw new Error("获取提案资料上传 URL 失败");
     }
   }
@@ -942,7 +942,7 @@ export class ApiService {
         `/scenarios/${scenarioId}/presentation`,
       );
     } catch (error) {
-      console.error("提案資料削除エラー:", error);
+      console.error("演示资料删除错误:", error);
       throw new Error("删除提案资料失败");
     }
   }
@@ -967,7 +967,7 @@ export class ApiService {
     try {
       return await this.apiGet(`/scenarios/${scenarioId}/slides`);
     } catch (error) {
-      console.error("スライド画像一覧取得エラー:", error);
+      console.error("幻灯片图片列表获取错误:", error);
       throw new Error("获取幻灯片图片失败");
     }
   }
@@ -986,7 +986,7 @@ export class ApiService {
         { pdfKey: string; fileName: string }
       >(`/scenarios/${scenarioId}/convert-slides`, { pdfKey, fileName });
     } catch (error) {
-      console.error("スライド変換トリガーエラー:", error);
+      console.error("幻灯片转换触发错误:", error);
       throw new Error("开始幻灯片转换失败");
     }
   }
@@ -1485,7 +1485,7 @@ export class ApiService {
       });
     } catch (error) {
       // 中断処理の失敗は致命的ではないため、警告ログのみ出力して握りつぶす
-      console.warn("マルチパートアップロード中断に失敗しました:", error);
+      console.warn("分段上传中断失败:", error);
       return { aborted: false };
     }
   }
@@ -1556,7 +1556,7 @@ export class ApiService {
       return formattedResponse;
     } catch (error) {
       console.error(
-        `ランキング取得エラー: ${error instanceof Error ? error.message : String(error)}`,
+        `排行榜获取错误: ${error instanceof Error ? error.message : String(error)}`,
       );
 
       if (error instanceof Error) {
@@ -1612,7 +1612,7 @@ export class ApiService {
 
       return response;
     } catch (error) {
-      console.error("Polly API呼び出しエラー:", error);
+      console.error("Polly API调用错误:", error);
 
       if (error instanceof Error) {
         throw new Error(`Polly 语音合成失败: ${error.message}`);
@@ -1663,7 +1663,7 @@ export class ApiService {
 
       return response;
     } catch (error) {
-      console.error('音声アップロードURL生成エラー:', error);
+      console.error('音频上传URL生成错误:', error);
 
       if (error instanceof Error) {
         throw new Error(`生成语音上传 URL 失败: ${error.message}`);
@@ -1710,7 +1710,7 @@ export class ApiService {
 
       return response;
     } catch (error) {
-      console.error('音声分析開始エラー:', error);
+      console.error('音频分析开始错误:', error);
 
       if (error instanceof Error) {
         throw new Error(`开始语音分析失败: ${error.message}`);
@@ -1745,7 +1745,7 @@ export class ApiService {
 
       return response;
     } catch (error) {
-      console.error('分析状況確認エラー:', error);
+      console.error('分析状态确认错误:', error);
 
       if (error instanceof Error) {
         throw new Error(`确认分析状态失败: ${error.message}`);
@@ -1780,7 +1780,7 @@ export class ApiService {
 
       return response;
     } catch (error) {
-      console.error('音声分析結果取得エラー:', error);
+      console.error('音频分析结果获取错误:', error);
 
       if (error instanceof Error) {
         throw new Error(`获取语音分析结果失败: ${error.message}`);
@@ -1825,7 +1825,7 @@ export class ApiService {
 
       return response;
     } catch (error) {
-      console.error('セッション分析開始エラー:', error);
+      console.error('会话分析开始错误:', error);
 
       if (error instanceof Error) {
         throw new Error(`开始会话分析失败: ${error.message}`);
@@ -1860,7 +1860,7 @@ export class ApiService {
 
       return response;
     } catch (error) {
-      console.error('セッション分析ステータス取得エラー:', error);
+      console.error('会话分析状态获取错误:', error);
 
       if (error instanceof Error) {
         throw new Error(`获取会话分析状态失败: ${error.message}`);

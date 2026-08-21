@@ -236,7 +236,7 @@ const ScenarioCreatePage: React.FC = () => {
           }));
         }
       } catch (error) {
-        console.error("ガードレールの取得に失敗しました:", error);
+        console.error("护栏获取失败:", error);
         setError(t("scenarios.create.error.guardrailsLoad"));
       }
     };
@@ -384,7 +384,7 @@ const ScenarioCreatePage: React.FC = () => {
         },
       });
     } catch (error) {
-      console.error("シナリオ作成エラー:", error);
+      console.error("场景创建错误:", error);
       setError(
         error instanceof Error
           ? error.message

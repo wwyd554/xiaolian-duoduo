@@ -127,7 +127,7 @@ export class AvatarService {
       const data = JSON.parse(await response.body.text()) as { success: boolean; avatar?: AvatarMetadata };
       return data.success && data.avatar ? data.avatar : null;
     } catch {
-      console.warn("アバター詳細取得失敗（共有アバターの可能性）:", avatarId);
+      console.warn("头像详情获取失败（可能是共享头像）:", avatarId);
       return null;
     }
   }

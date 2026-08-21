@@ -45,7 +45,7 @@ const UserNameEditor: React.FC = () => {
           setUserId(currentUser.userId || "");
         }
       } catch (error) {
-        console.error("ユーザー情報の取得に失敗しました:", error);
+        console.error("用户信息获取失败:", error);
       }
     };
 
@@ -63,7 +63,7 @@ const UserNameEditor: React.FC = () => {
           setUsername(currentUser.preferredUsername || currentUser.name || "");
         }
       } catch (error) {
-        console.error("ユーザー情報の取得に失敗しました:", error);
+        console.error("用户信息获取失败:", error);
       }
     }
   };
@@ -79,7 +79,7 @@ const UserNameEditor: React.FC = () => {
         severity: "success",
       });
     } catch (error) {
-      console.error("ユーザー名の更新中にエラーが発生しました:", error);
+      console.error("更新用户名时出错:", error);
       setNotification({
         open: true,
         message: t("profile.usernameUpdateError"),

@@ -93,7 +93,7 @@ export class LipSyncController {
       this.setupAudioMonitoring();
       this.isConnected = true;
     } catch (error) {
-      console.error('LipSyncController: 接続エラー:', error);
+      console.error('LipSyncController: 连接错误:', error);
     }
   }
 

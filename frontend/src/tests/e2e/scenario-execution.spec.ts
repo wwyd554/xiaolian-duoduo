@@ -224,14 +224,14 @@ test.describe("Phase 3: 会話セッション", () => {
 
       // 入力フィールドに値が設定されていることを確認
       await expect(messageInput).toHaveValue(testMessage);
-      console.log("メッセージを入力しました:", testMessage);
+      console.log("已输入消息:", testMessage);
 
       // 送信ボタンを取得（aria-labelで検索）
       const sendButton = page.locator('button[aria-label*="送信"]').first();
 
       // 送信ボタンが有効になるまで待機
       await expect(sendButton).toBeEnabled({ timeout: 5000 });
-      console.log("送信ボタンをクリックします");
+      console.log("点击发送按钮");
 
       // 送信ボタンをクリック
       await sendButton.click();
@@ -249,7 +249,7 @@ test.describe("Phase 3: 会話セッション", () => {
       try {
         // 処理中インジケーターが表示されることを確認
         await expect(processingIndicator.first()).toBeVisible({ timeout: 5000 });
-        console.log("メッセージ送信テスト完了: 処理中インジケーターが表示されました");
+        console.log("消息发送测试完成: 处理中指示器已显示");
       } catch {
         // 処理中インジケーターが表示されない場合は、入力フィールドの状態を確認
         // 入力フィールドが再度表示されるまで待機
@@ -262,7 +262,7 @@ test.describe("Phase 3: 会話セッション", () => {
         if (isVisible) {
           const currentValue = await currentInput.inputValue().catch(() => testMessage);
           if (currentValue === '') {
-            console.log("メッセージ送信テスト完了: 入力フィールドがクリアされました");
+            console.log("消息发送测试完成: 输入框已清空");
           } else {
             // 入力フィールドがクリアされていない場合でも、
             // 送信ボタンがクリックされたことは確認できているので、
@@ -271,11 +271,11 @@ test.describe("Phase 3: 会話セッション", () => {
             const pageContent = await page.content();
             const hasUserMessage = pageContent.includes(testMessage);
             expect(hasUserMessage).toBe(true);
-            console.log("メッセージ送信テスト完了: ユーザーメッセージがページに表示されました");
+            console.log("消息发送测试完成: 用户消息已显示在页面上");
           }
         } else {
           // 入力フィールドが非表示の場合は、処理中の可能性が高い
-          console.log("メッセージ送信テスト完了: 入力フィールドが非表示（処理中）");
+          console.log("消息发送测试完成: 输入框已隐藏（处理中）");
         }
       }
     });
@@ -547,7 +547,7 @@ test.describe("Phase 6: 結果画面", () => {
 
     // NPCメッセージが表示されるまで最大60秒待機
     await expect(npcMessage.first()).toBeVisible({ timeout: 60000 });
-    console.log("NPCの初期メッセージが表示されました");
+    console.log("NPC的初始消息已显示");
 
     // 追加の安定化待機
     await page.waitForTimeout(2000);
@@ -557,10 +557,10 @@ test.describe("Phase 6: 結果画面", () => {
 
     // 終了ボタンが表示されていることを確認
     await expect(endButton).toBeVisible({ timeout: 10000 });
-    console.log("セッション終了ボタンが表示されました");
+    console.log("结束会话按钮已显示");
 
     await endButton.click();
-    console.log("セッション終了ボタンをクリックしました");
+    console.log("已点击结束会话按钮");
 
     // 注意: ConversationPage.tsxでは確認ダイアログは使用されていない
     // 「セッション終了」ボタンをクリックすると、録画アップロード待機後に直接結果ページへ遷移する
@@ -568,7 +568,7 @@ test.describe("Phase 6: 結果画面", () => {
 
     // 結果ページに遷移することを確認（録画アップロード待機を考慮して長めに設定）
     await expect(page).toHaveURL(/\/result\//, { timeout: 150000 });
-    console.log("結果ページに遷移しました");
+    console.log("已跳转到结果页");
 
     // 結果ページのローディングが完了するまで待機
     // LinearProgressが消えるまで待機（分析完了を待つ）
@@ -576,12 +576,12 @@ test.describe("Phase 6: 結果画面", () => {
     try {
       // ローディングが表示されている場合は消えるまで待機（最大120秒）
       if (await loadingProgress.isVisible().catch(() => false)) {
-        console.log("分析中のローディングを待機しています...");
+        console.log("正在等待分析中的加载...");
         await expect(loadingProgress).not.toBeVisible({ timeout: 120000 });
-        console.log("ローディングが完了しました");
+        console.log("加载已完成");
       }
     } catch {
-      console.log("ローディング待機がタイムアウトしました。続行します。");
+      console.log("加载等待超时。继续执行。");
     }
 
     // 追加の安定化待機（データ表示のため）
@@ -603,7 +603,7 @@ test.setTimeout(300000);
       // まず評価サマリータブが表示されていることを確認
       const evaluationTab = page.locator('button[role="tab"]:has-text("評価サマリー")');
       await expect(evaluationTab.first()).toBeVisible({ timeout: 30000 });
-      console.log("評価サマリータブが表示されました");
+      console.log("评估摘要标签页已显示");
 
       // スコア表示を確認（以下のいずれかが表示されればOK）
       // - Typography h2 内の数値（スコア）
@@ -616,7 +616,7 @@ test.setTimeout(300000);
         .or(page.locator('[role="status"]'));
 
       await expect(scoreIndicator.first()).toBeVisible({ timeout: 60000 });
-      console.log("スコア関連の要素が表示されました");
+      console.log("评分相关元素已显示");
     });
 
     test("パフォーマンスレベルが表示されること", async ({ page }) => {
@@ -636,7 +636,7 @@ test.setTimeout(300000);
         .or(page.locator('text=分析中'));
 
       await expect(performanceLevel.first()).toBeVisible({ timeout: 60000 });
-      console.log("パフォーマンスレベルまたは分析中表示が確認されました");
+      console.log("已确认性能等级或分析中显示");
     });
   });
 
@@ -655,12 +655,12 @@ test.setTimeout(300000);
 
       // 分析中でない場合のみチャートを確認
       if (await analysisInProgress.first().isVisible().catch(() => false)) {
-        console.log("分析中のため、チャート表示はスキップします");
+        console.log("由于分析中，跳过图表显示");
         // 分析中の表示が確認できればOK
         await expect(analysisInProgress.first()).toBeVisible();
       } else {
         await expect(radarChart).toBeVisible({ timeout: 30000 });
-        console.log("レーダーチャートが表示されました");
+        console.log("雷达图已显示");
       }
     });
 
@@ -680,7 +680,7 @@ test.setTimeout(300000);
         .or(page.locator('text=分析中'));
 
       await expect(improvementSection.first()).toBeVisible({ timeout: 30000 });
-      console.log("改善提案または分析中表示が確認されました");
+      console.log("已确认改进建议或分析中显示");
     });
   });
 
@@ -696,7 +696,7 @@ test.setTimeout(300000);
 
       if (await historyTab.isVisible()) {
         await historyTab.click();
-        console.log("会話履歴タブをクリックしました");
+        console.log("已点击对话历史标签页");
 
         // タブパネルが表示されるまで待機
         await page.waitForTimeout(1000);
@@ -709,9 +709,9 @@ test.setTimeout(300000);
           .or(page.locator('.MuiPaper-root'));
 
         await expect(messageContent.first()).toBeVisible({ timeout: 15000 });
-        console.log("会話履歴タブの内容が表示されました");
+        console.log("对话历史标签页内容已显示");
       } else {
-        console.log("会話履歴タブが見つかりませんでした");
+        console.log("未找到对话历史标签页");
       }
     });
   });
@@ -728,7 +728,7 @@ test.setTimeout(300000);
 
       if (await complianceTab.isVisible()) {
         await complianceTab.click();
-        console.log("コンプライアンスタブをクリックしました");
+        console.log("已点击合规模块标签页");
 
         // タブパネルが表示されるまで待機
         await page.waitForTimeout(1000);
@@ -739,9 +739,9 @@ test.setTimeout(300000);
           .or(page.locator('text=コンプライアンス'));
 
         await expect(complianceContent.first()).toBeVisible({ timeout: 15000 });
-        console.log("コンプライアンスタブの内容が表示されました");
+        console.log("合规模块标签页内容已显示");
       } else {
-        console.log("コンプライアンスタブが見つかりませんでした");
+        console.log("未找到合规模块标签页");
       }
     });
   });
@@ -762,13 +762,13 @@ test.setTimeout(300000);
 
       if (await homeButton.first().isVisible()) {
         await homeButton.first().click();
-        console.log("ホームボタンをクリックしました");
+        console.log("已点击主页按钮");
 
         // ホームページに遷移することを確認
         await expect(page).toHaveURL(/\/$|\/home|\/scenarios/, { timeout: 15000 });
-        console.log("ホームページに遷移しました");
+        console.log("已跳转到主页");
       } else {
-        console.log("ホームボタンが見つかりませんでした。ヘッダーのロゴをクリックします");
+        console.log("未找到主页按钮。点击页头的Logo。");
         // ヘッダーのロゴやタイトルをクリックしてホームに戻る
         const headerLogo = page.locator('header a').first()
           .or(page.locator('[data-testid="header-logo"]'));
