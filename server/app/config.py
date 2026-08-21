@@ -40,5 +40,8 @@ class Settings:
     # 开发期认证绕过（1 = 开放 /auth/dev-login，免邀请码直登；生产必须关闭）
     auth_dev_bypass: bool = os.getenv("AUTH_DEV_BYPASS", "0") == "1"
 
+    # 语音（阶段 3）：开发期 edge-tts + faster-whisper，生产切火山引擎
+    whisper_model: str = os.getenv("WHISPER_MODEL", "base")
+
 
 settings = Settings()
