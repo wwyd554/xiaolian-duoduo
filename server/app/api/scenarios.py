@@ -7,6 +7,7 @@ S3 / PDF / 幻灯片相关端点在本阶段不提供（本地文件存储另行
 from __future__ import annotations
 
 import json
+import logging
 import re
 import uuid
 from datetime import datetime, timezone
@@ -14,9 +15,14 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, Body, Depends, HTTPException
 from fastapi import Request
 
+from ..agents.llm import call_model
+from ..agents.prompts import SCENARIO_GEN_SYSTEM_PROMPT, build_scenario_gen_prompt
+from ..agents.scoring import _extract_json
 from ..auth.jwt import UserInfo, get_current_user, optional_user
 from ..database import db
 from ..models import ScenarioShareRequest
+
+logger = logging.getLogger("scenarios")
 
 router = APIRouter(prefix="/scenarios", tags=["scenarios"])
 
@@ -197,6 +203,56 @@ def create_scenario(body: dict = Body(...), user: UserInfo = Depends(get_current
             (scenario_id, json.dumps(doc, ensure_ascii=False), user.user_id, now, now),
         )
     return {"message": "场景创建成功", "scenarioId": scenario_id, "scenario": _doc_to_response(doc)}
+
+
+@router.post("/generate")
+def generate_scenario_draft(body: dict = Body(...), user: UserInfo = Depends(get_current_user)):
+    """基于行业资料生成陪练场景草稿（不入库，前端预览编辑后由 POST /scenarios 入库）。
+
+    接收：material（行业资料文本，必填）+ industry/role/trainingGoals/difficulty/category（可选设定）。
+    返回：{ success, draft }，draft 符合场景 schema，可直接经前端编辑后 POST /scenarios 入库。
+    """
+    material = body.get("material", "")
+    if not isinstance(material, str) or not material.strip():
+        raise HTTPException(400, "material（行业资料文本）为必填")
+
+    params = {
+        "industry": body.get("industry", ""),
+        "role": body.get("role", ""),
+        "trainingGoals": body.get("trainingGoals", ""),
+        "difficulty": body.get("difficulty", "中级"),
+        "category": body.get("category", ""),
+    }
+
+    try:
+        prompt = build_scenario_gen_prompt(material, params)
+        raw = call_model(
+            system=SCENARIO_GEN_SYSTEM_PROMPT,
+            messages=[{"role": "user", "content": prompt}],
+            model="deepseek-chat",
+            max_tokens=2048,
+            label="scenario-gen",
+        )
+        draft = _extract_json(raw)
+        if not isinstance(draft, dict):
+            raise ValueError("场景草稿非 JSON 对象")
+
+        # 基础字段补全，保证可直接入库
+        draft.setdefault("language", "zh")
+        if isinstance(draft.get("npc"), dict):
+            draft["npc"].setdefault("voiceId", "Kazuha")
+        else:
+            draft["npc"] = {"voiceId": "Kazuha"}
+        if not isinstance(draft.get("goals"), list):
+            draft["goals"] = []
+        if not isinstance(draft.get("initialMetrics"), dict):
+            draft["initialMetrics"] = {"angerLevel": 1, "trustLevel": 1, "progressLevel": 1}
+        draft.setdefault("maxTurns", 20)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("[scenario-gen] 生成失败: %s", exc)
+        raise HTTPException(500, f"场景生成失败: {exc}")
+
+    return {"success": True, "draft": draft}
 
 
 @router.put("/{scenario_id}")

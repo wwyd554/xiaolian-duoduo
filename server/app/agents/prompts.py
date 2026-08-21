@@ -293,3 +293,64 @@ def build_report_prompt(
 {transcript}
 
 请基于以上信息生成复盘报告 JSON。"""
+
+
+# ========================================
+# 场景生成（deepseek-chat，单次调用）
+# ========================================
+
+SCENARIO_GEN_SYSTEM_PROMPT = """你是资深的 B2B 销售陪练场景设计师。你会拿到一段行业/产品资料，以及用户对陪练场景的设定要求（行业、客户角色、训练目标、难度）。
+
+请基于资料设计一个真实、可练的销售角色扮演场景草稿，输出严格 JSON 对象（不要 markdown、不要解释），字段如下：
+{
+  "title": "场景标题（简洁，点明行业与情境）",
+  "description": "场景背景说明（2-4 句，描述客户所在行业、痛点、本次商谈来由）",
+  "industry": "行业名称",
+  "category": "行业分类（如：金融/制造/医疗/IT/零售/教育 等）",
+  "difficulty": "初级 | 中级 | 高级",
+  "language": "zh",
+  "initialMessage": "客户（NPC）的开场白，1-2 句，体现角色性格与当前情境",
+  "npc": {
+    "name": "客户姓名（中文）",
+    "role": "客户职位",
+    "company": "客户公司名（中文，与资料相符）",
+    "personality": ["性格标签1", "性格标签2"],
+    "description": "客户背景与谈判风格描述（1-2 句）",
+    "voiceId": "Kazuha"
+  },
+  "objectives": "本次陪练对学员的训练目标概述",
+  "goals": [
+    {"id": "goal-1", "description": "具体可衡量的商谈目标1", "isRequired": true, "priority": 1, "criteria": ["达成判断标准1", "达成判断标准2"]},
+    {"id": "goal-2", "description": "具体可衡量的商谈目标2", "isRequired": false, "priority": 2, "criteria": ["达成判断标准1"]}
+  ],
+  "initialMetrics": {"angerLevel": 1, "trustLevel": 1, "progressLevel": 1},
+  "maxTurns": 20
+}
+要求：
+1. 场景必须基于所给资料，客户公司/行业/痛点要真实可信，不要编造与资料矛盾的信息。
+2. goals 至少 3 条，覆盖“了解需求 / 呈现价值 / 处理异议 / 推进下一步”等典型销售动作。
+3. initialMessage 用客户口吻，自然且有代入感。
+4. 所有文本用简体中文。"""
+
+
+def build_scenario_gen_prompt(material: str, params: dict[str, Any]) -> str:
+    """构造场景生成提示词。"""
+    extra = []
+    if params.get("industry"):
+        extra.append(f"- 行业：{params['industry']}")
+    if params.get("role"):
+        extra.append(f"- 客户角色：{params['role']}")
+    if params.get("trainingGoals"):
+        extra.append(f"- 训练目标：{params['trainingGoals']}")
+    if params.get("difficulty"):
+        extra.append(f"- 难度：{params['difficulty']}")
+    if params.get("category"):
+        extra.append(f"- 分类：{params['category']}")
+    extra_text = "\n".join(extra) or "（无特殊设定，请自行合理设定）"
+    return f"""# 设定要求
+{extra_text}
+
+# 行业/产品资料
+{material}
+
+请基于以上资料与设定，生成陪练场景草稿 JSON。"""
