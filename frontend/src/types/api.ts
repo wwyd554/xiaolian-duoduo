@@ -346,6 +346,7 @@ export interface ScenarioInfo {
   description: string;
   difficulty: DifficultyLevel;
   category: string;
+  industry?: string;
   initialMessage?: string;
   language?: string;
   estimatedDuration?: number;
