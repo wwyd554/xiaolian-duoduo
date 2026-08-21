@@ -1,0 +1,59 @@
+{
+  "name": "cdk",
+  "version": "0.1.0",
+  "bin": {
+    "cdk": "bin/cdk.js"
+  },
+  "scripts": {
+    "watch": "tsc -w",
+    "test": "jest",
+    "cdk": "cdk",
+    "nag-check": "cdk synth && echo 'CDK Nag check completed'",
+    "build": "tsc",
+    "deploy:dev": "env $(cat .env.dev | xargs) cdk deploy --all --require-approval never --context env=dev",
+    "deploy:staging": "env $(cat .env.staging | xargs) cdk deploy --all --require-approval never --context env=staging",
+    "deploy:prod": "env $(cat .env.prod | xargs) cdk deploy --all --require-approval never --context env=prod",
+    "synth:dev": "env $(cat .env.dev | xargs) cdk synth --context env=dev",
+    "synth:staging": "env $(cat .env.staging | xargs) cdk synth --context env=staging",
+    "synth:prod": "env $(cat .env.prod | xargs) cdk synth --context env=prod",
+    "destroy:dev": "env $(cat .env.dev | xargs) cdk destroy --all --require-approval never --context env=dev",
+    "update_package": "npm i --package-lock-only",
+    "package_update": "npx ncu -u && npm install && npm i --package-lock-only"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.161",
+    "@types/jest": "^30.0.0",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "25.5.0",
+    "aws-cdk": "2.1114.1",
+    "aws-cdk-lib": "^2.246.0",
+    "cdk-nag": "^2.37.55",
+    "jest": "^30.3.0",
+    "ts-jest": "^29.4.6",
+    "ts-node": "^10.9.2",
+    "typescript": "~5.9.2"
+  },
+  "dependencies": {
+    "@aws-amplify/auth-construct": "^1.11.2",
+    "@aws-cdk/aws-bedrock-agentcore-alpha": "^2.245.0-alpha.0",
+    "@aws-cdk/aws-lambda-python-alpha": "^2.245.0-alpha.0",
+    "@aws-cdk/mixins-preview": "^2.245.0-alpha.0",
+    "@aws-sdk/client-apigatewaymanagementapi": "^3.1019.0",
+    "@aws-sdk/client-dynamodb": "^3.1019.0",
+    "@aws-sdk/client-polly": "^3.1019.0",
+    "@aws-sdk/client-s3": "^3.1019.0",
+    "@aws-sdk/client-transcribe-streaming": "^3.1019.0",
+    "@aws-sdk/lib-dynamodb": "^3.1019.0",
+    "@aws-sdk/s3-request-presigner": "^3.1019.0",
+    "@aws-solutions-constructs/aws-cloudfront-apigateway": "^2.100.1",
+    "@aws-solutions-constructs/aws-cloudfront-oai-s3": "^2.100.1",
+    "@aws-solutions-constructs/aws-cloudfront-s3": "^2.100.1",
+    "@aws/pdk": "^0.26.15",
+    "@cdklabs/generative-ai-cdk-constructs": "^0.1.316",
+    "constructs": "^10.6.0",
+    "deploy-time-build": "^0.4.10",
+    "jsonwebtoken": "^9.0.3",
+    "jwks-rsa": "^4.0.1",
+    "source-map-support": "^0.5.21"
+  }
+}

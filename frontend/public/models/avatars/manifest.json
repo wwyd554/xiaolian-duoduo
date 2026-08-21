@@ -1,0 +1,13 @@
+{
+  "version": "2.0.0",
+  "defaultAvatarId": "default",
+  "avatars": [
+    {
+      "id": "default",
+      "name": "デフォルトアバター",
+      "modelPath": "default_girl1.vrm",
+      "description": "標準的なビジネスパーソンのアバター",
+      "isDefault": true
+    }
+  ]
+}

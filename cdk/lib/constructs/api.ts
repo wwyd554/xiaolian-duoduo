@@ -1,0 +1,298 @@
+import * as cdk from 'aws-cdk-lib';
+import { Construct } from 'constructs';
+import * as cognito from 'aws-cdk-lib/aws-cognito';
+import * as iam from 'aws-cdk-lib/aws-iam';
+import * as s3 from 'aws-cdk-lib/aws-s3';
+import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
+import { Runtime, Architecture } from 'aws-cdk-lib/aws-lambda';
+import { ApiGatewayConstruct } from './api/api-gateway';
+import { AudioStorageConstruct } from './storage/audio-storage';
+import { VideoStorageConstruct } from './storage/video-storage';
+import { AvatarStorageConstruct } from './storage/avatar-storage';
+import { VideosLambdaConstruct } from './api/videos-lambda';
+import { AvatarLambdaConstruct } from './api/avatar-lambda';
+import { SessionLambdaConstruct } from './api/session-lambda';
+import { ScenarioLambdaConstruct } from './api/scenario-lambda';
+import { SlideConvertLambdaConstruct } from './api/slide-convert-lambda';
+import { RankingsLambdaConstruct } from './api/rankings-lambda';
+import { GuardrailsLambdaConstruct } from './api/guardrails-lambda';
+import { AudioAnalysisLambdaConstruct } from './api/audio-analysis-lambda';
+import { TranscribeWebSocketConstruct } from './api/transcribe-websocket';
+
+// DatabaseTablesをインポート
+import { DatabaseTables } from './storage/database-tables';
+import { BedrockModelsConfig } from '../types/bedrock-models';
+
+import { GuardrailsConstruct } from './guardrails';
+import { AudioAnalysisStepFunctionsConstruct } from './audio-analysis-stepfunctions';
+import { SessionAnalysisLambdaConstruct } from './api/session-analysis-lambda';
+import { SessionAnalysisStepFunctionsConstruct } from './session-analysis-stepfunctions';
+
+export interface BackendApiProps {
+  userPool?: cognito.UserPool;
+  userPoolClient?: cognito.UserPoolClient;
+  envId: string;
+  guardrails?: GuardrailsConstruct;
+  resourceNamePrefix: string;
+  knowledgeBaseId: string;
+  databaseTables: DatabaseTables;
+  pdfStorageBucket: s3.IBucket;
+  slideStorageBucket: s3.IBucket;
+  bedrockModels: BedrockModelsConfig;
+  agentCoreMemoryId?: string;
+}
+
+export class Api extends Construct {
+  readonly api: ApiGatewayConstruct;
+
+  /** WebSocket API for Transcribe */
+  public readonly transcribeWebSocket: TranscribeWebSocketConstruct;
+
+  /** 音声ストレージ */
+  public readonly audioStorage: AudioStorageConstruct;
+
+  /** 動画ストレージ */
+  public readonly videoStorage: VideoStorageConstruct;
+
+  /** アバターストレージ */
+  public readonly avatarStorage: AvatarStorageConstruct;
+
+  /** アバター管理Lambda */
+  public readonly avatarLambda: AvatarLambdaConstruct;
+
+  /** 動画分析Lambda */
+  public readonly videosLambda: VideosLambdaConstruct;
+
+  /** テキスト→音声変換Lambda */
+  public readonly textToSpeechFunction: NodejsFunction;
+
+  /** データベーステーブル参照 */
+  public readonly databaseTables: DatabaseTables;
+
+  /** セッション管理Lambda */
+  public readonly sessionLambda: SessionLambdaConstruct;
+
+  /** シナリオ管理Lambda */
+  public readonly scenarioLambda: ScenarioLambdaConstruct;
+
+  /** PDF→スライド画像変換Lambda */
+  public readonly slideConvertLambda: SlideConvertLambdaConstruct;
+
+  /** ガードレール管理Lambda */
+  public readonly guardrailsLambda: GuardrailsLambdaConstruct;
+
+  /** ランキング管理Lambda */
+  public readonly rankingsLambdaConstruct: RankingsLambdaConstruct;
+
+  /** 音声分析Lambda */
+  public readonly audioAnalysisLambda: AudioAnalysisLambdaConstruct;
+
+  /** 音声分析Step Functions */
+  public readonly audioAnalysisStepFunctions: AudioAnalysisStepFunctionsConstruct;
+
+  /** セッション分析Lambda */
+  public readonly sessionAnalysisLambda: SessionAnalysisLambdaConstruct;
+
+  /** セッション分析Step Functions */
+  public readonly sessionAnalysisStepFunctions: SessionAnalysisStepFunctionsConstruct;
+
+  constructor(scope: Construct, id: string, props: BackendApiProps) {
+    super(scope, id);
+
+    // データベーステーブルを保存
+    this.databaseTables = props.databaseTables;
+
+    // 音声ファイル用S3バケット
+    this.audioStorage = new AudioStorageConstruct(this, 'AudioStorage', {
+      resourceNamePrefix: props.resourceNamePrefix
+    });
+
+    // 動画ストレージの作成（受講生の録画用）
+    this.videoStorage = new VideoStorageConstruct(this, 'VideoStorage', {
+      resourceNamePrefix: props.resourceNamePrefix
+    });
+
+    // プロップスから渡されたBedrockモデル設定を使用（フラット化済み）
+    const bedrockModels = props.bedrockModels;
+
+    // セッション管理Lambda関数
+    this.sessionLambda = new SessionLambdaConstruct(this, 'SessionLambda', {
+      sessionsTableName: this.databaseTables.sessionsTable.tableName,
+      messagesTableName: this.databaseTables.messagesTable.tableName,
+      scenariosTableName: this.databaseTables.scenariosTable.tableName,
+      bedrockModels: bedrockModels,
+      knowledgeBaseId: props.knowledgeBaseId,
+      videoBucketName: this.videoStorage.bucket.bucketName,
+      sessionFeedbackTableName: this.databaseTables.sessionFeedbackTable.tableName,
+      agentCoreMemoryId: props.agentCoreMemoryId,
+    });
+
+    // シナリオ管理Lambda関数
+    this.scenarioLambda = new ScenarioLambdaConstruct(this, 'ScenarioLambda', {
+      scenariosTable: this.databaseTables.scenariosTable,
+      pdfBucket: props.pdfStorageBucket,
+      slideBucket: props.slideStorageBucket,
+      knowledgeBaseId: props.knowledgeBaseId,
+    });
+
+    // PDF→スライド画像変換Lambda関数
+    this.slideConvertLambda = new SlideConvertLambdaConstruct(this, 'SlideConvertLambda', {
+      scenariosTable: this.databaseTables.scenariosTable,
+      slideBucket: props.slideStorageBucket,
+    });
+
+    // ScenarioLambdaにSlideConvert Lambda関数名を環境変数として設定
+    this.scenarioLambda.function.addEnvironment('SLIDE_CONVERT_FUNCTION', this.slideConvertLambda.function.functionName);
+    // ScenarioLambdaにSlideConvert Lambdaの呼び出し権限を付与
+    this.slideConvertLambda.function.grantInvoke(this.scenarioLambda.function);
+
+    // SessionLambdaに各テーブル名を環境変数として設定
+    this.sessionLambda.function.addEnvironment('SESSION_FEEDBACK_TABLE', this.databaseTables.sessionFeedbackTable.tableName);
+
+    // SessionLambdaにDynamoDBテーブルへのアクセス権限を付与
+    this.databaseTables.sessionFeedbackTable.grantReadWriteData(this.sessionLambda.function);
+
+    // テキスト→音声変換Lambda関数
+    this.textToSpeechFunction = new NodejsFunction(this, 'TextToSpeechFunction', {
+      entry: 'lambda/textToSpeech/app.ts',
+      handler: 'handler',
+      runtime: Runtime.NODEJS_22_X,
+      architecture: Architecture.ARM_64,
+      memorySize: 256,
+      timeout: cdk.Duration.seconds(30),
+      environment: {
+        STORAGE_BUCKET: this.audioStorage.bucket.bucketName,
+        ENV_ID: props.envId
+      },
+      bundling: {
+        externalModules: [
+          '@aws-sdk/*'
+        ]
+      }
+    });
+
+    // Lambda実行ロールにPollyアクセス権限を付与
+    this.textToSpeechFunction.addToRolePolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: [
+          'polly:SynthesizeSpeech',
+          'polly:StartSpeechSynthesisTask',
+          'polly:GetSpeechSynthesisTask',
+          'polly:ListLexicons',
+          'polly:GetLexicon'
+        ],
+        resources: ['*']
+      })
+    );
+
+    // S3バケットへの書き込み権限を付与
+    this.audioStorage.bucket.grantReadWrite(this.textToSpeechFunction);
+
+    // ランキングLambda関数を作成 (新しいRankingsLambdaConstructを使用)
+    this.rankingsLambdaConstruct = new RankingsLambdaConstruct(this, 'RankingsLambda', {
+      sessionFeedbackTable: this.databaseTables.sessionFeedbackTable,
+      sessionsTable: this.databaseTables.sessionsTable,
+      userPoolId: props.userPool!.userPoolId
+    });
+
+    // 動画管理Lambda関数
+    this.videosLambda = new VideosLambdaConstruct(this, 'VideosLambda', {
+      feedbackTableName: this.databaseTables.sessionFeedbackTable.tableName,
+      videoBucket: this.videoStorage.bucket,
+      videoAnalysisModelId: bedrockModels.video // 環境設定から動画分析モデルIDを取得
+    });
+
+    // アバターストレージの作成（VRMファイル + メタデータ）
+    this.avatarStorage = new AvatarStorageConstruct(this, 'AvatarStorage', {
+      resourceNamePrefix: props.resourceNamePrefix,
+    });
+
+    // アバター管理Lambda関数
+    this.avatarLambda = new AvatarLambdaConstruct(this, 'AvatarLambda', {
+      avatarBucket: this.avatarStorage.bucket,
+      avatarTable: this.avatarStorage.table,
+    });
+
+    // ガードレールLambda関数を作成
+    this.guardrailsLambda = new GuardrailsLambdaConstruct(this, 'GuardrailsLambda', {
+      envId: props.envId
+    });
+
+    // 音声分析Lambda関数を作成
+    this.audioAnalysisLambda = new AudioAnalysisLambdaConstruct(this, 'AudioAnalysisLambda', {
+      sessionFeedbackTable: this.databaseTables.sessionFeedbackTable,
+      scenariosTable: this.databaseTables.scenariosTable,
+      audioBucket: this.audioStorage.bucket,
+      knowledgeBaseId: props.knowledgeBaseId,
+      bedrockModels: {
+        analysis: bedrockModels.scoring
+      }
+    });
+
+    // 音声分析Step Functionsを作成
+    this.audioAnalysisStepFunctions = new AudioAnalysisStepFunctionsConstruct(this, 'AudioAnalysisStepFunctions', {
+      resourceNamePrefix: props.resourceNamePrefix,
+      audioAnalysisLambda: this.audioAnalysisLambda
+    });
+
+    // 音声分析API関数にStep Functions ARNを設定
+    this.audioAnalysisLambda.apiFunction.addEnvironment(
+      'AUDIO_ANALYSIS_STATE_MACHINE_ARN',
+      this.audioAnalysisStepFunctions.stateMachine.stateMachineArn
+    );
+
+    // セッション分析Lambda関数を作成
+    this.sessionAnalysisLambda = new SessionAnalysisLambdaConstruct(this, 'SessionAnalysisLambda', {
+      sessionFeedbackTable: this.databaseTables.sessionFeedbackTable,
+      sessionsTable: this.databaseTables.sessionsTable,
+      messagesTable: this.databaseTables.messagesTable,
+      scenariosTable: this.databaseTables.scenariosTable,
+      videoBucket: this.videoStorage.bucket,
+      knowledgeBaseId: props.knowledgeBaseId,
+      bedrockModels: {
+        feedback: bedrockModels.feedback,
+        video: bedrockModels.video,
+        reference: bedrockModels.scoring
+      },
+      agentCoreMemoryId: props.agentCoreMemoryId,
+    });
+
+    // セッション分析Step Functionsを作成
+    this.sessionAnalysisStepFunctions = new SessionAnalysisStepFunctionsConstruct(this, 'SessionAnalysisStepFunctions', {
+      resourceNamePrefix: props.resourceNamePrefix,
+      sessionAnalysisLambda: this.sessionAnalysisLambda
+    });
+
+    // セッション分析API関数にStep Functions ARNを設定
+    this.sessionAnalysisLambda.apiFunction.addEnvironment(
+      'SESSION_ANALYSIS_STATE_MACHINE_ARN',
+      this.sessionAnalysisStepFunctions.stateMachine.stateMachineArn
+    );
+
+    // WebSocket API for Transcribe
+    this.transcribeWebSocket = new TranscribeWebSocketConstruct(this, 'TranscribeWebSocket', {
+      stageName: 'prod',
+      envId: props.envId,
+      userPool: props.userPool!,
+      userPoolClient: props.userPoolClient!,
+      sessionsTable: props.databaseTables.sessionsTable,
+      scenariosTable: props.databaseTables.scenariosTable
+    });
+
+    // API Gateway
+    this.api = new ApiGatewayConstruct(this, 'ApiGateway', {
+      userPool: props.userPool!,
+      userPoolClient: props.userPoolClient!,
+      textToSpeechFunction: this.textToSpeechFunction,
+      sessionFunction: this.sessionLambda.function,
+      scenarioFunction: this.scenarioLambda.function,
+      rankingFunction: this.rankingsLambdaConstruct.function,
+      videosFunction: this.videosLambda.function,
+      guardrailsFunction: this.guardrailsLambda.function,
+      audioAnalysisFunction: this.audioAnalysisLambda.apiFunction,
+      sessionAnalysisFunction: this.sessionAnalysisLambda.apiFunction,
+      avatarFunction: this.avatarLambda.function,
+    });
+  }
+}

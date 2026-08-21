@@ -1,0 +1,36 @@
+name: Cleanup Video Directory
+
+on:
+  workflow_dispatch:
+  
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.ref }}
+          
+      - name: Remove unused directory
+        run: |
+          # Removing the problematic directory if it exists
+          if [ -d "./frontend/src/components/video" ]; then
+            rm -rf ./frontend/src/components/video
+            echo "Removed unused video directory"
+          else
+            echo "Directory does not exist"
+          fi
+          
+      - name: Commit changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add -A
+          git diff-index --quiet HEAD || git commit -m "Remove unused video directory"
+          
+      - name: Push changes
+        uses: ad-m/github-push-action@v0.6.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}

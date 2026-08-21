@@ -1,0 +1,228 @@
+"""
+リアルタイムスコアリングエージェント用プロンプト定義
+"""
+
+from typing import Dict, Any, List
+
+
+def build_scoring_prompt(
+    user_message: str,
+    previous_messages: List[Dict],
+    current_scores: Dict[str, Any],
+    goals: List[Dict],
+    language: str = 'zh',
+    scenario_description: str = ''
+) -> str:
+    """构建评分用提示词"""
+    anger = current_scores.get('angerLevel', 1)
+    trust = current_scores.get('trustLevel', 1)
+    progress = current_scores.get('progressLevel', 1)
+    
+    # 格式化对话历史
+    history = format_conversation_history(previous_messages, language)
+    
+    # 格式化目标
+    goals_txt = format_goals(goals, language)
+    
+    if language == 'en':
+        scenario_ctx = f"\nScenario Context: {scenario_description}\n" if scenario_description else ""
+        return f"""You are a sales conversation scoring engine. Evaluate the latest message and update scores.
+
+Current Scores: Anger={anger}/10, Trust={trust}/10, Progress={progress}/10
+{scenario_ctx}
+Conversation:
+{history}
+
+Latest Message: {user_message}
+
+Goals:
+{goals_txt}
+
+Goal evaluation rules:
+- For goalUpdates, use the exact goalId shown in [ID: xxx] above
+- Do NOT invent your own IDs. Always use the provided IDs exactly as shown
+
+Rules for "analysis" field:
+- Write 1-2 SHORT sentences only (max 120 characters)
+- Format: "[Score change reason]. [One actionable tip]."
+- Example: "Good rapport building, trust +1. Try mentioning specific product benefits next."
+- Do NOT write long explanations, bullet points, or section headers
+- Do NOT repeat the scores or goal list in the analysis
+
+NPC Emotion Estimation:
+- Estimate the NPC's current emotional state based on the conversation context
+- npcEmotion: one of "happy", "angry", "sad", "relaxed", "neutral"
+- npcEmotionIntensity: 0.0 (very weak) to 1.0 (very strong)
+- Consider: NPC personality, conversation flow, user's attitude, and score changes
+
+NPC Gesture Estimation:
+- Estimate the appropriate gesture for the NPC based on the conversation context
+- gesture: "nod" (nodding), "headTilt" (head tilt), "none" (no gesture)
+- Nod: Use when NPC shows agreement, understanding, or empathy
+- Head tilt: Use when NPC shows doubt, confusion, or is thinking
+- None: Default when no gesture is needed
+- Do not add a gesture every time. Use them at a natural frequency.
+
+Reply Suggestions:
+- Generate suggested replies that the SALES rep (the user) could say next
+- Base them on the NPC's latest message and the conversation flow
+- IMPORTANT: Consider the scenario context and goal hints when generating suggestions
+- Prioritize suggestions that help achieve unachieved goals
+- suggestions: an array of about 3 SHORT reply candidates (each max 40 characters)
+- Give them DIFFERENT directions (e.g., assertive / empathetic / question) so the choice changes the metrics
+- Write them as natural first-person utterances the sales rep would say
+- Do NOT include quotation marks or numbering"""
+    elif language == 'zh':
+        scenario_ctx = f"\n场景背景: {scenario_description}\n" if scenario_description else ""
+        return f"""你是销售对话评分引擎，请评估最新消息并更新分数。
+
+当前分数: 愤怒={anger}/10, 信任={trust}/10, 进度={progress}/10
+{scenario_ctx}
+对话历史:
+{history}
+
+最新消息: {user_message}
+
+目标:
+{goals_txt}
+
+目标判定规则:
+- goalUpdates 的 goalId 请直接使用上方目标列表中 [ID: xxx] 标注的 ID
+- 不要自行编造 ID，务必使用所提供的 ID
+
+「analysis」字段的规则:
+- 只写 1～2 句简短的话（最多 120 字）
+- 格式：「[分数变化原因]。[下一步行动建议]。」
+- 示例：「寒暄得体，信任 +1。下次可更具体地介绍产品优势。」
+- 禁止长篇说明、列表或标题
+- 不要在 analysis 中重复分数或目标列表
+
+NPC 情绪推断:
+- 请根据对话语境推断 NPC 当前的情绪状态
+- npcEmotion: "happy"、"angry"、"sad"、"relaxed"、"neutral" 之一
+- npcEmotionIntensity: 0.0（非常弱）～ 1.0（非常强）
+- 考虑要素: NPC 的性格、对话走向、用户态度、分数变化
+
+NPC 手势推断:
+- 请根据对话语境推断 NPC 合适的手势
+- gesture: "nod"（点头）、"headTilt"（歪头）、"none"（无）之一
+- 点头(nod): NPC 表示同意、理解或共情的场景使用
+- 歪头(headTilt): NPC 表示疑问、困惑或思考的场景使用
+- 无(none): 不需要特别手势的场景（默认）
+- 不必每次都加手势，请以自然频率使用
+
+回复建议（suggestions）:
+- 请生成销售人员（用户）接下来可以说的回复建议
+- 基于 NPC 上一条发言和对话走向
+- 重要: 生成建议时要考虑场景背景和目标提示
+- 优先提出有助于达成未完成目标的建议
+- suggestions: 约 3 条简短回复候选的数组（每条最多 40 字）
+- 各候选应具有不同方向（例如: 强势 / 共情 / 提问），使选择会改变指标
+- 以销售人员实际会说的第一人称自然表达来写
+- 不要加引号或编号"""
+    else:
+        scenario_ctx = f"\nシナリオの背景: {scenario_description}\n" if scenario_description else ""
+        return f"""あなたは営業会話のスコアリングエンジンです。最新メッセージを評価しスコアを更新してください。
+
+現在のスコア: 怒り={anger}/10, 信頼={trust}/10, 進捗={progress}/10
+{scenario_ctx}
+会話履歴:
+{history}
+
+最新メッセージ: {user_message}
+
+ゴール:
+{goals_txt}
+
+ゴール判定ルール:
+- goalUpdatesのgoalIdには、上記ゴール一覧の[ID: xxx]に記載されたIDをそのまま使用すること
+- 自分でIDを作成しないこと。必ず提供されたIDを使用すること
+
+「analysis」フィールドのルール:
+- 1〜2文の短文のみ（最大120文字）
+- 形式: 「[スコア変動理由]。[次の一手のアドバイス]。」
+- 例: 「丁寧な挨拶で好印象。次は訪問目的を簡潔に伝えましょう。」
+- 長文の説明、箇条書き、見出しは禁止
+- スコアやゴール一覧をanalysisに繰り返さないこと
+
+NPC感情推定:
+- 会話の文脈からNPCの現在の感情状態を推定してください
+- npcEmotion: "happy", "angry", "sad", "relaxed", "neutral" のいずれか
+- npcEmotionIntensity: 0.0（非常に弱い）〜 1.0（非常に強い）
+- 考慮要素: NPCの性格、会話の流れ、ユーザーの態度、スコアの変化
+
+NPCジェスチャー推定:
+- 会話の文脈からNPCの適切なジェスチャーを推定してください
+- gesture: "nod"（うなずき）, "headTilt"（首かしげ）, "none"（なし） のいずれか
+- うなずき(nod): NPCが同意・理解・共感を示す場面で使用
+- 首かしげ(headTilt): NPCが疑問・困惑・考え中の場面で使用
+- なし(none): 特にジェスチャーが不要な場面（デフォルト）
+- 毎回ジェスチャーを付ける必要はありません。自然な頻度で使用してください
+
+返答候補（サジェスト）:
+- 営業担当者（ユーザー）が次に発言する返答候補を生成してください
+- NPCの直前の発言と会話の流れを踏まえること
+- 重要: シナリオの背景とゴールのヒントを考慮して提案を生成すること
+- 未達成のゴールの達成を助ける提案を優先すること
+- suggestions: 3件程度の短い返答候補の配列（各候補は最大40文字）
+- 各候補は異なる方向性（例: 強気 / 共感 / 質問）を持たせ、選択によってメトリクスが変化するようにすること
+- 営業担当者が実際に話す一人称の自然な発言として記述すること
+- 引用符や番号は付けないこと"""
+
+
+def format_conversation_history(messages: List[Dict], language: str = 'zh') -> str:
+    """格式化对话历史"""
+    if not messages:
+        return "（无历史）" if language == 'zh' else ("（履歴なし）" if language == 'ja' else "(No history)")
+    
+    sales_label = '销售' if language == 'zh' else ('営業' if language == 'ja' else 'Sales')
+    customer_label = '客户' if language == 'zh' else ('顧客' if language == 'ja' else 'Customer')
+    
+    lines = []
+    for msg in messages[-5:]:  # 仅最近 5 条
+        sender = msg.get('sender', '')
+        content = msg.get('content', '')
+        label = sales_label if sender == 'user' else customer_label
+        lines.append(f"{label}: {content}")
+    
+    return "\n".join(lines)
+
+
+def format_goals(goals: List[Dict], language: str = 'zh') -> str:
+    """格式化目标（包含 ID，以便 LLM 返回准确的 goalId）"""
+    if not goals:
+        return "（无目标）" if language == 'zh' else ("（ゴールなし）" if language == 'ja' else "(No goals)")
+    
+    achieved_label = '已达成' if language == 'zh' else ('達成' if language == 'ja' else 'Achieved')
+    not_achieved_label = '未达成' if language == 'zh' else ('未達成' if language == 'ja' else 'Not achieved')
+    hints_label = '提示' if language == 'zh' else ('ヒント' if language == 'ja' else 'Hints')
+    criteria_label = '达成标准' if language == 'zh' else ('達成基準' if language == 'ja' else 'Criteria')
+    
+    lines = []
+    for goal in goals:
+        goal_id = goal.get('id', '')
+        description = goal.get('description', '')
+        achieved = goal.get('achieved', False)
+        status = achieved_label if achieved else not_achieved_label
+        lines.append(f"- [ID: {goal_id}] {description}: {status}")
+        
+        # 包含达成标准（仅未达成目标，以提升建议质量）
+        criteria = goal.get('criteria', [])
+        if criteria and not achieved:
+            lines.append(f"  {criteria_label}: {'; '.join(criteria)}")
+        
+        # 包含提示（仅未达成目标，以提升建议质量）
+        hints = goal.get('hints', [])
+        if hints and not achieved:
+            lines.append(f"  {hints_label}: {'; '.join(hints)}")
+    
+    return "\n".join(lines)
+
+
+def get_default_scores() -> Dict[str, int]:
+    """获取默认分数"""
+    return {
+        'angerLevel': 1,
+        'trustLevel': 1,
+        'progressLevel': 1
+    }

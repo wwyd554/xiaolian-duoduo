@@ -1,0 +1,52 @@
+name: Check PR Target Branch
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+jobs:
+  check-target-branch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Verify PR target branch
+        env:
+          BASE_BRANCH: ${{ github.event.pull_request.base.ref }}
+          HEAD_BRANCH: ${{ github.event.pull_request.head.ref }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          echo "PR #$PR_NUMBER: $PR_TITLE"
+          echo "Target branch: $BASE_BRANCH"
+          echo "Source branch: $HEAD_BRANCH"
+          
+          # 特別なPRのパターンを確認（リリース、ホットフィックスなど）
+          if [[ "$PR_TITLE" =~ ^(Release:|Hotfix:|RELEASE:|HOTFIX:) ]]; then
+            echo "このPRはリリースまたはホットフィックスのため、mainターゲットが許可されています"
+            exit 0
+          fi
+          
+          # 対象ブランチがdevでない場合は警告を出す
+          if [[ "$BASE_BRANCH" != "dev" ]]; then
+            echo "::warning::⚠️ このPR #$PR_NUMBER のターゲットブランチが '$BASE_BRANCH' に設定されています。"
+            echo "::warning::特別な理由がない限り、PRのターゲットブランチは 'dev' にすべきです。"
+            echo "::warning::PR作成者は意図的にこのターゲットブランチを選択したか確認してください。"
+            
+            # GitHub APIを使用してPRにコメントを追加
+            COMMENT="⚠️ **警告: ターゲットブランチの確認**\n\nこのPRのターゲットブランチが \`$BASE_BRANCH\` に設定されています。\n\n特別な理由（リリースやホットフィックスなど）がない限り、PRのターゲットブランチは \`dev\` にすべきです。意図的にこのターゲットブランチを選択した場合は無視してください。そうでない場合は、PRのターゲットブランチを変更することを検討してください。"
+            
+            curl -X POST \
+              -H "Authorization: token $GITHUB_TOKEN" \
+              -H "Accept: application/vnd.github.v3+json" \
+              "https://api.github.com/repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" \
+              -d "{\"body\":\"$COMMENT\"}"
+            
+            # エラーではなく警告として扱う
+            # exit 1
+          else
+            echo "✅ ターゲットブランチが正しく 'dev' に設定されています"
+          fi

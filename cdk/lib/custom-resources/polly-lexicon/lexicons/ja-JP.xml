@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lexicon version="1.0" 
+      xmlns="http://www.w3.org/2005/01/pronunciation-lexicon"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+      xsi:schemaLocation="http://www.w3.org/2005/01/pronunciation-lexicon 
+        http://www.w3.org/TR/2007/CR-pronunciation-lexicon-20071212/pls.xsd"
+      alphabet="ipa" 
+      xml:lang="ja-JP">
+  <lexeme>
+    <grapheme>AI営業</grapheme>
+    <alias>エーアイえいぎょう</alias>
+  </lexeme>
+  <lexeme>
+    <grapheme>AWS</grapheme>
+    <alias>エーダブリューエス</alias>
+  </lexeme>
+  <lexeme>
+    <grapheme>生成AI</grapheme>
+    <alias>せいせいエーアイ</alias>
+  </lexeme>
+  <lexeme>
+    <grapheme>NISA</grapheme>
+    <alias>ニーサ</alias>
+  </lexeme>
+  <lexeme>
+    <grapheme>御社</grapheme>
+    <alias>おんしゃ</alias>
+  </lexeme>
+  <lexeme>
+    <grapheme>御社の</grapheme>
+    <alias>おんしゃの</alias>
+  </lexeme>
+  <lexeme>
+    <grapheme>DX</grapheme>
+    <alias>ディーエックス</alias>
+  </lexeme>
+</lexicon>

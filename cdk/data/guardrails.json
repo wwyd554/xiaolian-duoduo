@@ -1,0 +1,208 @@
+{
+  "guardrails": [
+    {
+      "name": "TechnologyCompliance",
+      "description": "Technology sales compliance standards for cloud migration and IT solutions",
+      "wordFilters": {
+        "exact": [
+          "guaranteed",
+          "absolute",
+          "100%",
+          "certainly",
+          "definitely",
+          "always",
+          "never",
+          "completely",
+          "perfectly"
+        ],
+        "partial": [
+          "we guarantee",
+          "we promise",
+          "better than any competitor",
+          "better than all others",
+          "best in the market",
+          "the only solution",
+          "no risk",
+          "zero downtime"
+        ]
+      },
+      "topics": [
+        {
+          "name": "exaggerated-claims",
+          "definition": "Exaggerated or unsubstantiated claims about product capabilities, performance improvements, or cost savings without proper evidence or qualifications.",
+          "examples": [
+            "Our solution guarantees 100% uptime",
+            "You will definitely save 50% on your IT costs",
+            "This is absolutely the most secure cloud platform",
+            "We promise zero data loss during migration"
+          ]
+        },
+        {
+          "name": "security-guarantees",
+          "definition": "Absolute guarantees about security, data protection, or invulnerability to breaches which no technology solution can honestly provide.",
+          "examples": [
+            "Our cloud platform is completely immune to all cyber threats",
+            "We guarantee your data will never be compromised",
+            "100% protection against all security vulnerabilities",
+            "Absolutely no possibility of unauthorized access"
+          ]
+        },
+        {
+          "name": "implementation-timeframes",
+          "definition": "Unrealistic promises about implementation timeframes, ease of migration, or lack of disruption during cloud transitions.",
+          "examples": [
+            "Migration will be completed with zero business disruption",
+            "The entire implementation will only take one weekend",
+            "Your team won't need to do any work during the transition",
+            "All your systems will work perfectly from day one"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "GeneralCompliance",
+      "description": "一般的な営業コンプライアンス基準",
+      "wordFilters": {
+        "exact": [
+          "絶対に",
+          "必ず",
+          "100%",
+          "確実に",
+          "間違いなく",
+          "永久に",
+          "完璧に"
+        ],
+        "partial": [
+          "保証します",
+          "約束します",
+          "他社より優れ",
+          "競合他社より優れ",
+          "最高の",
+          "最も優れた",
+          "唯一の"
+        ]
+      },
+      "topics": [
+        {
+          "name": "false-description",
+          "definition": "製品やサービスの効果、安全性、品質について科学的根拠や事実に基づかない断定的な主張や誇張表現。絶対的な保証や100%の確実性を謳う表現。",
+          "examples": [
+            "この商品は必ず効果があります",
+            "100%安全です",
+            "絶対に失敗しない方法です",
+            "完璧な結果を保証します"
+          ]
+        },
+        {
+          "name": "excessive-pressure",
+          "definition": "購入決定への急かしや心理的プレッシャー、限定的な時間制約を利用した購買誘導。緊急性を煽る表現や決断を急がせる手法。",
+          "examples": [
+            "今日中に決めてください",
+            "この特別価格は今だけです",
+            "決断しないと機会を失います",
+            "後で後悔することになります"
+          ]
+        },
+        {
+          "name": "competitor-defamation",
+          "definition": "競合他社や競合製品に対する否定的評価、根拠のない批判、品質やサービスの劣性に関する主張。他社との比較における不正確または誹謗中傷的な表現。",
+          "examples": [
+            "あの会社の製品は故障しやすい",
+            "競合他社は顧客サポートが不十分",
+            "他社製品は品質が劣っています",
+            "うちの競合は信頼できません"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "FinanceCompliance",
+      "description": "金融商品販売における特別なコンプライアンス基準",
+      "wordFilters": {
+        "exact": [
+          "絶対に",
+          "必ず",
+          "100%",
+          "確実に",
+          "間違いなく",
+          "リスクなし",
+          "損失なし",
+          "保証付き"
+        ],
+        "partial": [
+          "利益を保証",
+          "リターンを保証",
+          "損をしない",
+          "リスクがない",
+          "確実に増える",
+          "必ず儲かる"
+        ]
+      },
+      "topics": [
+        {
+          "name": "insufficient-risk-disclosure",
+          "definition": "金融商品における投資リスク、元本変動の可能性、損失の発生可能性について適切な開示や説明を欠いた内容。リスクフリーまたは安全性を過度に強調する表現。",
+          "examples": [
+            "この投資に失敗はありません",
+            "元本は常に安全です",
+            "リスクがない金融商品です",
+            "損をすることは絶対にありません"
+          ]
+        },
+        {
+          "name": "inappropriate-return-prediction",
+          "definition": "将来の投資収益、利回り、資産価値について確実性を保証する表現や根拠のない予測。具体的な数値による収益保証や必ず利益が得られるという断言。",
+          "examples": [
+            "毎年20%以上のリターンが確実に得られます",
+            "この投資で必ず儲かります",
+            "損失が出ることはありません",
+            "確実に資産が増える方法です"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "MedicalCompliance",
+      "description": "医療・健康関連商品販売における特別なコンプライアンス基準",
+      "wordFilters": {
+        "exact": [
+          "治癒",
+          "完治",
+          "治します",
+          "治ります",
+          "全快",
+          "万能"
+        ],
+        "partial": [
+          "効果があります",
+          "症状が改善",
+          "痛みがなくなる",
+          "病気を治す",
+          "医学的に証明"
+        ]
+      },
+      "topics": [
+        {
+          "name": "unapproved-efficacy-claims",
+          "definition": "医薬品医療機器等法（薬機法）で承認されていない医療効果、治療効果、疾病の治癒や症状改善について言及する内容。医学的根拠のない効能や万能性を謳う表現。",
+          "examples": [
+            "この製品はあらゆる病気に効果があります",
+            "使用すると○○病が完治します",
+            "医学的に効果が証明されています",
+            "どんな症状でも改善します"
+          ]
+        },
+        {
+          "name": "safety-exaggeration",
+          "definition": "医療製品や健康食品の安全性について科学的根拠のない断定的表現や副作用の完全否定。個人差や体質による影響を考慮しない安全性の過度な強調。",
+          "examples": [
+            "副作用は一切ありません",
+            "完全に安全な成分のみ使用",
+            "どなたでも安心して使用できます",
+            "天然成分なので100%安全です"
+          ]
+        }
+      ]
+    }
+  ]
+}
