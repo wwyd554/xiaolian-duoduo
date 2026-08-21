@@ -1,0 +1,35 @@
+# AI 销售陪练助手 —— 本地 / 火山引擎 一键部署
+# 用法：
+#   1) 复制配置：cp server/.env.example server/.env 并填入 DEEPSEEK_API_KEY
+#   2) 按需修改下方 frontend 的 VITE_LOCAL_BACKEND_URL 为你的服务器地址
+#   3) docker compose up -d --build
+#
+# 启动后：
+#   前端（SPA）  http://<服务器IP>:80
+#   后端 API     http://<服务器IP>:8000
+#   对话音频/ASR 由浏览器直连后端 8000（已开启 CORS）
+
+services:
+  backend:
+    build: ./server
+    env_file: ./server/.env
+    ports:
+      - "8000:8000"
+    volumes:
+      - backend-data:/app/data
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        # 浏览器访问后端的可达地址；远程部署改成 http://<服务器IP>:8000 或域名
+        VITE_LOCAL_BACKEND_URL: "http://localhost:8000"
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  backend-data:
