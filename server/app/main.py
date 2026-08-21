@@ -9,7 +9,7 @@ import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .api import scenarios, sessions, transcribe, tts
+from .api import analysis, scenarios, sessions, transcribe, tts
 from .auth import routes as auth_routes
 from .database import init_db
 from .services.seed import seed_scenarios
@@ -35,6 +35,7 @@ app.include_router(scenarios.router)
 app.include_router(sessions.router)
 app.include_router(tts.router)
 app.include_router(transcribe.router)
+app.include_router(analysis.router)
 
 
 @app.on_event("startup")

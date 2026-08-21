@@ -69,6 +69,15 @@ CREATE TABLE IF NOT EXISTS rankings (
   created_at TEXT NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS analysis_reports (
+  session_id  TEXT PRIMARY KEY,
+  status      TEXT NOT NULL,        -- pending / processing / completed / failed
+  report_json TEXT,
+  error       TEXT,
+  created_at  TEXT NOT NULL,
+  updated_at  TEXT NOT NULL
+);
+
 CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id, updated_at DESC);
 CREATE INDEX IF NOT EXISTS idx_messages_session ON messages(session_id, created_at ASC);
 """

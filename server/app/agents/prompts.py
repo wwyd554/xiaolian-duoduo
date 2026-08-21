@@ -204,3 +204,92 @@ def format_goals(goals: list[dict], language: str = "zh") -> str:
 
 def get_default_scores() -> dict[str, int]:
     return {"angerLevel": 1, "trustLevel": 1, "progressLevel": 1}
+
+
+# ========================================
+# 反馈报告提示词（deepseek-reasoner）
+# ========================================
+
+REPORT_SYSTEM_PROMPT = """你是资深 B2B 销售教练与陪练复盘专家。你会收到一场销售角色扮演对话的完整记录、客户（NPC）每轮的情绪变化、以及这场商谈预设的目标清单。
+
+请基于真实对话内容，给出专业、具体、可操作的复盘报告。要求：
+0. 【强制】必须输出一个严格完整、包含所有下列字段的 JSON 对象。不得省略 goalFeedback 与 detailedAnalysis；即使某项内容为空，也必须保留对应键（空数组 [] 或 0 分），禁止丢弃任何字段。
+1. 评分必须基于对话事实，不要凭空给高分；分数区间 0-100。
+2. strengths（表现亮点）与 improvements（待改进）各 3-5 条，每条具体到一个可观察的行为或对话片段，避免空话。
+3. keyInsights（核心洞察）2-4 条，点出客户心理或销售节奏的关键转折。
+4. nextSteps（下一步行动）是一段连贯的中文建议，告诉学员下次如何改进。
+5. goalFeedback 的 achievedGoals / partiallyAchievedGoals / missedGoals 用目标的描述原文归类，recommendations 给出针对性建议。
+6. detailedAnalysis 三个维度的 9 个子项各给出 0-100 评分，反映对应能力。
+
+只输出一个 JSON 对象（不要 markdown、不要解释），字段严格如下：
+{
+  "scores": {
+    "overall": 0-100,
+    "communication": 0-100,
+    "needsAnalysis": 0-100,
+    "proposalQuality": 0-100,
+    "flexibility": 0-100,
+    "trustBuilding": 0-100,
+    "objectionHandling": 0-100,
+    "closingSkill": 0-100,
+    "listeningSkill": 0-100,
+    "productKnowledge": 0-100,
+    "customerFocus": 0-100,
+    "goalAchievement": 0-100
+  },
+  "strengths": ["..."],
+  "improvements": ["..."],
+  "keyInsights": ["..."],
+  "nextSteps": "...",
+  "goalFeedback": {
+    "achievedGoals": ["目标描述"],
+    "partiallyAchievedGoals": ["目标描述"],
+    "missedGoals": ["目标描述"],
+    "recommendations": ["..."]
+  },
+  "detailedAnalysis": {
+    "communicationPatterns": {"questionFrequency": 0-100, "responseQuality": 0-100, "clarityOfExplanation": 0-100},
+    "customerInteraction": {"empathyLevel": 0-100, "respectShown": 0-100, "engagementQuality": 0-100},
+    "salesTechniques": {"valuePropositionClarity": 0-100, "needsAlignment": 0-100, "painPointIdentification": 0-100}
+  }
+}"""
+
+
+def build_report_prompt(
+    scenario_doc: dict[str, Any],
+    transcript: str,
+    metrics_history: list[dict],
+    goal_statuses: list[dict],
+    language: str = "zh",
+) -> str:
+    """构造复盘报告的用户提示词。"""
+    npc = scenario_doc.get("npc") or {}
+    npc_name = npc.get("name", "客户")
+    npc_company = npc.get("company", "")
+    npc_role = npc.get("role", "")
+    background = scenario_doc.get("description") or scenario_doc.get("background") or ""
+
+    goals_text = "\n".join(
+        f"- 目标描述：{g.get('description', g.get('id', ''))} | 当前达成：{'已达成' if g.get('achieved') else '未达成'}"
+        for g in goal_statuses
+    ) or "（无预设目标）"
+
+    metrics_text = "\n".join(
+        f"第{i+1}轮后：愤怒 {m.get('angerLevel')} / 信任 {m.get('trustLevel')} / 进度 {m.get('progressLevel')}"
+        for i, m in enumerate(metrics_history)
+    ) or "（无情绪记录）"
+
+    return f"""# 商谈背景
+- 客户：{npc_company}的{npc_role}{npc_name}
+- 场景说明：{background}
+
+# 预设目标与最终达成情况
+{goals_text}
+
+# 客户情绪变化（按对话轮次）
+{metrics_text}
+
+# 完整对话记录
+{transcript}
+
+请基于以上信息生成复盘报告 JSON。"""
