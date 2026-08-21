@@ -2,7 +2,7 @@
   "npcs": [
     {
       "id": "super-salty-youth",
-      "name": "美咲",
+      "name": "陈晓彤",
       "role": "大学生",
       "company": "无业",
       "personality": [
@@ -16,7 +16,7 @@
     },
     {
       "id": "harsh-buyer",
-      "name": "田中部长",
+      "name": "李国栋",
       "role": "采购部长",
       "company": "科技解决方案公司",
       "personality": [
@@ -30,7 +30,7 @@
     },
     {
       "id": "new-manager",
-      "name": "佐藤科长",
+      "name": "张明远",
       "role": "营业科长",
       "company": "成长创投公司",
       "personality": [
@@ -44,7 +44,7 @@
     },
     {
       "id": "conservative-cfo",
-      "name": "山田董事",
+      "name": "王德福",
       "role": "CFO",
       "company": "老字号商贸公司",
       "personality": [
@@ -58,7 +58,7 @@
     },
     {
       "id": "tech-leader",
-      "name": "高桥负责人",
+      "name": "孙立群",
       "role": "技术统筹负责人",
       "company": "环球科技公司",
       "personality": [
@@ -72,7 +72,7 @@
     },
     {
       "id": "healthcare-manager",
-      "name": "松本院长",
+      "name": "刘明德",
       "role": "医院院长",
       "company": "中央医疗中心",
       "personality": [
@@ -86,9 +86,9 @@
     },
     {
       "id": "affluent-business-owner",
-      "name": "中村社长",
+      "name": "周建国",
       "role": "董事长",
-      "company": "中村精密工业公司",
+      "company": "华鑫精密工业公司",
       "personality": [
         "稳健",
         "谨慎",
@@ -100,7 +100,7 @@
     },
     {
       "id": "wealthy-executive",
-      "name": "渡边会长",
+      "name": "钱文远",
       "role": "董事会会长",
       "company": "环球贸易公司",
       "personality": [
@@ -114,7 +114,7 @@
     },
     {
       "id": "cautious-investor",
-      "name": "佐佐木",
+      "name": "郑浩",
       "role": "公司职员",
       "company": "普通企业职员",
       "personality": [
@@ -128,7 +128,7 @@
     },
     {
       "id": "worried-existing-client",
-      "name": "田村",
+      "name": "田立刚",
       "role": "个人投资者",
       "company": "现有客户",
       "personality": [
@@ -142,9 +142,9 @@
     },
     {
       "id": "business-department-head",
-      "name": "木村部长",
+      "name": "赵志强",
       "role": "事业部长",
-      "company": "日本制造系统公司",
+      "company": "华通制造系统公司",
       "personality": [
         "务实",
         "重视结果",
@@ -156,9 +156,9 @@
     },
     {
       "id": "traditional-manager",
-      "name": "斋藤部长",
+      "name": "吴守义",
       "role": "营业部长",
-      "company": "大和物产公司",
+      "company": "盛达物产公司",
       "personality": [
         "传统型",
         "重视关系",
@@ -170,7 +170,7 @@
     },
     {
       "id": "young-professional",
-      "name": "林",
+      "name": "林一凡",
       "role": "公司职员",
       "company": "IT 公司职员",
       "personality": [
@@ -184,9 +184,9 @@
     },
     {
       "id": "business-owner",
-      "name": "中村社长",
+      "name": "黄永昌",
       "role": "董事长",
-      "company": "中村工业公司",
+      "company": "宏图工业公司",
       "personality": [
         "经营者视角",
         "重视数字",
@@ -198,7 +198,7 @@
     },
     {
       "id": "ai-dlc-cto",
-      "name": "高桥CTO",
+      "name": "高启明",
       "role": "CTO/开发统筹",
       "company": "未来系统公司",
       "personality": [
@@ -213,9 +213,9 @@
     },
     {
       "id": "aws-summit-demo-npc",
-      "name": "田中部长",
-      "role": "信息系统部长",
-      "company": "制造业科技公司",
+      "name": "冯绍华",
+      "role": "CIO（首席信息官）",
+      "company": "恒远精密工业公司",
       "personality": [
         "理性",
         "对技术感兴趣",
@@ -323,7 +323,7 @@
       "category": "通用",
       "npc": {
         "id": "super-salty-youth",
-        "name": "美咲",
+        "name": "陈晓彤",
         "role": "大学生",
         "company": "无业",
         "personality": [
@@ -417,12 +417,12 @@
       "industry": "金融",
       "category": "金融",
       "guardrail": "FinanceCompliance",
-      "initialMessage": "你好，我是中村精密工业的中村。想听你们介绍一下贵司的资产配置方案。我们虽然是中小企业，但只靠存款对将来感到不安，希望在重视安全性的同时也能做一些投资。",
+      "initialMessage": "你好，我是华鑫精密工业的周建国。想听你们介绍一下贵司的资产配置方案。我们虽然是中小企业，但只靠存款对将来感到不安，希望在重视安全性的同时也能做一些投资。",
       "npc": {
         "id": "affluent-business-owner",
-        "name": "中村社长",
+        "name": "周建国",
         "role": "董事长",
-        "company": "中村精密工业公司",
+        "company": "华鑫精密工业公司",
         "personality": [
           "稳健",
           "谨慎",
@@ -501,10 +501,10 @@
       "difficulty": "hard",
       "industry": "IT",
       "category": "IT",
-      "initialMessage": "感谢你今天来访。我是科技解决方案公司的田中。听说过贵司的软件，但我们公司已经在用类似的系统，所以怀疑换过去的价值。能说明一下你们的强项吗？",
+      "initialMessage": "感谢你今天来访。我是科技解决方案公司的李国栋。听说过贵司的软件，但我们公司已经在用类似的系统，所以怀疑换过去的价值。能说明一下你们的强项吗？",
       "npc": {
         "id": "harsh-buyer",
-        "name": "田中部长",
+        "name": "李国栋",
         "role": "采购部长",
         "company": "科技解决方案公司",
         "personality": [
@@ -574,10 +574,10 @@
       "difficulty": "normal",
       "industry": "商业服务",
       "category": "商业服务",
-      "initialMessage": "嗨，我是成长创投的佐藤。最近销售额突然上涨，真是又喜又忧。不过规模化真的很难……照这样下去可能会撞上成长的天花板。今天想就这方面咨询一下。",
+      "initialMessage": "嗨，我是成长创投的张明远。最近销售额突然上涨，真是又喜又忧。不过规模化真的很难……照这样下去可能会撞上成长的天花板。今天想就这方面咨询一下。",
       "npc": {
         "id": "new-manager",
-        "name": "佐藤科长",
+        "name": "张明远",
         "role": "营业科长",
         "company": "成长创投公司",
         "personality": [
@@ -648,10 +648,10 @@
       "industry": "制造业",
       "category": "制造业",
       "guardrail": "GeneralCompliance",
-      "initialMessage": "久等了。我是老字号商贸的山田。我们公司创业超过 100 年，说实话对改变以往的做法有些抵触。虽然年轻员工有数字化的诉求，但我觉得不能操之过急。今天想就这方面咨询一下。",
+      "initialMessage": "久等了。我是老字号商贸的王德福。我们公司创业超过 100 年，说实话对改变以往的做法有些抵触。虽然年轻员工有数字化的诉求，但我觉得不能操之过急。今天想就这方面咨询一下。",
       "npc": {
         "id": "conservative-cfo",
-        "name": "山田董事",
+        "name": "王德福",
         "role": "CFO",
         "company": "老字号商贸公司",
         "personality": [
@@ -721,10 +721,10 @@
       "difficulty": "normal",
       "industry": "通用",
       "category": "通用",
-      "initialMessage": "好久不见，我是科技解决方案的田中。快到续约的时候了。其实公司内部做了预算调整，要求削减经费。我们对贵司的服务很满意，但在想能不能再省一点费用。",
+      "initialMessage": "好久不见，我是科技解决方案的李国栋。快到续约的时候了。其实公司内部做了预算调整，要求削减经费。我们对贵司的服务很满意，但在想能不能再省一点费用。",
       "npc": {
         "id": "harsh-buyer",
-        "name": "田中部长",
+        "name": "李国栋",
         "role": "采购部长",
         "company": "科技解决方案公司",
         "personality": [
@@ -794,10 +794,10 @@
       "difficulty": "hard",
       "industry": "通用",
       "category": "通用",
-      "initialMessage": "你好，我是成长创投的佐藤。贵司的产品我很喜欢，但坦白说超出预算了。和其他公司的类似产品比贵了大约两成……如果没法在内部说明性价比，就很难获批。有什么好方案吗？",
+      "initialMessage": "你好，我是成长创投的张明远。贵司的产品我很喜欢，但坦白说超出预算了。和其他公司的类似产品比贵了大约两成……如果没法在内部说明性价比，就很难获批。有什么好方案吗？",
       "npc": {
         "id": "new-manager",
-        "name": "佐藤科长",
+        "name": "张明远",
         "role": "营业科长",
         "company": "成长创投公司",
         "personality": [
@@ -868,12 +868,12 @@
       "industry": "IT",
       "category": "IT",
       "guardrail": "GeneralCompliance",
-      "initialMessage": "好的，我是日本制造系统的木村。久等了。是系统更新的访谈对吧。我不太懂技术，请尽量避开专业术语。我最想知道的是现场业务会怎么改善。",
+      "initialMessage": "好的，我是华通制造系统的赵志强。久等了。是系统更新的访谈对吧。我不太懂技术，请尽量避开专业术语。我最想知道的是现场业务会怎么改善。",
       "npc": {
         "id": "business-department-head",
-        "name": "木村部长",
+        "name": "赵志强",
         "role": "事业部长",
-        "company": "日本制造系统公司",
+        "company": "华通制造系统公司",
         "personality": [
           "务实",
           "重视结果",
@@ -952,10 +952,10 @@
       "difficulty": "hard",
       "industry": "IT",
       "category": "IT",
-      "initialMessage": "我是环球科技的高桥，担任 CTO 兼技术负责人。对贵司的解决方案感兴趣，但已经厌倦了营销上的夸大其词。今天想详细了解具体的技术规格，尤其是性能和安全性方面。",
+      "initialMessage": "我是环球科技的孙立群，担任 CTO 兼技术负责人。对贵司的解决方案感兴趣，但已经厌倦了营销上的夸大其词。今天想详细了解具体的技术规格，尤其是性能和安全性方面。",
       "npc": {
         "id": "tech-leader",
-        "name": "高桥负责人",
+        "name": "孙立群",
         "role": "技术统筹负责人",
         "company": "环球科技公司",
         "personality": [
@@ -1026,10 +1026,10 @@
       "industry": "医疗",
       "category": "医疗",
       "guardrail": "MedicalCompliance",
-      "initialMessage": "你好，我是中央医疗中心的松本。我们医院员工疲惫问题很严重，业务效率化非常紧迫。不过患者安全必须放在第一位，这一点绝对不能妥协。今天想咨询一下能取得这种平衡的系统。",
+      "initialMessage": "你好，我是中央医疗中心的刘明德。我们医院员工疲惫问题很严重，业务效率化非常紧迫。不过患者安全必须放在第一位，这一点绝对不能妥协。今天想咨询一下能取得这种平衡的系统。",
       "npc": {
         "id": "healthcare-manager",
-        "name": "松本院长",
+        "name": "刘明德",
         "role": "医院院长",
         "company": "中央医疗中心",
         "personality": [
@@ -1099,12 +1099,12 @@
       "difficulty": "hard",
       "industry": "咨询",
       "category": "咨询",
-      "initialMessage": "我是大和物产的斋藤。感谢你在百忙之中抽空。我知道必须数字化，但不知道该从哪里开始……公司内部也有很多人说「现在的做法就够了」，我很苦恼推进方式。有什么好建议请告诉我。",
+      "initialMessage": "我是盛达物产的吴守义。感谢你在百忙之中抽空。我知道必须数字化，但不知道该从哪里开始……公司内部也有很多人说「现在的做法就够了」，我很苦恼推进方式。有什么好建议请告诉我。",
       "npc": {
         "id": "traditional-manager",
-        "name": "斋藤部长",
+        "name": "吴守义",
         "role": "营业部长",
-        "company": "大和物产公司",
+        "company": "盛达物产公司",
         "personality": [
           "传统型",
           "重视关系",
@@ -1183,10 +1183,10 @@
       "difficulty": "normal",
       "industry": "证券",
       "category": "证券",
-      "initialMessage": "初次见面，我叫佐佐木。今天想来咨询养老资金的事。其实我从没做过投资，只有银行存款。但最近觉得这样下去养老会不安……不过风险太高的东西还是有点怕。",
+      "initialMessage": "初次见面，我叫郑浩。今天想来咨询养老资金的事。其实我从没做过投资，只有银行存款。但最近觉得这样下去养老会不安……不过风险太高的东西还是有点怕。",
       "npc": {
         "id": "cautious-investor",
-        "name": "佐佐木",
+        "name": "郑浩",
         "role": "公司职员",
         "company": "普通企业职员",
         "personality": [
@@ -1256,10 +1256,10 @@
       "difficulty": "hard",
       "industry": "证券",
       "category": "证券",
-      "initialMessage": "那个，我是田村，现在就想谈！昨天开始市场急跌，我的资产缩水了 20%。不该是这样的……你说过「长期投资很重要」，但我受不了更多损失了。现在是不是应该全部卖掉？",
+      "initialMessage": "那个，我是田立刚，现在就想谈！昨天开始市场急跌，我的资产缩水了 20%。不该是这样的……你说过「长期投资很重要」，但我受不了更多损失了。现在是不是应该全部卖掉？",
       "npc": {
         "id": "worried-existing-client",
-        "name": "田村",
+        "name": "田立刚",
         "role": "个人投资者",
         "company": "现有客户",
         "personality": [
@@ -1329,10 +1329,10 @@
       "difficulty": "easy",
       "industry": "证券",
       "category": "证券",
-      "initialMessage": "初次见面，我叫林。在社交媒体上看到投资的话题产生了兴趣，但不知道具体该从什么开始。听说定投不错，那是什么机制？另外，能从少量资金开始吗？",
+      "initialMessage": "初次见面，我叫林一凡。在社交媒体上看到投资的话题产生了兴趣，但不知道具体该从什么开始。听说定投不错，那是什么机制？另外，能从少量资金开始吗？",
       "npc": {
         "id": "young-professional",
-        "name": "林",
+        "name": "林一凡",
         "role": "公司职员",
         "company": "IT 公司职员",
         "personality": [
@@ -1402,10 +1402,10 @@
       "difficulty": "hard",
       "industry": "金融",
       "category": "金融",
-      "initialMessage": "感谢邀请。我是环球贸易的渡边。我多年来靠日本股票和市中心房产积累资产，但最近很在意世界形势的变化。不过对海外投资不得不谨慎。什么样的方法比较合适？",
+      "initialMessage": "感谢邀请。我是环球贸易的钱文远。我多年来靠国内股票和一线城市房产积累资产，但最近很在意世界形势的变化。不过对海外投资不得不谨慎。什么样的方法比较合适？",
       "npc": {
         "id": "wealthy-executive",
-        "name": "渡边会长",
+        "name": "钱文远",
         "role": "董事会会长",
         "company": "环球贸易公司",
         "personality": [
@@ -1468,7 +1468,7 @@
           "description": "提出税务/继承对策",
           "priority": 4,
           "criteria": [
-            "提出考虑国际税制的资产管理结构",
+            "提出考虑海外税务合规的资产管理结构",
             "具体说明向下一代传承资产的计划",
             "介绍通过慈善活动实现社会贡献和税收优惠"
           ],
@@ -1486,12 +1486,12 @@
       "difficulty": "hard",
       "industry": "证券",
       "category": "证券",
-      "initialMessage": "我是中村工业的社长中村。为了完善员工福利，正在考虑导入企业年金制度。不过想了解一下中小企业也容易导入的制度有哪些、性价比如何、导入后的运营负担有多大等具体情况。",
+      "initialMessage": "我是宏图工业的社长黄永昌。为了完善员工福利，正在考虑导入企业年金制度。不过想了解一下中小企业也容易导入的制度有哪些、性价比如何、导入后的运营负担有多大等具体情况。",
       "npc": {
         "id": "business-owner",
-        "name": "中村社长",
+        "name": "黄永昌",
         "role": "董事长",
-        "company": "中村工业公司",
+        "company": "宏图工业公司",
         "personality": [
           "经营者视角",
           "重视数字",
@@ -1532,7 +1532,7 @@
           "criteria": [
             "用具体数字展示法人税等税务优势",
             "说明对员工的税务优势",
-            "提出应对税制改革的未来对策"
+            "提出应对个人养老金政策的未来对策"
           ],
           "isRequired": true
         },
@@ -1563,9 +1563,9 @@
       "initialMessage": "感谢你今天抽出时间。我们是精密设备制造商，约有 500 名员工。管理层要求推进数字化转型，我们还没用过云，但想听听 AWS 的介绍。",
       "npc": {
         "id": "aws-summit-demo-npc",
-        "name": "山本CIO",
+        "name": "冯绍华",
         "role": "CIO（首席信息官）",
-        "company": "东海精密工业公司",
+        "company": "恒远精密工业公司",
         "personality": [
           "话少、表达简洁",
           "从经营视角判断",
@@ -1655,10 +1655,10 @@
       "difficulty": "hard",
       "industry": "IT",
       "category": "IT",
-      "initialMessage": "我是高桥。我们公司已经用上了编码代理，但开发整体的生产力并没有太大变化。如果有更根本的方法，我想听听。",
+      "initialMessage": "我是高启明。我们公司已经用上了编码代理，但开发整体的生产力并没有太大变化。如果有更根本的方法，我想听听。",
       "npc": {
         "id": "ai-dlc-cto",
-        "name": "高桥CTO",
+        "name": "高启明",
         "role": "CTO/开发统筹",
         "company": "未来系统公司",
         "personality": [

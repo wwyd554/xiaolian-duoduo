@@ -12,10 +12,10 @@ def build_npc_system_prompt(
     presented_slides: list = None
 ) -> str:
     """NPC会話用のシステムプロンプトを生成"""
-    npc_name = npc_info.get('name', '田中太郎')
-    npc_role = npc_info.get('role', '購買担当者')
-    npc_company = npc_info.get('company', '株式会社ABC')
-    npc_personality = npc_info.get('personality', ['厳しい', '効率重視'])
+    npc_name = npc_info.get('name', '张伟')
+    npc_role = npc_info.get('role', '采购负责人')
+    npc_company = npc_info.get('company', '某科技有限公司')
+    npc_personality = npc_info.get('personality', ['严格', '效率至上'])
     npc_description = npc_info.get('description', '')
     
     anger_level = emotion_params.get('angerLevel', 1)
