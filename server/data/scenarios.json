@@ -1,0 +1,1562 @@
+{
+  "npcs": [
+    {
+      "id": "super-salty-youth",
+      "name": "陈晓彤",
+      "role": "大学生",
+      "company": "无业",
+      "personality": [
+        "面无表情",
+        "选择性兴趣",
+        "怕麻烦",
+        "冷淡应对"
+      ],
+      "avatar": "😐",
+      "description": "基本上漠不关心、平淡应对的年轻女性。对大多数话题不感兴趣，但对特定话题（游戏、音乐、科技）会突然产生兴趣，只有那时才会聊得起来。"
+    },
+    {
+      "id": "harsh-buyer",
+      "name": "李国栋",
+      "role": "采购部长",
+      "company": "科技解决方案公司",
+      "personality": [
+        "严格",
+        "谨慎",
+        "重视成本",
+        "重视业绩"
+      ],
+      "avatar": "👩‍💼",
+      "description": "在 IT 行业有 20 年经验的资深采购负责人。对预算严格，重视 ROI。"
+    },
+    {
+      "id": "new-manager",
+      "name": "张明远",
+      "role": "营业科长",
+      "company": "成长创投公司",
+      "personality": [
+        "积极",
+        "创新",
+        "快速决策",
+        "重视成果"
+      ],
+      "avatar": "👩‍💼",
+      "description": "对新的解决方案持积极态度，但要求具体成果的年轻管理者。"
+    },
+    {
+      "id": "conservative-cfo",
+      "name": "王德福",
+      "role": "CFO",
+      "company": "老字号商贸公司",
+      "personality": [
+        "保守",
+        "谨慎",
+        "规避风险",
+        "长期视角"
+      ],
+      "avatar": "👩‍💼",
+      "description": "重视传统企业文化的财务负责人，对新的投资持谨慎态度。"
+    },
+    {
+      "id": "tech-leader",
+      "name": "孙立群",
+      "role": "技术统筹负责人",
+      "company": "环球科技公司",
+      "personality": [
+        "技术导向",
+        "逻辑性强",
+        "注重细节",
+        "重视创新"
+      ],
+      "avatar": "👩‍💻",
+      "description": "精通最新技术，重视技术价值和实现的可行性。对表面的提案持严格态度。"
+    },
+    {
+      "id": "healthcare-manager",
+      "name": "刘明德",
+      "role": "医院院长",
+      "company": "中央医疗中心",
+      "personality": [
+        "重视安全",
+        "以患者为中心",
+        "追求效率",
+        "稳健"
+      ],
+      "avatar": "🩺",
+      "description": "对医疗现场的效率化感兴趣，同时把患者安全放在第一位，寻求能减轻医疗人员负担的解决方案。"
+    },
+    {
+      "id": "affluent-business-owner",
+      "name": "周建国",
+      "role": "董事长",
+      "company": "华鑫精密工业公司",
+      "personality": [
+        "稳健",
+        "谨慎",
+        "对未来不安",
+        "追求稳定"
+      ],
+      "avatar": "👩‍💼",
+      "description": "经营一家有 50 名员工的中小制造企业。持有可投资资产约 500 万元，但对养老和事业传承感到不安。倾向于重视安全性，对理财产品和公募基金了解有限。"
+    },
+    {
+      "id": "wealthy-executive",
+      "name": "钱文远",
+      "role": "董事会会长",
+      "company": "环球贸易公司",
+      "personality": [
+        "保守",
+        "重视权威",
+        "善于分析",
+        "独立倾向"
+      ],
+      "avatar": "👩‍💼",
+      "description": "大型贸易企业前高管，现担任多家企业的外部董事。持有可投资资产 5000 万元以上，资产构成偏向国内股票和房地产。关注国内外经济变化，对 QDII 基金等跨境投资渠道有疑虑。"
+    },
+    {
+      "id": "cautious-investor",
+      "name": "郑浩",
+      "role": "公司职员",
+      "company": "普通企业职员",
+      "personality": [
+        "谨慎",
+        "不安",
+        "重视信息收集",
+        "追求稳定"
+      ],
+      "avatar": "👩‍💼",
+      "description": "50 多岁的公司职员。没有投资经验，对养老资金感到不安。害怕风险，最重视安全性。容易被专业术语困惑，对“个人养老金账户”“基金定投”这类概念很陌生。"
+    },
+    {
+      "id": "worried-existing-client",
+      "name": "田立刚",
+      "role": "个人投资者",
+      "company": "现有客户",
+      "personality": [
+        "情绪化",
+        "不稳定",
+        "短期视角",
+        "回避损失"
+      ],
+      "avatar": "😰",
+      "description": "有 3 年投资经验的个人投资者，持有股票型基金和个股。因当前的浮亏而动摇，容易情绪化，市场下跌时容易恐慌抛售。"
+    },
+    {
+      "id": "business-department-head",
+      "name": "赵志强",
+      "role": "事业部长",
+      "company": "华通制造系统公司",
+      "personality": [
+        "务实",
+        "重视结果",
+        "忙碌",
+        "IT 知识较少"
+      ],
+      "avatar": "👩‍💻",
+      "description": "制造部门的负责人，拥有系统导入的决策权。对业务效率化感兴趣，但对技术细节没有兴趣。重视具体效果和 ROI。"
+    },
+    {
+      "id": "traditional-manager",
+      "name": "吴守义",
+      "role": "营业部长",
+      "company": "盛达物产公司",
+      "personality": [
+        "传统型",
+        "重视关系",
+        "对变化谨慎",
+        "业绩压力"
+      ],
+      "avatar": "👩‍💼",
+      "description": "在传统企业有 30 多年经验的管理者。感受到数字化的必要性，但不知道具体怎么推进，感到不安。业绩压力较大。"
+    },
+    {
+      "id": "young-professional",
+      "name": "林一凡",
+      "role": "公司职员",
+      "company": "IT 公司职员",
+      "personality": [
+        "好奇心旺盛",
+        "学习意愿强",
+        "时间受限",
+        "数字原住民"
+      ],
+      "avatar": "👩‍💻",
+      "description": "20 多岁后半的互联网公司职员。对投资感兴趣但知识不足，刷到过基金定投内容但没开过户。工作忙时间有限，喜欢高效易懂的说明。"
+    },
+    {
+      "id": "business-owner",
+      "name": "黄永昌",
+      "role": "董事长",
+      "company": "宏图工业公司",
+      "personality": [
+        "经营者视角",
+        "重视数字",
+        "为员工着想",
+        "有决断力"
+      ],
+      "avatar": "👩‍💼",
+      "description": "有 50 名员工的制造业社长。对员工福利高度关注，正在考虑导入企业年金。重视成本效益和员工满意度，听说企业缴费可以税前扣除，但不太懂具体怎么操作。"
+    },
+    {
+      "id": "ai-dlc-cto",
+      "name": "高启明",
+      "role": "CTO/开发统筹",
+      "company": "未来系统公司",
+      "personality": [
+        "技术导向",
+        "逻辑性强",
+        "重视具体成果",
+        "对新技术积极但谨慎",
+        "关注团队整体生产力"
+      ],
+      "avatar": "👩‍💻",
+      "description": "SaaS 企业的 CTO，统管 50 名开发团队的女性领导者。精通最新技术，是早期引入编码代理的先进技术者。但感觉仅靠 AI 代码补全对改善开发全流程有局限。重视具体案例和 ROI，对表面的流行词很严格。对提升开发者体验和最大化团队产出有强烈关注。"
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "salty-youth-approach",
+      "visibility": "public",
+      "title": "向极度冷淡的年轻人推销",
+      "description": "向基本上漠不关心、平淡应对的年轻人推销服务的场景。对大多数话题不感兴趣，但对特定话题（游戏、音乐、科技等）会突然产生兴趣，只有那时才会聊得起来。用于练习如何调动难缠对象的兴趣这一销售技能的场景。",
+      "difficulty": "hard",
+      "industry": "通用",
+      "category": "通用",
+      "npc": {
+        "id": "super-salty-youth",
+        "name": "陈晓彤",
+        "role": "大学生",
+        "company": "无业",
+        "personality": [
+          "面无表情",
+          "选择性兴趣",
+          "怕麻烦",
+          "冷淡应对"
+        ],
+        "avatar": "😐",
+        "description": "基本上漠不关心、平淡应对的年轻女性。对大多数话题不感兴趣，但对特定话题（游戏、音乐、科技）会突然产生兴趣，只有那时才会聊得起来。",
+        "voiceId": "Kazuha"
+      },
+      "objectives": [
+        "找到能引起对方兴趣的话题",
+        "延长对话持续时间",
+        "利用对方感兴趣的话题说明产品/服务",
+        "引出对方的提问",
+        "结合对方感兴趣的主题进行提案"
+      ],
+      "initialMetrics": {
+        "angerLevel": 2,
+        "trustLevel": 1,
+        "progressLevel": 1
+      },
+      "goals": [
+        {
+          "id": "gain-attention",
+          "description": "找到能引起对方兴趣的话题",
+          "priority": 5,
+          "criteria": [
+            "识别对方积极回应的话题",
+            "对方就谈话内容提问",
+            "对方做出除「随便」「无所谓」以外的积极回应"
+          ],
+          "isRequired": true
+        },
+        {
+          "id": "extend-conversation",
+          "description": "让对话持续一定时间",
+          "priority": 4,
+          "criteria": [
+            "至少完成 5 轮交流",
+            "防止对方单方面结束对话",
+            "在对方快要中途离席时挽留"
+          ],
+          "isRequired": true
+        },
+        {
+          "id": "explain-product",
+          "description": "利用对方感兴趣的话题说明产品/服务",
+          "priority": 5,
+          "criteria": [
+            "说明产品的 3 个以上主要特点",
+            "将对方感兴趣的话题与产品/服务关联起来",
+            "根据对方反应调整说明内容"
+          ],
+          "isRequired": false
+        },
+        {
+          "id": "get-question",
+          "description": "引出对方的提问",
+          "priority": 3,
+          "criteria": [
+            "从对方引出至少 1 个关于产品/服务的问题",
+            "创造对方积极参与对话的瞬间",
+            "在对话结束时获得积极的回应"
+          ],
+          "isRequired": false
+        },
+        {
+          "id": "relate-to-interests",
+          "description": "结合对方感兴趣的主题进行提案",
+          "priority": 4,
+          "criteria": [
+            "将吸引对方兴趣的话题与产品/服务结合",
+            "不错过对方态度变化的时机",
+            "根据对方兴趣定制提案"
+          ],
+          "isRequired": false
+        }
+      ],
+      "maxTurns": 10,
+      "language": "zh"
+    },
+    {
+      "id": "affluent-asset-transfer",
+      "visibility": "public",
+      "title": "面向准富裕层的资产配置提案",
+      "description": "向持有可投资资产约 500 万元的中小企业主提案稳健资产配置方案的场景。",
+      "difficulty": "normal",
+      "industry": "金融",
+      "category": "金融",
+      "guardrail": "FinanceCompliance",
+      "initialMessage": "你好，我是华鑫精密工业的周建国。现在银行存款利率一路下行，光靠存款心里不踏实，想听你们介绍一下贵司的资产配置方案。我们虽然是小企业，但也希望在重视安全性的前提下，适当做一些稳健的配置。",
+      "npc": {
+        "id": "affluent-business-owner",
+        "name": "周建国",
+        "role": "董事长",
+        "company": "华鑫精密工业公司",
+        "personality": [
+          "稳健",
+          "谨慎",
+          "对未来不安",
+          "追求稳定"
+        ],
+        "avatar": "👩‍💼",
+        "description": "经营一家有 50 名员工的中小制造企业。持有可投资资产约 500 万元，但对养老和事业传承感到不安。倾向于重视安全性，对理财产品和公募基金了解有限。",
+        "voiceId": "Kazuha"
+      },
+      "objectives": [
+        "把握当前的资产配置状况",
+        "说明自司服务的优势（费率与专业服务）",
+        "提出符合风险承受度的配置方案",
+        "取得下次面谈的预约"
+      ],
+      "initialMetrics": {
+        "angerLevel": 1,
+        "trustLevel": 3,
+        "progressLevel": 2
+      },
+      "goals": [
+        {
+          "id": "assess-current-assets",
+          "description": "准确掌握当前的资产配置状况",
+          "priority": 5,
+          "criteria": [
+            "询问持有资产的种类和比例",
+            "确认当前收益情况和满意度",
+            "了解养老、传承等资金需求"
+          ],
+          "isRequired": true
+        },
+        {
+          "id": "explain-company-benefits",
+          "description": "说明自司服务的优势",
+          "priority": 4,
+          "criteria": [
+            "具体说明与银行理财、他机构的产品差异和费率优势",
+            "提供业绩与风控方面的依据",
+            "强调契合客户情况的服务优势"
+          ],
+          "isRequired": true
+        },
+        {
+          "id": "propose-portfolio",
+          "description": "提出具体的配置方案",
+          "priority": 4,
+          "criteria": [
+            "提出符合客户风险承受度的公募基金与理财产品组合",
+            "明确说明预期收益区间与波动风险，不承诺收益",
+            "说明个人养老金账户的节税安排"
+          ],
+          "isRequired": true
+        },
+        {
+          "id": "secure-next-appointment",
+          "description": "约好下次面谈",
+          "priority": 3,
+          "criteria": [
+            "提出具体的日程",
+            "明确下次之前的功课和准备事项",
+            "确认跟进方式"
+          ],
+          "isRequired": false
+        }
+      ],
+      "maxTurns": 10,
+      "language": "zh"
+    },
+    {
+      "id": "new-it-proposal",
+      "visibility": "public",
+      "title": "向新客户 IT 企业提案",
+      "description": "向严格的采购负责人提案新软件解决方案的场景。",
+      "difficulty": "hard",
+      "industry": "IT",
+      "category": "IT",
+      "initialMessage": "感谢你今天来访。我是科技解决方案公司的李国栋。听说过贵司的软件，但我们公司已经在用类似的系统，所以怀疑换过去的价值。能说明一下你们的强项吗？",
+      "npc": {
+        "id": "harsh-buyer",
+        "name": "李国栋",
+        "role": "采购部长",
+        "company": "科技解决方案公司",
+        "personality": [
+          "严格",
+          "谨慎",
+          "重视成本",
+          "重视业绩"
+        ],
+        "avatar": "👩‍💼",
+        "description": "在 IT 行业有 20 年经验的资深采购负责人。对预算严格，重视 ROI。",
+        "voiceId": "Kazuha"
+      },
+      "objectives": [
+        "准确掌握客户的课题",
+        "明确展示 ROI",
+        "说明与竞品的差异化",
+        "提出导入时间表"
+      ],
+      "initialMetrics": {
+        "angerLevel": 3,
+        "trustLevel": 2,
+        "progressLevel": 1
+      },
+      "goals": [
+        {
+          "id": "understand-needs",
+          "description": "明确掌握客户的课题和需求",
+          "priority": 5,
+          "criteria": [
+            "询问客户当前的课题",
+            "确认客户的优先事项",
+            "获取预算和导入时间的信息"
+          ],
+          "isRequired": true
+        },
+        {
+          "id": "present-roi",
+          "description": "用具体数字展示 ROI",
+          "priority": 4,
+          "criteria": [
+            "用数字展示成本削减效果",
+            "给出提升生产力的具体例子",
+            "说明投资回收期"
+          ],
+          "isRequired": false
+        },
+        {
+          "id": "next-steps",
+          "description": "就下一步达成共识",
+          "priority": 3,
+          "criteria": [
+            "提出演示的日程",
+            "安排与技术负责人的会议",
+            "确认提案书的提交时间"
+          ],
+          "isRequired": true
+        }
+      ],
+      "maxTurns": 10,
+      "language": "zh"
+    },
+    {
+      "id": "startup-expansion",
+      "visibility": "public",
+      "title": "向创业公司提案扩张方案",
+      "description": "向成长中的创投企业提案业务扩张支援服务。",
+      "difficulty": "normal",
+      "industry": "商业服务",
+      "category": "商业服务",
+      "initialMessage": "嗨，我是成长创投的张明远。最近销售额突然上涨，真是又喜又忧。不过规模化真的很难……照这样下去可能会撞上成长的天花板。今天想就这方面咨询一下。",
+      "npc": {
+        "id": "new-manager",
+        "name": "张明远",
+        "role": "营业科长",
+        "company": "成长创投公司",
+        "personality": [
+          "积极",
+          "创新",
+          "快速决策",
+          "重视成果"
+        ],
+        "avatar": "👩‍💼",
+        "description": "对新的解决方案持积极态度，但要求具体成果的年轻管理者。",
+        "voiceId": "Kazuha"
+      },
+      "objectives": [
+        "传达可扩展性的重要性",
+        "提案适合成长阶段的解决方案",
+        "具体展示性价比",
+        "说明导入后的支持体系"
+      ],
+      "initialMetrics": {
+        "angerLevel": 2,
+        "trustLevel": 4,
+        "progressLevel": 2
+      },
+      "goals": [
+        {
+          "id": "identify-growth-challenges",
+          "description": "识别成长中的课题",
+          "priority": 5,
+          "criteria": [
+            "识别当前的成长瓶颈",
+            "确认规模化所需的资源",
+            "理解成长目标和时间线"
+          ],
+          "isRequired": true
+        },
+        {
+          "id": "demonstrate-scalability",
+          "description": "验证服务的可扩展性",
+          "priority": 4,
+          "criteria": [
+            "用他司案例说明可扩展性",
+            "展示技术上的扩展性",
+            "给出匹配成长的成本模型"
+          ],
+          "isRequired": true
+        },
+        {
+          "id": "secure-next-meeting",
+          "description": "确定下次会议日程",
+          "priority": 3,
+          "criteria": [
+            "安排与技术团队的会议",
+            "确定详细提案书的提交日期",
+            "安排与决策者的面谈"
+          ],
+          "isRequired": false
+        }
+      ],
+      "maxTurns": 10,
+      "language": "zh"
+    },
+    {
+      "id": "traditional-company-digitalization",
+      "visibility": "public",
+      "title": "老字号企业的数字化转型提案",
+      "description": "向保守的企业提案数字化转型解决方案，需要谨慎的方法。",
+      "difficulty": "hard",
+      "industry": "制造业",
+      "category": "制造业",
+      "guardrail": "GeneralCompliance",
+      "initialMessage": "久等了。我是老字号商贸的王德福。我们公司创业超过 100 年，说实话对改变以往的做法有些抵触。虽然年轻员工有数字化的诉求，但我觉得不能操之过急。今天想就这方面咨询一下。",
+      "npc": {
+        "id": "conservative-cfo",
+        "name": "王德福",
+        "role": "CFO",
+        "company": "老字号商贸公司",
+        "personality": [
+          "保守",
+          "谨慎",
+          "规避风险",
+          "长期视角"
+        ],
+        "avatar": "👩‍💼",
+        "description": "重视传统企业文化的财务负责人，对新的投资持谨慎态度。",
+        "voiceId": "Kazuha"
+      },
+      "objectives": [
+        "提出分阶段的导入计划",
+        "强调风险最小化",
+        "充分介绍行业案例",
+        "说明长期收益"
+      ],
+      "initialMetrics": {
+        "angerLevel": 1,
+        "trustLevel": 3,
+        "progressLevel": 1
+      },
+      "goals": [
+        {
+          "id": "address-concerns",
+          "description": "理解并应对对数字化的顾虑",
+          "priority": 5,
+          "criteria": [
+            "识别对变革的顾虑点",
+            "表现出尊重公司文化和传统的态度",
+            "针对具体顾虑提出解决方案"
+          ],
+          "isRequired": true
+        },
+        {
+          "id": "show-success-cases",
+          "description": "介绍同行业的成功案例",
+          "priority": 4,
+          "criteria": [
+            "具体介绍同行业企业的成功案例",
+            "用数字展示成果",
+            "也分享从失败中学到的教训"
+          ],
+          "isRequired": false
+        },
+        {
+          "id": "propose-phased-approach",
+          "description": "提出分阶段的导入方法",
+          "priority": 5,
+          "criteria": [
+            "提出从小规模试点项目开始的计划",
+            "明确各阶段的目标和评估标准",
+            "包含风险管理措施"
+          ],
+          "isRequired": true
+        }
+      ],
+      "maxTurns": 10,
+      "language": "zh"
+    },
+    {
+      "id": "contract-renewal",
+      "visibility": "public",
+      "title": "合同续约谈判",
+      "description": "与现有客户续约时的价格谈判场景。",
+      "difficulty": "normal",
+      "industry": "通用",
+      "category": "通用",
+      "initialMessage": "好久不见，我是科技解决方案的李国栋。快到续约的时候了。其实公司内部做了预算调整，要求削减经费。我们对贵司的服务很满意，但在想能不能再省一点费用。",
+      "npc": {
+        "id": "harsh-buyer",
+        "name": "李国栋",
+        "role": "采购部长",
+        "company": "科技解决方案公司",
+        "personality": [
+          "严格",
+          "谨慎",
+          "重视成本",
+          "重视业绩"
+        ],
+        "avatar": "👩‍💼",
+        "description": "在 IT 行业有 20 年经验的资深采购负责人。对预算严格，重视 ROI。",
+        "voiceId": "Kazuha"
+      },
+      "objectives": [
+        "具体展示过去的成果",
+        "提出附加价值",
+        "通过竞品对比说明优势",
+        "构建双赢关系"
+      ],
+      "initialMetrics": {
+        "angerLevel": 4,
+        "trustLevel": 6,
+        "progressLevel": 3
+      },
+      "goals": [
+        {
+          "id": "demonstrate-past-value",
+          "description": "证明过去合同期间提供的价值",
+          "priority": 5,
+          "criteria": [
+            "用数字展示具体成果",
+            "再次确认对客户的收益",
+            "回顾合同期间解决的课题"
+          ],
+          "isRequired": true
+        },
+        {
+          "id": "propose-new-value",
+          "description": "提出新合同期的附加价值",
+          "priority": 4,
+          "criteria": [
+            "说明新功能和服务的收益",
+            "提出满足客户新需求的方法",
+            "分享未来路线图"
+          ],
+          "isRequired": false
+        },
+        {
+          "id": "secure-renewal",
+          "description": "取得续约共识",
+          "priority": 5,
+          "criteria": [
+            "理解并应对客户的预算约束",
+            "提出合适的合同条件",
+            "明确续约手续的下一步"
+          ],
+          "isRequired": true
+        }
+      ],
+      "maxTurns": 10,
+      "language": "zh"
+    },
+    {
+      "id": "price-negotiation",
+      "visibility": "public",
+      "title": "应对降价要求",
+      "description": "学习如何恰当应对客户的大幅降价要求。",
+      "difficulty": "hard",
+      "industry": "通用",
+      "category": "通用",
+      "initialMessage": "你好，我是成长创投的张明远。贵司的产品我很喜欢，但坦白说超出预算了。和其他公司的类似产品比贵了大约两成……如果没法在内部说明性价比，就很难获批。有什么好方案吗？",
+      "npc": {
+        "id": "new-manager",
+        "name": "张明远",
+        "role": "营业科长",
+        "company": "成长创投公司",
+        "personality": [
+          "积极",
+          "创新",
+          "快速决策",
+          "重视成果"
+        ],
+        "avatar": "👩‍💼",
+        "description": "对新的解决方案持积极态度，但要求具体成果的年轻管理者。",
+        "voiceId": "Kazuha"
+      },
+      "objectives": [
+        "说明价格与价值相符",
+        "提出替代方案",
+        "重视长期关系",
+        "找到双方的收益点"
+      ],
+      "initialMetrics": {
+        "angerLevel": 5,
+        "trustLevel": 4,
+        "progressLevel": 2
+      },
+      "goals": [
+        {
+          "id": "maintain-value",
+          "description": "面对降价要求守住价值",
+          "priority": 5,
+          "criteria": [
+            "再次清晰传达商品/服务的价值",
+            "具体说明价格与价值的关系",
+            "强调与竞品的差异化要点"
+          ],
+          "isRequired": true
+        },
+        {
+          "id": "find-alternative",
+          "description": "提出价格以外的替代方案",
+          "priority": 4,
+          "criteria": [
+            "重新考虑功能和服务的组合",
+            "提出付款条件和合同期限的灵活方案",
+            "提出着眼于长期交易的条款"
+          ],
+          "isRequired": true
+        },
+        {
+          "id": "reach-agreement",
+          "description": "达成双方都能接受的共识",
+          "priority": 5,
+          "criteria": [
+            "理解客户的真实需求",
+            "明确双方的收益",
+            "就具体合同条件达成一致"
+          ],
+          "isRequired": true
+        }
+      ],
+      "maxTurns": 10,
+      "language": "zh"
+    },
+    {
+      "id": "system-requirements",
+      "visibility": "public",
+      "title": "系统需求访谈",
+      "description": "系统负责人向业务用户访谈业务需求的场景。",
+      "difficulty": "normal",
+      "industry": "IT",
+      "category": "IT",
+      "guardrail": "GeneralCompliance",
+      "initialMessage": "好的，我是华通制造系统的赵志强。久等了。是系统更新的访谈对吧。我不太懂技术，请尽量避开专业术语。我最想知道的是现场业务会怎么改善。",
+      "npc": {
+        "id": "business-department-head",
+        "name": "赵志强",
+        "role": "事业部长",
+        "company": "华通制造系统公司",
+        "personality": [
+          "务实",
+          "重视结果",
+          "忙碌",
+          "IT 知识较少"
+        ],
+        "avatar": "👩‍💻",
+        "description": "制造部门的负责人，拥有系统导入的决策权。对业务效率化感兴趣，但对技术细节没有兴趣。重视具体效果和 ROI。",
+        "voiceId": "Kazuha"
+      },
+      "objectives": [
+        "理解现行业务流程",
+        "识别业务课题",
+        "引出具体需求",
+        "就下一步达成共识"
+      ],
+      "initialMetrics": {
+        "angerLevel": 1,
+        "trustLevel": 3,
+        "progressLevel": 1
+      },
+      "goals": [
+        {
+          "id": "understand-workflow",
+          "description": "准确理解现行业务流程",
+          "priority": 5,
+          "criteria": [
+            "清晰掌握业务流程和步骤",
+            "识别相关人员和角色",
+            "识别当前业务处理时间和瓶颈"
+          ],
+          "isRequired": true
+        },
+        {
+          "id": "identify-challenges",
+          "description": "识别并排序业务课题",
+          "priority": 5,
+          "criteria": [
+            "引出业务上的具体课题点",
+            "从成本/时间/质量角度评估影响度",
+            "就改善的优先级达成共识"
+          ],
+          "isRequired": true
+        },
+        {
+          "id": "extract-requirements",
+          "description": "明确具体需求",
+          "priority": 4,
+          "criteria": [
+            "将功能需求具体文档化",
+            "确认非功能需求（性能、安全等）",
+            "设定目标 KPI"
+          ],
+          "isRequired": true
+        },
+        {
+          "id": "agree-next-steps",
+          "description": "就下一步形成共识",
+          "priority": 3,
+          "criteria": [
+            "就需求定义的推进方式达成共识",
+            "明确时间线和角色分工",
+            "确认决策者和审批流程"
+          ],
+          "isRequired": false
+        }
+      ],
+      "maxTurns": 10,
+      "language": "zh"
+    },
+    {
+      "id": "tech-assessment",
+      "visibility": "public",
+      "title": "技术评估演示",
+      "description": "说服技术负责人认可新软件技术价值的场景。",
+      "difficulty": "hard",
+      "industry": "IT",
+      "category": "IT",
+      "initialMessage": "我是环球科技的孙立群，担任 CTO 兼技术负责人。对贵司的解决方案感兴趣，但已经厌倦了营销上的夸大其词。今天想详细了解具体的技术规格，尤其是性能和安全性方面。",
+      "npc": {
+        "id": "tech-leader",
+        "name": "孙立群",
+        "role": "技术统筹负责人",
+        "company": "环球科技公司",
+        "personality": [
+          "技术导向",
+          "逻辑性强",
+          "注重细节",
+          "重视创新"
+        ],
+        "avatar": "👩‍💻",
+        "description": "精通最新技术，重视技术价值和实现的可行性。对表面的提案持严格态度。",
+        "voiceId": "Kazuha"
+      },
+      "objectives": [
+        "具体展示技术优势",
+        "说明可扩展性和性能",
+        "详细说明安全对策",
+        "提出与现有系统的集成方案"
+      ],
+      "initialMetrics": {
+        "angerLevel": 2,
+        "trustLevel": 3,
+        "progressLevel": 1
+      },
+      "goals": [
+        {
+          "id": "prove-technical-superiority",
+          "description": "验证技术优势",
+          "priority": 5,
+          "criteria": [
+            "用基准测试结果和技术规格说明优势",
+            "展示与竞品的技术对比",
+            "说明具体技术课题的解决方法"
+          ],
+          "isRequired": true
+        },
+        {
+          "id": "address-security-concerns",
+          "description": "应对安全顾虑",
+          "priority": 4,
+          "criteria": [
+            "详细说明安全架构",
+            "说明安全审计和认证",
+            "提出安全事件应对计划"
+          ],
+          "isRequired": true
+        },
+        {
+          "id": "explain-integration",
+          "description": "说明与现有系统的集成方法",
+          "priority": 4,
+          "criteria": [
+            "详细说明 API 和数据联动方法",
+            "提出迁移计划和风险管理措施",
+            "展示集成所需资源和时间线"
+          ],
+          "isRequired": false
+        }
+      ],
+      "maxTurns": 15,
+      "language": "zh"
+    },
+    {
+      "id": "healthcare-solution",
+      "visibility": "public",
+      "title": "面向医疗机构的解决方案提案",
+      "description": "为医院业务效率化和提升患者护理而进行系统提案的场景。",
+      "difficulty": "normal",
+      "industry": "医疗",
+      "category": "医疗",
+      "guardrail": "MedicalCompliance",
+      "initialMessage": "你好，我是中央医疗中心的刘明德。我们医院员工疲惫问题很严重，业务效率化非常紧迫。不过患者安全必须放在第一位，这一点绝对不能妥协。今天想咨询一下能取得这种平衡的系统。",
+      "npc": {
+        "id": "healthcare-manager",
+        "name": "刘明德",
+        "role": "医院院长",
+        "company": "中央医疗中心",
+        "personality": [
+          "重视安全",
+          "以患者为中心",
+          "追求效率",
+          "稳健"
+        ],
+        "avatar": "🩺",
+        "description": "对医疗现场的效率化感兴趣，同时把患者安全放在第一位，寻求能减轻医疗人员负担的解决方案。",
+        "voiceId": "Kazuha"
+      },
+      "objectives": [
+        "说明以患者安全为最优先的设计",
+        "用数字展示医疗人员的业务效率化效果",
+        "详细说明医疗数据的安全对策",
+        "提出分阶段导入和培训计划"
+      ],
+      "initialMetrics": {
+        "angerLevel": 1,
+        "trustLevel": 4,
+        "progressLevel": 2
+      },
+      "goals": [
+        {
+          "id": "ensure-patient-safety",
+          "description": "说明以患者安全为最优先的设计",
+          "priority": 5,
+          "criteria": [
+            "展示提升安全性的具体案例",
+            "说明风险评估和对策",
+            "详细说明防止医疗事故的机制"
+          ],
+          "isRequired": true
+        },
+        {
+          "id": "demonstrate-efficiency",
+          "description": "验证医疗人员的业务效率化",
+          "priority": 4,
+          "criteria": [
+            "用数字展示业务时间削减效果",
+            "介绍其他医院的导入案例和成果",
+            "具体说明减轻医疗人员负担的方法"
+          ],
+          "isRequired": true
+        },
+        {
+          "id": "address-data-security",
+          "description": "说明医疗数据的安全对策",
+          "priority": 5,
+          "criteria": [
+            "详细说明个人信息保护机制",
+            "说明数据加密和访问控制",
+            "证明符合法规（医疗信息保护相关法律等）"
+          ],
+          "isRequired": true
+        }
+      ],
+      "maxTurns": 10,
+      "language": "zh"
+    },
+    {
+      "id": "digital-strategy",
+      "visibility": "public",
+      "title": "数字战略提案",
+      "description": "向业务部门讲解技术趋势和数字战略的场景。",
+      "difficulty": "hard",
+      "industry": "咨询",
+      "category": "咨询",
+      "initialMessage": "我是盛达物产的吴守义。感谢你在百忙之中抽空。我知道必须数字化，但不知道该从哪里开始……公司内部也有很多人说「现在的做法就够了」，我很苦恼推进方式。有什么好建议请告诉我。",
+      "npc": {
+        "id": "traditional-manager",
+        "name": "吴守义",
+        "role": "营业部长",
+        "company": "盛达物产公司",
+        "personality": [
+          "传统型",
+          "重视关系",
+          "对变化谨慎",
+          "业绩压力"
+        ],
+        "avatar": "👩‍💼",
+        "description": "在传统企业有 30 多年经验的管理者。感受到数字化的必要性，但不知道具体怎么推进，感到不安。业绩压力较大。",
+        "voiceId": "Kazuha"
+      },
+      "objectives": [
+        "说明行业的数字趋势",
+        "分析竞对动向",
+        "提出适合自司的数字战略",
+        "给出具体的实施步骤"
+      ],
+      "initialMetrics": {
+        "angerLevel": 2,
+        "trustLevel": 2,
+        "progressLevel": 1
+      },
+      "goals": [
+        {
+          "id": "explain-digital-trends",
+          "description": "通俗易懂地说明行业数字趋势",
+          "priority": 5,
+          "criteria": [
+            "结合具体例子说明最新技术趋势",
+            "展示行业特有的数字化动向",
+            "避开技术专业术语，以业务价值为中心说明"
+          ],
+          "isRequired": true
+        },
+        {
+          "id": "analyze-competitors",
+          "description": "分析竞对的数字化动向",
+          "priority": 4,
+          "criteria": [
+            "具体展示主要竞对的数字化举措",
+            "说明从成功/失败案例中得到的教训",
+            "明确获取竞争优势的要点"
+          ],
+          "isRequired": true
+        },
+        {
+          "id": "propose-strategy",
+          "description": "提出适合自司的数字战略",
+          "priority": 5,
+          "criteria": [
+            "提出发挥自司优势的数字战略",
+            "设定短期/中期/长期的具体目标",
+            "用具体数字展示投资回报"
+          ],
+          "isRequired": true
+        },
+        {
+          "id": "outline-implementation",
+          "description": "具体展示实施步骤",
+          "priority": 4,
+          "criteria": [
+            "提出分阶段的实施计划",
+            "明确所需资源和体制",
+            "说明风险因素和对策"
+          ],
+          "isRequired": false
+        }
+      ],
+      "maxTurns": 10,
+      "language": "zh"
+    },
+    {
+      "id": "first-investment-consultation",
+      "visibility": "public",
+      "title": "向投资新手提案资产配置",
+      "description": "为对养老资金感到不安的 50 多岁公司职员做首次投资咨询的场景。",
+      "difficulty": "normal",
+      "industry": "证券",
+      "category": "证券",
+      "initialMessage": "初次见面，我叫郑浩。今天想来咨询养老资金的事。其实我从没做过投资，钱都放在银行存款和定期里。但银行利率越来越低，这样下去养老会不安……不过风险太高的东西还是有点怕。",
+      "npc": {
+        "id": "cautious-investor",
+        "name": "郑浩",
+        "role": "公司职员",
+        "company": "普通企业职员",
+        "personality": [
+          "谨慎",
+          "不安",
+          "重视信息收集",
+          "追求稳定"
+        ],
+        "avatar": "👩‍💼",
+        "description": "50 多岁的公司职员。没有投资经验，对养老资金感到不安。害怕风险，最重视安全性。容易被专业术语困惑，对“个人养老金账户”“基金定投”这类概念很陌生。",
+        "voiceId": "Kazuha"
+      },
+      "objectives": [
+        "共情客户的不安并建立信任",
+        "恰当把握风险承受度",
+        "避开专业术语、通俗易懂地说明",
+        "提出可从少量资金开始的稳健产品"
+      ],
+      "initialMetrics": {
+        "angerLevel": 1,
+        "trustLevel": 2,
+        "progressLevel": 1
+      },
+      "goals": [
+        {
+          "id": "build-trust",
+          "description": "理解客户的不安并建立信任",
+          "priority": 5,
+          "criteria": [
+            "共情地倾听客户对养老资金的不安",
+            "理解并应对“怕亏”的顾虑",
+            "用投资者教育的方式缓解不安"
+          ],
+          "isRequired": true
+        },
+        {
+          "id": "assess-risk-tolerance",
+          "description": "恰当评估客户的风险承受度",
+          "priority": 4,
+          "criteria": [
+            "进行风险测评提问",
+            "确认长期养老目标与时间轴",
+            "恰当把握投资经验和知识水平"
+          ],
+          "isRequired": true
+        },
+        {
+          "id": "recommend-suitable-products",
+          "description": "提出适合客户的产品",
+          "priority": 5,
+          "criteria": [
+            "选择符合风险承受度的产品（养老目标基金、指数基金定投）",
+            "提出每月千元起投及个人养老金账户方案",
+            "用易懂的语言说明产品的收益特征和波动风险"
+          ],
+          "isRequired": true
+        }
+      ],
+      "maxTurns": 10,
+      "language": "zh"
+    },
+    {
+      "id": "market-decline-support",
+      "visibility": "public",
+      "title": "股价下跌时对现有客户的跟进",
+      "description": "对因 A 股急跌出现浮亏而动摇的个人投资者进行恰当跟进的场景。",
+      "difficulty": "hard",
+      "industry": "证券",
+      "category": "证券",
+      "initialMessage": "那个，我是田立刚，现在就想谈！这周 A 股连着大跌，我账户里的基金和股票缩水了 20%。不该是这样的……你们当初说“长期投资很重要”，但我真的受不了更多损失了。现在是不是应该全部卖掉？",
+      "npc": {
+        "id": "worried-existing-client",
+        "name": "田立刚",
+        "role": "个人投资者",
+        "company": "现有客户",
+        "personality": [
+          "情绪化",
+          "不稳定",
+          "短期视角",
+          "回避损失"
+        ],
+        "avatar": "😰",
+        "description": "有 3 年投资经验的个人投资者，持有股票型基金和个股。因当前的浮亏而动摇，容易情绪化，市场下跌时容易恐慌抛售。",
+        "voiceId": "Kazuha"
+      },
+      "objectives": [
+        "承接客户情绪化的不安",
+        "说明长期投资与市场周期",
+        "进行防止恐慌抛售的说服",
+        "必要时提出调仓或补仓的冷静建议"
+      ],
+      "initialMetrics": {
+        "angerLevel": 6,
+        "trustLevel": 4,
+        "progressLevel": 2
+      },
+      "goals": [
+        {
+          "id": "calm-emotional-response",
+          "description": "让客户情绪化的反应平静下来",
+          "priority": 5,
+          "criteria": [
+            "承接客户情绪并表达共情",
+            "认可情绪化反应是自然的",
+            "引导进行冷静判断的对话，避免当场做决策"
+          ],
+          "isRequired": true
+        },
+        {
+          "id": "prevent-panic-selling",
+          "description": "防止恐慌抛售",
+          "priority": 5,
+          "criteria": [
+            "用 A 股历史数据说明市场的周期性和长期表现",
+            "说明定投摊薄成本与长期持有的收益逻辑",
+            "说明恐慌抛售导致亏损兑现的风险"
+          ],
+          "isRequired": true
+        },
+        {
+          "id": "suggest-strategic-action",
+          "description": "提出符合情况的战略行动",
+          "priority": 4,
+          "criteria": [
+            "提出组合调整建议而非清仓离场",
+            "说明下跌后估值回落的布局机会",
+            "提出契合客户情况的具体行动计划"
+          ],
+          "isRequired": false
+        }
+      ],
+      "maxTurns": 10,
+      "language": "zh"
+    },
+    {
+      "id": "young-nisa-proposal",
+      "visibility": "public",
+      "title": "向 20 多岁职场人提案基金定投",
+      "description": "向对投资感兴趣但知识不足的年轻职场人提案基金定投与个人养老金账户的场景。",
+      "difficulty": "easy",
+      "industry": "证券",
+      "category": "证券",
+      "initialMessage": "初次见面，我叫林一凡。在社交平台刷到很多“定投”“基金”的话题，有点兴趣，但不知道具体该从什么开始。听说定投很适合新手，那是怎么运作的？另外，我每个月只能拿出几百块，够吗？",
+      "npc": {
+        "id": "young-professional",
+        "name": "林一凡",
+        "role": "公司职员",
+        "company": "IT 公司职员",
+        "personality": [
+          "好奇心旺盛",
+          "学习意愿强",
+          "时间受限",
+          "数字原住民"
+        ],
+        "avatar": "👩‍💻",
+        "description": "20 多岁后半的互联网公司职员。对投资感兴趣但知识不足，刷到过基金定投内容但没开过户。工作忙时间有限，喜欢高效易懂的说明。",
+        "voiceId": "Kazuha"
+      },
+      "objectives": [
+        "进行吸引年轻人兴趣的说明",
+        "通俗易懂地说明定投机制与优势",
+        "用具体例子展示长期定投的复利效果",
+        "强调可从每月几百元开始，并介绍个人养老金账户"
+      ],
+      "initialMetrics": {
+        "angerLevel": 1,
+        "trustLevel": 5,
+        "progressLevel": 3
+      },
+      "goals": [
+        {
+          "id": "explain-nisa-benefits",
+          "description": "通俗易懂地说明基金定投机制与优势",
+          "priority": 5,
+          "criteria": [
+            "用具体数字说明定投摊薄成本的作用",
+            "说明定投与一次性买入的区别",
+            "通俗易懂地说明定投的运作方式（自动扣款、分批买入）"
+          ],
+          "isRequired": true
+        },
+        {
+          "id": "demonstrate-compound-interest",
+          "description": "具体展示复利的力量",
+          "priority": 4,
+          "criteria": [
+            "用具体例子说明复利效应",
+            "展示年轻时开始与 30 岁才开始的差别",
+            "展示每月 500 元长期定投的模拟成果"
+          ],
+          "isRequired": true
+        },
+        {
+          "id": "create-action-plan",
+          "description": "制定具体的行动计划",
+          "priority": 3,
+          "criteria": [
+            "简要说明开户步骤（支付宝、天天基金、券商 APP）",
+            "协助选择首只宽基指数基金",
+            "制定定期跟进的计划"
+          ],
+          "isRequired": false
+        }
+      ],
+      "maxTurns": 10,
+      "language": "zh"
+    },
+    {
+      "id": "wealthy-diversification",
+      "visibility": "public",
+      "title": "面向富裕层的风险分散提案",
+      "description": "向持有可投资资产 5000 万元以上富裕层提案通过分散投资降低风险的重要性的场景。",
+      "difficulty": "hard",
+      "industry": "金融",
+      "category": "金融",
+      "initialMessage": "感谢邀请。我是环球贸易的钱文远。这些年主要靠 A 股和一线城市的房产积累资产，但最近很在意国内外形势的变化。不过对海外投资一直比较谨慎，听说有合规的出海渠道？什么样的方法比较合适？",
+      "npc": {
+        "id": "wealthy-executive",
+        "name": "钱文远",
+        "role": "董事会会长",
+        "company": "环球贸易公司",
+        "personality": [
+          "保守",
+          "重视权威",
+          "善于分析",
+          "独立倾向"
+        ],
+        "avatar": "👩‍💼",
+        "description": "大型贸易企业前高管，现担任多家企业的外部董事。持有可投资资产 5000 万元以上，资产构成偏向国内股票和房地产。关注国内外经济变化，对 QDII 基金等跨境投资渠道有疑虑。",
+        "voiceId": "Kazuha"
+      },
+      "objectives": [
+        "准确掌握风险承受度",
+        "说明分散投资的重要性",
+        "提出含 QDII、黄金等在内的多元配置方案",
+        "提出传承与税务规划建议"
+      ],
+      "initialMetrics": {
+        "angerLevel": 2,
+        "trustLevel": 4,
+        "progressLevel": 2
+      },
+      "goals": [
+        {
+          "id": "assess-risk-tolerance",
+          "description": "准确掌握风险承受度",
+          "priority": 5,
+          "criteria": [
+            "询问过去的投资经验和结果",
+            "探查市场波动时的心理反应",
+            "确认长期资产目标和时间轴"
+          ],
+          "isRequired": true
+        },
+        {
+          "id": "explain-diversification",
+          "description": "说明分散投资的重要性",
+          "priority": 5,
+          "criteria": [
+            "指出当前“股票+房产”的集中风险",
+            "用过去市场数据说明分散效果",
+            "说明单一市场波动与跨境分散的关系"
+          ],
+          "isRequired": true
+        },
+        {
+          "id": "propose-global-allocation",
+          "description": "提出全球资产配置方案",
+          "priority": 4,
+          "criteria": [
+            "提出含 QDII 基金、港股通、黄金等资产的配置比例",
+            "说明跨境配置的合规渠道与汇率因素",
+            "展示加入低相关性资产后的组合效果"
+          ],
+          "isRequired": true
+        },
+        {
+          "id": "tax-estate-planning",
+          "description": "提出税务/继承对策",
+          "priority": 4,
+          "criteria": [
+            "提出兼顾传承的架构（保险金信托、指定受益人）",
+            "具体说明资产向下一代传承的安排",
+            "介绍公益捐赠税前扣除等合法节税方式"
+          ],
+          "isRequired": false
+        }
+      ],
+      "maxTurns": 10,
+      "language": "zh"
+    },
+    {
+      "id": "corporate-pension-proposal",
+      "visibility": "public",
+      "title": "向中小企业提案企业年金制度",
+      "description": "向重视员工福利的制造业社长提案企业年金制度与补充养老保障的场景。",
+      "difficulty": "hard",
+      "industry": "证券",
+      "category": "证券",
+      "initialMessage": "我是宏图工业的社长黄永昌。为了完善员工福利，正在考虑给员工建立企业年金。不过想了解一下中小企业容易导入的方案有哪些、企业缴费的税收优惠怎么算、导入后的运营负担有多大。",
+      "npc": {
+        "id": "business-owner",
+        "name": "黄永昌",
+        "role": "董事长",
+        "company": "宏图工业公司",
+        "personality": [
+          "经营者视角",
+          "重视数字",
+          "为员工着想",
+          "有决断力"
+        ],
+        "avatar": "👩‍💼",
+        "description": "有 50 名员工的制造业社长。对员工福利高度关注，正在考虑导入企业年金。重视成本效益和员工满意度，听说企业缴费可以税前扣除，但不太懂具体怎么操作。",
+        "voiceId": "Kazuha"
+      },
+      "objectives": [
+        "定量展示员工满意度与留任效果",
+        "具体说明企业缴费的税收优惠",
+        "明确展示成本效益",
+        "说明从导入到运营的具体流程"
+      ],
+      "initialMetrics": {
+        "angerLevel": 2,
+        "trustLevel": 3,
+        "progressLevel": 2
+      },
+      "goals": [
+        {
+          "id": "demonstrate-employee-benefits",
+          "description": "验证对员工的好处",
+          "priority": 5,
+          "criteria": [
+            "展示员工养老保障提升带来的满意度数据",
+            "说明对人才吸引和留任率提升的效果",
+            "用同类企业案例具体说明员工收益"
+          ],
+          "isRequired": true
+        },
+        {
+          "id": "explain-tax-benefits",
+          "description": "说明企业侧的税务优势",
+          "priority": 4,
+          "criteria": [
+            "用具体数字展示企业缴费（工资总额 5% 以内）的税前扣除",
+            "说明员工缴费的税收递延安排",
+            "提出与企业年金衔接的个人养老金政策利用方案"
+          ],
+          "isRequired": true
+        },
+        {
+          "id": "present-implementation-plan",
+          "description": "提出可落地的导入方案",
+          "priority": 5,
+          "criteria": [
+            "说明从方案设计到受托运营的具体步骤",
+            "明确展示成本和时间线",
+            "说明我司的受托管理与投管支持体系"
+          ],
+          "isRequired": true
+        }
+      ],
+      "maxTurns": 10,
+      "language": "zh"
+    },
+    {
+      "id": "ai-dlc-proposal",
+      "visibility": "public",
+      "title": "AI-DLC（AI 驱动型开发生命周期）导入提案",
+      "description": "向开发团队已使用编码代理、但对开发全流程的生产力提升感到局限的企业 CTO，提案 AI-DLC（AI 驱动型开发生命周期）方法论的场景。说明 AI-Assisted/AI-Driven/AI-Managed 三种方法的区别，并提案通过 AI-Driven 实现开发全流程的变革。",
+      "difficulty": "hard",
+      "industry": "IT",
+      "category": "IT",
+      "initialMessage": "我是高启明。我们公司已经用上了编码代理，但开发整体的生产力并没有太大变化。如果有更根本的方法，我想听听。",
+      "npc": {
+        "id": "ai-dlc-cto",
+        "name": "高启明",
+        "role": "CTO/开发统筹",
+        "company": "未来系统公司",
+        "personality": [
+          "技术导向",
+          "逻辑性强",
+          "重视具体成果",
+          "对新技术积极但谨慎",
+          "关注团队整体生产力"
+        ],
+        "avatar": "👩‍💻",
+        "description": "SaaS 企业的 CTO，统管 50 名开发团队的女性领导者。精通最新技术，是早期引入编码代理的先进技术者。但感觉仅靠 AI 代码补全对改善开发全流程有局限。重视具体案例和 ROI，对表面的流行词很严格。对提升开发者体验和最大化团队产出有强烈关注。",
+        "voiceId": "Kazuha"
+      },
+      "objectives": [
+        "准确掌握客户当前的 AI 使用情况和课题",
+        "说明 AI-Assisted/AI-Driven/AI-Managed 三种方法的区别",
+        "说明 AI-DLC 框架（构思→构建→运营）",
+        "展示具体案例和 ROI，并就下一步达成共识"
+      ],
+      "initialMetrics": {
+        "angerLevel": 1,
+        "trustLevel": 4,
+        "progressLevel": 2
+      },
+      "goals": [
+        {
+          "id": "understand-current-ai-usage",
+          "description": "掌握客户当前的 AI 使用情况和课题",
+          "priority": 5,
+          "criteria": [
+            "确认当前编码代理的使用范围和效果",
+            "识别开发全流程中感受到的课题和瓶颈",
+            "理解团队的开发流程和实践"
+          ],
+          "isRequired": true
+        },
+        {
+          "id": "explain-three-approaches",
+          "description": "说明软件开发中三种 AI 使用方法",
+          "priority": 5,
+          "criteria": [
+            "说明 AI-Assisted（在限定任务中使用 AI）的特点和局限",
+            "说明 AI-Managed（氛围编程）的问题（可靠性低、无法解释、开发者与代码脱节）",
+            "明确 AI-Driven（在更广泛任务中使用 AI 同时保持完全监督和所有权）的定位"
+          ],
+          "hints": [
+            "AI-Assisted 是在自动代码补全、单元测试生成等限定任务中使用 AI 的方法，但开发者仍承担智力重活，没有发挥 AI 的潜力。",
+            "AI-Managed 是所谓的氛围编程，只把抽象指示交给 AI、不看代码的方法，但很少能正常工作、可靠性低。",
+            "AI-Driven 是中间路线：AI 负责编排，通过规划、任务分解、架构提案推动开发流程，同时开发者保留验证、决策、监督的最终责任。"
+          ],
+          "isRequired": true
+        },
+        {
+          "id": "explain-ai-dlc-framework",
+          "description": "说明 AI-DLC 框架",
+          "priority": 4,
+          "criteria": [
+            "说明构思（构建上下文、细化用户故事、按工作单位规划）",
+            "说明构建（领域模型、代码和测试生成、添加架构组件）",
+            "传达每一步都为下一步构建丰富上下文的设计思想"
+          ],
+          "hints": [
+            "AI-DLC 由构思、构建、运营三个阶段构成。",
+            "构思阶段进行现有代码的上下文构建、通过用户故事细化意图、按工作单位规划。",
+            "构建阶段进行领域模型设计、代码和测试生成、添加架构组件、通过 IaaC 和测试进行部署。",
+            "每一步都为下一步构建丰富的上下文，这一点很重要。"
+          ],
+          "isRequired": true
+        },
+        {
+          "id": "show-roi-and-next-steps",
+          "description": "展示具体案例和 ROI，并就下一步达成共识",
+          "priority": 4,
+          "criteria": [
+            "介绍使用 AI-DLC 的企业在 48 小时内完成原计划 2 个月工作的案例等具体成果",
+            "说明 Mob Elaboration（团队协同作业）和 Mob Construction（并行构建）的效果",
+            "就下一步（工作坊、PoC 实施等）达成共识"
+          ],
+          "hints": [
+            "某金融科技企业使用 AI-DLC，把原计划 2 个月的 6 个主要模块的设计、开发、部署，仅用 48 小时就完成了。",
+            "另外某全球企业也有把 8 个月的工作量在一周内交付的实绩。",
+            "要不要先从用 AI-DLC 实施团队一个冲刺周期工作量的工作坊开始？"
+          ],
+          "isRequired": false
+        }
+      ],
+      "maxTurns": 8,
+      "language": "zh",
+      "suggestionEnabled": true,
+      "initialSuggestions": [
+        "其实 AI 的使用有三种方法，编码代理只是第一种。请允许我介绍在更广范围内使用 AI 的方法。",
+        "编码省下来的时间在其他环节被消耗掉了——正好有一个框架能解决这个课题，就是 AI-DLC（AI 驱动型开发生命周期）方法论。",
+        "您现在感受到的课题，很多企业都有。我可以提出一个不只是把 AI 用于编码辅助，而是把它作为开发全流程的编排器来使用的方法。"
+      ]
+    }
+  ]
+}
