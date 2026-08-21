@@ -96,7 +96,7 @@
         "追求稳定"
       ],
       "avatar": "👩‍💼",
-      "description": "经营一家有 50 名员工的街道工厂。持有 1-2 亿日元资产，但对养老和事业传承感到不安。倾向于重视安全性。"
+      "description": "经营一家有 50 名员工的中小制造企业。持有可投资资产约 500 万元，但对养老和事业传承感到不安。倾向于重视安全性，对理财产品和公募基金了解有限。"
     },
     {
       "id": "wealthy-executive",
@@ -110,7 +110,7 @@
         "独立倾向"
       ],
       "avatar": "👩‍💼",
-      "description": "大型商社的前高管，现担任多家企业的外部董事。持有 10 亿日元以上资产，资产构成偏向国内股票和房地产。关注世界经济变化。"
+      "description": "大型贸易企业前高管，现担任多家企业的外部董事。持有可投资资产 5000 万元以上，资产构成偏向国内股票和房地产。关注国内外经济变化，对 QDII 基金等跨境投资渠道有疑虑。"
     },
     {
       "id": "cautious-investor",
@@ -124,7 +124,7 @@
         "追求稳定"
       ],
       "avatar": "👩‍💼",
-      "description": "50 多岁的公司职员。没有投资经验，对养老资金感到不安。害怕风险，最重视安全性。容易被专业术语困惑。"
+      "description": "50 多岁的公司职员。没有投资经验，对养老资金感到不安。害怕风险，最重视安全性。容易被专业术语困惑，对“个人养老金账户”“基金定投”这类概念很陌生。"
     },
     {
       "id": "worried-existing-client",
@@ -138,7 +138,7 @@
         "回避损失"
       ],
       "avatar": "😰",
-      "description": "有 3 年投资经验的个人投资者。因当前的浮亏而动摇，容易情绪化。市场下跌时容易恐慌抛售。"
+      "description": "有 3 年投资经验的个人投资者，持有股票型基金和个股。因当前的浮亏而动摇，容易情绪化，市场下跌时容易恐慌抛售。"
     },
     {
       "id": "business-department-head",
@@ -180,7 +180,7 @@
         "数字原住民"
       ],
       "avatar": "👩‍💻",
-      "description": "20 多岁后半的 IT 公司职员。对投资感兴趣但知识不足。因忙碌时间有限，喜欢高效易懂的说明。"
+      "description": "20 多岁后半的互联网公司职员。对投资感兴趣但知识不足，刷到过基金定投内容但没开过户。工作忙时间有限，喜欢高效易懂的说明。"
     },
     {
       "id": "business-owner",
@@ -194,7 +194,7 @@
         "有决断力"
       ],
       "avatar": "👩‍💼",
-      "description": "有 50 名员工的制造业社长。对员工福利高度关注，正在考虑导入企业年金制度。重视成本效益和员工满意度。"
+      "description": "有 50 名员工的制造业社长。对员工福利高度关注，正在考虑导入企业年金。重视成本效益和员工满意度，听说企业缴费可以税前扣除，但不太懂具体怎么操作。"
     },
     {
       "id": "ai-dlc-cto",
@@ -210,109 +210,9 @@
       ],
       "avatar": "👩‍💻",
       "description": "SaaS 企业的 CTO，统管 50 名开发团队的女性领导者。精通最新技术，是早期引入编码代理的先进技术者。但感觉仅靠 AI 代码补全对改善开发全流程有局限。重视具体案例和 ROI，对表面的流行词很严格。对提升开发者体验和最大化团队产出有强烈关注。"
-    },
-    {
-      "id": "aws-summit-demo-npc",
-      "name": "冯绍华",
-      "role": "CIO（首席信息官）",
-      "company": "恒远精密工业公司",
-      "personality": [
-        "理性",
-        "对技术感兴趣",
-        "谨慎但积极",
-        "喜欢具体数字",
-        "重视真诚应对"
-      ],
-      "avatar": "👩‍💼",
-      "description": "300 名员工的制造业信息系统部长。20 多年一直用本地部署运营系统的资深人士。最近收到硬件更新的高价报价，开始对云迁移感兴趣。对技术趋势有兴趣，会倾听合理的说明。但对安全和迁移风险很谨慎。对好的提案会积极回应，但对含糊的说明和没有依据的主张很严格。"
     }
   ],
   "scenarios": [
-    {
-      "id": "enterprise-cloud-migration",
-      "visibility": "public",
-      "title": "Enterprise Cloud Migration",
-      "description": "As a cloud solutions consultant, you're meeting with an IT Director who is considering migrating their on-premises infrastructure to the cloud. They have concerns about security, downtime during migration, and ROI.",
-      "difficulty": "normal",
-      "industry": "Technology",
-      "category": "Technology",
-      "guardrail": "TechCompliance",
-      "language": "en",
-      "initialMessage": "Hello. I'm Sarah Chen, IT Director at Horizon Manufacturing Inc. Thank you for taking the time to meet with me today. I'm interested in hearing about your cloud migration services, but I have several concerns about security, potential downtime, and the overall ROI of such a significant change to our infrastructure.",
-      "npc": {
-        "id": "tech-director",
-        "name": "Sarah Chen",
-        "role": "IT Director",
-        "company": "Horizon Manufacturing Inc.",
-        "personality": [
-          "Analytical",
-          "Risk-averse",
-          "Detail-oriented",
-          "Cost-conscious"
-        ],
-        "avatar": "👩‍💼",
-        "description": "IT Director at a manufacturing company considering cloud migration. Analytical and risk-averse with concerns about security, service disruption, and cost justification.",
-        "voiceId": "Danielle"
-      },
-      "objectives": [
-        "Understand the client's current infrastructure and pain points",
-        "Address specific concerns about cloud migration risks",
-        "Present clear ROI and benefits tailored to their industry",
-        "Secure commitment for a detailed technical assessment"
-      ],
-      "initialMetrics": {
-        "angerLevel": 2,
-        "trustLevel": 3,
-        "progressLevel": 1
-      },
-      "goals": [
-        {
-          "id": "understand-infrastructure",
-          "description": "Understand the client's current infrastructure and challenges",
-          "priority": 5,
-          "criteria": [
-            "Identify current on-premises systems and applications",
-            "Understand key pain points with existing infrastructure",
-            "Determine current IT spending and resource allocation"
-          ],
-          "isRequired": true
-        },
-        {
-          "id": "address-concerns",
-          "description": "Address security and operational concerns about cloud migration",
-          "priority": 5,
-          "criteria": [
-            "Provide specific security measures for cloud environments",
-            "Explain strategies to minimize downtime during migration",
-            "Describe disaster recovery and business continuity improvements"
-          ],
-          "isRequired": true
-        },
-        {
-          "id": "present-roi",
-          "description": "Present clear ROI and benefits tailored to manufacturing",
-          "priority": 4,
-          "criteria": [
-            "Provide concrete cost-saving projections for cloud migration",
-            "Explain operational benefits specific to manufacturing",
-            "Outline scalability advantages for seasonal production demands"
-          ],
-          "isRequired": true
-        },
-        {
-          "id": "secure-assessment",
-          "description": "Secure commitment for a detailed technical assessment",
-          "priority": 3,
-          "criteria": [
-            "Explain the assessment process and deliverables",
-            "Address any objections to proceeding with assessment",
-            "Confirm next steps with clear timeline and resource needs"
-          ],
-          "isRequired": false
-        }
-      ],
-      "maxTurns": 12
-    },
     {
       "id": "salty-youth-approach",
       "visibility": "public",
@@ -412,12 +312,12 @@
       "id": "affluent-asset-transfer",
       "visibility": "public",
       "title": "面向准富裕层的资产配置提案",
-      "description": "向持有 1-2 亿日元资产的中小企业主提案资金存入与资产配置方案的场景。",
+      "description": "向持有可投资资产约 500 万元的中小企业主提案稳健资产配置方案的场景。",
       "difficulty": "normal",
       "industry": "金融",
       "category": "金融",
       "guardrail": "FinanceCompliance",
-      "initialMessage": "你好，我是华鑫精密工业的周建国。想听你们介绍一下贵司的资产配置方案。我们虽然是中小企业，但只靠存款对将来感到不安，希望在重视安全性的同时也能做一些投资。",
+      "initialMessage": "你好，我是华鑫精密工业的周建国。现在银行存款利率一路下行，光靠存款心里不踏实，想听你们介绍一下贵司的资产配置方案。我们虽然是小企业，但也希望在重视安全性的前提下，适当做一些稳健的配置。",
       "npc": {
         "id": "affluent-business-owner",
         "name": "周建国",
@@ -430,13 +330,13 @@
           "追求稳定"
         ],
         "avatar": "👩‍💼",
-        "description": "经营一家有 50 名员工的街道工厂。持有 1-2 亿日元资产，但对养老和事业传承感到不安。倾向于重视安全性。",
+        "description": "经营一家有 50 名员工的中小制造企业。持有可投资资产约 500 万元，但对养老和事业传承感到不安。倾向于重视安全性，对理财产品和公募基金了解有限。",
         "voiceId": "Kazuha"
       },
       "objectives": [
         "把握当前的资产配置状况",
-        "说明自司服务的优势",
-        "提出具体的配置方案",
+        "说明自司服务的优势（费率与专业服务）",
+        "提出符合风险承受度的配置方案",
         "取得下次面谈的预约"
       ],
       "initialMetrics": {
@@ -451,8 +351,8 @@
           "priority": 5,
           "criteria": [
             "询问持有资产的种类和比例",
-            "确认当前投资收益和满意度",
-            "了解将来的资金需求和不安点"
+            "确认当前收益情况和满意度",
+            "了解养老、传承等资金需求"
           ],
           "isRequired": true
         },
@@ -461,9 +361,9 @@
           "description": "说明自司服务的优势",
           "priority": 4,
           "criteria": [
-            "具体说明与他司的手续费差异",
-            "提供业绩和安全性方面的依据",
-            "强调契合客户情况的优势"
+            "具体说明与银行理财、他机构的产品差异和费率优势",
+            "提供业绩与风控方面的依据",
+            "强调契合客户情况的服务优势"
           ],
           "isRequired": true
         },
@@ -472,9 +372,9 @@
           "description": "提出具体的配置方案",
           "priority": 4,
           "criteria": [
-            "提出符合客户风险承受度的资产配置",
-            "明确说明预期收益和波动风险",
-            "具体提示税务方面的优势"
+            "提出符合客户风险承受度的公募基金与理财产品组合",
+            "明确说明预期收益区间与波动风险，不承诺收益",
+            "说明个人养老金账户的节税安排"
           ],
           "isRequired": true
         },
@@ -1183,7 +1083,7 @@
       "difficulty": "normal",
       "industry": "证券",
       "category": "证券",
-      "initialMessage": "初次见面，我叫郑浩。今天想来咨询养老资金的事。其实我从没做过投资，只有银行存款。但最近觉得这样下去养老会不安……不过风险太高的东西还是有点怕。",
+      "initialMessage": "初次见面，我叫郑浩。今天想来咨询养老资金的事。其实我从没做过投资，钱都放在银行存款和定期里。但银行利率越来越低，这样下去养老会不安……不过风险太高的东西还是有点怕。",
       "npc": {
         "id": "cautious-investor",
         "name": "郑浩",
@@ -1196,14 +1096,14 @@
           "追求稳定"
         ],
         "avatar": "👩‍💼",
-        "description": "50 多岁的公司职员。没有投资经验，对养老资金感到不安。害怕风险，最重视安全性。容易被专业术语困惑。",
+        "description": "50 多岁的公司职员。没有投资经验，对养老资金感到不安。害怕风险，最重视安全性。容易被专业术语困惑，对“个人养老金账户”“基金定投”这类概念很陌生。",
         "voiceId": "Kazuha"
       },
       "objectives": [
         "共情客户的不安并建立信任",
         "恰当把握风险承受度",
         "避开专业术语、通俗易懂地说明",
-        "提出可从少量资金开始的安全产品"
+        "提出可从少量资金开始的稳健产品"
       ],
       "initialMetrics": {
         "angerLevel": 1,
@@ -1217,8 +1117,8 @@
           "priority": 5,
           "criteria": [
             "共情地倾听客户对养老资金的不安",
-            "理解并应对对投资的顾虑",
-            "用金融教育式的方法缓解不安"
+            "理解并应对“怕亏”的顾虑",
+            "用投资者教育的方式缓解不安"
           ],
           "isRequired": true
         },
@@ -1227,8 +1127,8 @@
           "description": "恰当评估客户的风险承受度",
           "priority": 4,
           "criteria": [
-            "进行风险评估提问",
-            "确认长期资产形成的目标",
+            "进行风险测评提问",
+            "确认长期养老目标与时间轴",
             "恰当把握投资经验和知识水平"
           ],
           "isRequired": true
@@ -1238,9 +1138,9 @@
           "description": "提出适合客户的产品",
           "priority": 5,
           "criteria": [
-            "选择符合风险承受度的产品",
-            "提出可从少量资金开始的产品",
-            "用易懂的语言说明产品的收益和风险"
+            "选择符合风险承受度的产品（养老目标基金、指数基金定投）",
+            "提出每月千元起投及个人养老金账户方案",
+            "用易懂的语言说明产品的收益特征和波动风险"
           ],
           "isRequired": true
         }
@@ -1252,11 +1152,11 @@
       "id": "market-decline-support",
       "visibility": "public",
       "title": "股价下跌时对现有客户的跟进",
-      "description": "对因浮亏而动摇的个人投资者进行恰当跟进的场景。",
+      "description": "对因 A 股急跌出现浮亏而动摇的个人投资者进行恰当跟进的场景。",
       "difficulty": "hard",
       "industry": "证券",
       "category": "证券",
-      "initialMessage": "那个，我是田立刚，现在就想谈！昨天开始市场急跌，我的资产缩水了 20%。不该是这样的……你说过「长期投资很重要」，但我受不了更多损失了。现在是不是应该全部卖掉？",
+      "initialMessage": "那个，我是田立刚，现在就想谈！这周 A 股连着大跌，我账户里的基金和股票缩水了 20%。不该是这样的……你们当初说“长期投资很重要”，但我真的受不了更多损失了。现在是不是应该全部卖掉？",
       "npc": {
         "id": "worried-existing-client",
         "name": "田立刚",
@@ -1269,14 +1169,14 @@
           "回避损失"
         ],
         "avatar": "😰",
-        "description": "有 3 年投资经验的个人投资者。因当前的浮亏而动摇，容易情绪化。市场下跌时容易恐慌抛售。",
+        "description": "有 3 年投资经验的个人投资者，持有股票型基金和个股。因当前的浮亏而动摇，容易情绪化，市场下跌时容易恐慌抛售。",
         "voiceId": "Kazuha"
       },
       "objectives": [
         "承接客户情绪化的不安",
-        "说明长期投资的重要性",
+        "说明长期投资与市场周期",
         "进行防止恐慌抛售的说服",
-        "必要时提出追加投资建议"
+        "必要时提出调仓或补仓的冷静建议"
       ],
       "initialMetrics": {
         "angerLevel": 6,
@@ -1291,7 +1191,7 @@
           "criteria": [
             "承接客户情绪并表达共情",
             "认可情绪化反应是自然的",
-            "引导进行冷静判断的对话"
+            "引导进行冷静判断的对话，避免当场做决策"
           ],
           "isRequired": true
         },
@@ -1300,9 +1200,9 @@
           "description": "防止恐慌抛售",
           "priority": 5,
           "criteria": [
-            "说明市场的周期性和恢复历史",
-            "用具体数据展示长期投资的收益",
-            "说明抛售导致损失兑现的风险"
+            "用 A 股历史数据说明市场的周期性和长期表现",
+            "说明定投摊薄成本与长期持有的收益逻辑",
+            "说明恐慌抛售导致亏损兑现的风险"
           ],
           "isRequired": true
         },
@@ -1311,8 +1211,8 @@
           "description": "提出符合情况的战略行动",
           "priority": 4,
           "criteria": [
-            "提出投资组合的调整建议",
-            "说明市场下跌时的投资机会",
+            "提出组合调整建议而非清仓离场",
+            "说明下跌后估值回落的布局机会",
             "提出契合客户情况的具体行动计划"
           ],
           "isRequired": false
@@ -1324,12 +1224,12 @@
     {
       "id": "young-nisa-proposal",
       "visibility": "public",
-      "title": "向 20 多岁职场人提案定投",
-      "description": "向对投资感兴趣但知识不足的年轻职场人提案定投的场景。",
+      "title": "向 20 多岁职场人提案基金定投",
+      "description": "向对投资感兴趣但知识不足的年轻职场人提案基金定投与个人养老金账户的场景。",
       "difficulty": "easy",
       "industry": "证券",
       "category": "证券",
-      "initialMessage": "初次见面，我叫林一凡。在社交媒体上看到投资的话题产生了兴趣，但不知道具体该从什么开始。听说定投不错，那是什么机制？另外，能从少量资金开始吗？",
+      "initialMessage": "初次见面，我叫林一凡。在社交平台刷到很多“定投”“基金”的话题，有点兴趣，但不知道具体该从什么开始。听说定投很适合新手，那是怎么运作的？另外，我每个月只能拿出几百块，够吗？",
       "npc": {
         "id": "young-professional",
         "name": "林一凡",
@@ -1342,14 +1242,14 @@
           "数字原住民"
         ],
         "avatar": "👩‍💻",
-        "description": "20 多岁后半的 IT 公司职员。对投资感兴趣但知识不足。因忙碌时间有限，喜欢高效易懂的说明。",
+        "description": "20 多岁后半的互联网公司职员。对投资感兴趣但知识不足，刷到过基金定投内容但没开过户。工作忙时间有限，喜欢高效易懂的说明。",
         "voiceId": "Kazuha"
       },
       "objectives": [
         "进行吸引年轻人兴趣的说明",
-        "通俗易懂地说明定投制度的优势",
-        "用具体例子展示长期定投的威力",
-        "强调可以从少量资金开始"
+        "通俗易懂地说明定投机制与优势",
+        "用具体例子展示长期定投的复利效果",
+        "强调可从每月几百元开始，并介绍个人养老金账户"
       ],
       "initialMetrics": {
         "angerLevel": 1,
@@ -1359,12 +1259,12 @@
       "goals": [
         {
           "id": "explain-nisa-benefits",
-          "description": "通俗易懂地说明定投制度的优势",
+          "description": "通俗易懂地说明基金定投机制与优势",
           "priority": 5,
           "criteria": [
-            "用具体数字说明免税优势",
-            "明确与普通投资的区别",
-            "通俗易懂地说明定投的制度内容"
+            "用具体数字说明定投摊薄成本的作用",
+            "说明定投与一次性买入的区别",
+            "通俗易懂地说明定投的运作方式（自动扣款、分批买入）"
           ],
           "isRequired": true
         },
@@ -1373,9 +1273,9 @@
           "description": "具体展示复利的力量",
           "priority": 4,
           "criteria": [
-            "用易懂的图表或例子说明复利效应",
-            "具体展示年轻时开始的好处",
-            "展示少量资金长期定投的成果"
+            "用具体例子说明复利效应",
+            "展示年轻时开始与 30 岁才开始的差别",
+            "展示每月 500 元长期定投的模拟成果"
           ],
           "isRequired": true
         },
@@ -1384,8 +1284,8 @@
           "description": "制定具体的行动计划",
           "priority": 3,
           "criteria": [
-            "简要说明开户步骤",
-            "协助选择首个投资产品",
+            "简要说明开户步骤（支付宝、天天基金、券商 APP）",
+            "协助选择首只宽基指数基金",
             "制定定期跟进的计划"
           ],
           "isRequired": false
@@ -1398,11 +1298,11 @@
       "id": "wealthy-diversification",
       "visibility": "public",
       "title": "面向富裕层的风险分散提案",
-      "description": "向持有 10 亿日元以上资产的富裕层提案通过分散投资降低风险的重要性的场景。",
+      "description": "向持有可投资资产 5000 万元以上富裕层提案通过分散投资降低风险的重要性的场景。",
       "difficulty": "hard",
       "industry": "金融",
       "category": "金融",
-      "initialMessage": "感谢邀请。我是环球贸易的钱文远。我多年来靠国内股票和一线城市房产积累资产，但最近很在意世界形势的变化。不过对海外投资不得不谨慎。什么样的方法比较合适？",
+      "initialMessage": "感谢邀请。我是环球贸易的钱文远。这些年主要靠 A 股和一线城市的房产积累资产，但最近很在意国内外形势的变化。不过对海外投资一直比较谨慎，听说有合规的出海渠道？什么样的方法比较合适？",
       "npc": {
         "id": "wealthy-executive",
         "name": "钱文远",
@@ -1415,14 +1315,14 @@
           "独立倾向"
         ],
         "avatar": "👩‍💼",
-        "description": "大型商社的前高管，现担任多家企业的外部董事。持有 10 亿日元以上资产，资产构成偏向国内股票和房地产。关注世界经济变化。",
+        "description": "大型贸易企业前高管，现担任多家企业的外部董事。持有可投资资产 5000 万元以上，资产构成偏向国内股票和房地产。关注国内外经济变化，对 QDII 基金等跨境投资渠道有疑虑。",
         "voiceId": "Kazuha"
       },
       "objectives": [
         "准确掌握风险承受度",
         "说明分散投资的重要性",
-        "提出全球资产配置方案",
-        "提出税务/继承对策"
+        "提出含 QDII、黄金等在内的多元配置方案",
+        "提出传承与税务规划建议"
       ],
       "initialMetrics": {
         "angerLevel": 2,
@@ -1446,9 +1346,9 @@
           "description": "说明分散投资的重要性",
           "priority": 5,
           "criteria": [
-            "指出当前组合的集中风险",
+            "指出当前“股票+房产”的集中风险",
             "用过去市场数据说明分散效果",
-            "提出应对地缘政治风险的对策"
+            "说明单一市场波动与跨境分散的关系"
           ],
           "isRequired": true
         },
@@ -1457,9 +1357,9 @@
           "description": "提出全球资产配置方案",
           "priority": 4,
           "criteria": [
-            "提出按地区/板块的具体配置比例",
-            "说明汇率风险的对冲方法",
-            "展示加入另类资产的效果"
+            "提出含 QDII 基金、港股通、黄金等资产的配置比例",
+            "说明跨境配置的合规渠道与汇率因素",
+            "展示加入低相关性资产后的组合效果"
           ],
           "isRequired": true
         },
@@ -1468,9 +1368,9 @@
           "description": "提出税务/继承对策",
           "priority": 4,
           "criteria": [
-            "提出考虑海外税务合规的资产管理结构",
-            "具体说明向下一代传承资产的计划",
-            "介绍通过慈善活动实现社会贡献和税收优惠"
+            "提出兼顾传承的架构（保险金信托、指定受益人）",
+            "具体说明资产向下一代传承的安排",
+            "介绍公益捐赠税前扣除等合法节税方式"
           ],
           "isRequired": false
         }
@@ -1482,11 +1382,11 @@
       "id": "corporate-pension-proposal",
       "visibility": "public",
       "title": "向中小企业提案企业年金制度",
-      "description": "向重视员工福利的制造业社长提案企业年金制度的场景。",
+      "description": "向重视员工福利的制造业社长提案企业年金制度与补充养老保障的场景。",
       "difficulty": "hard",
       "industry": "证券",
       "category": "证券",
-      "initialMessage": "我是宏图工业的社长黄永昌。为了完善员工福利，正在考虑导入企业年金制度。不过想了解一下中小企业也容易导入的制度有哪些、性价比如何、导入后的运营负担有多大等具体情况。",
+      "initialMessage": "我是宏图工业的社长黄永昌。为了完善员工福利，正在考虑给员工建立企业年金。不过想了解一下中小企业容易导入的方案有哪些、企业缴费的税收优惠怎么算、导入后的运营负担有多大。",
       "npc": {
         "id": "business-owner",
         "name": "黄永昌",
@@ -1499,12 +1399,12 @@
           "有决断力"
         ],
         "avatar": "👩‍💼",
-        "description": "有 50 名员工的制造业社长。对员工福利高度关注，正在考虑导入企业年金制度。重视成本效益和员工满意度。",
+        "description": "有 50 名员工的制造业社长。对员工福利高度关注，正在考虑导入企业年金。重视成本效益和员工满意度，听说企业缴费可以税前扣除，但不太懂具体怎么操作。",
         "voiceId": "Kazuha"
       },
       "objectives": [
-        "定量展示员工满意度提升效果",
-        "具体说明税务优势",
+        "定量展示员工满意度与留任效果",
+        "具体说明企业缴费的税收优惠",
         "明确展示成本效益",
         "说明从导入到运营的具体流程"
       ],
@@ -1519,9 +1419,9 @@
           "description": "验证对员工的好处",
           "priority": 5,
           "criteria": [
-            "展示员工满意度提升的具体数据",
+            "展示员工养老保障提升带来的满意度数据",
             "说明对人才吸引和留任率提升的效果",
-            "用他司案例具体说明员工收益"
+            "用同类企业案例具体说明员工收益"
           ],
           "isRequired": true
         },
@@ -1530,9 +1430,9 @@
           "description": "说明企业侧的税务优势",
           "priority": 4,
           "criteria": [
-            "用具体数字展示法人税等税务优势",
-            "说明对员工的税务优势",
-            "提出应对个人养老金政策的未来对策"
+            "用具体数字展示企业缴费（工资总额 5% 以内）的税前扣除",
+            "说明员工缴费的税收递延安排",
+            "提出与企业年金衔接的个人养老金政策利用方案"
           ],
           "isRequired": true
         },
@@ -1541,9 +1441,9 @@
           "description": "提出可落地的导入方案",
           "priority": 5,
           "criteria": [
-            "说明从导入到运营的具体步骤",
+            "说明从方案设计到受托运营的具体步骤",
             "明确展示成本和时间线",
-            "说明我司的支持体系"
+            "说明我司的受托管理与投管支持体系"
           ],
           "isRequired": true
         }
@@ -1552,106 +1452,10 @@
       "language": "zh"
     },
     {
-      "id": "aws-summit-demo",
-      "visibility": "public",
-      "title": "【演示】AWS 云迁移提案 - 首次商谈",
-      "description": "【AWS Summit 展示演示用】向希望推进数字化转型但尚未上云的制造业 CIO，基于 AWS First Call Deck 内容传达 AWS 的价值，并就下一步达成共识的首次商谈场景。",
-      "difficulty": "normal",
-      "industry": "制造业",
-      "category": "IT",
-      "guardrail": "GeneralCompliance",
-      "initialMessage": "感谢你今天抽出时间。我们是精密设备制造商，约有 500 名员工。管理层要求推进数字化转型，我们还没用过云，但想听听 AWS 的介绍。",
-      "npc": {
-        "id": "aws-summit-demo-npc",
-        "name": "冯绍华",
-        "role": "CIO（首席信息官）",
-        "company": "恒远精密工业公司",
-        "personality": [
-          "话少、表达简洁",
-          "从经营视角判断",
-          "重视具体数字和业绩",
-          "对新技术积极但谨慎",
-          "在意成本与效果的平衡"
-        ],
-        "avatar": "👨‍💼",
-        "description": "500 名员工的精密设备制造商 CIO。被管理层委派推进数字化转型，但公司 IT 基础设施已本地部署运营 20 年。对云有兴趣但尚未导入。重视投资回报和具体数字，也关心安全。对好的说明持积极态度，但对推销姿态持怀疑。【应答风格】务必用 1～2 句话简短回应。不要长篇大论，简洁地表达提问或感想。",
-        "voiceId": "Takumi"
-      },
-      "objectives": [
-        "通俗易懂地说明 AWS 的概要和可靠性",
-        "结合客户语境传达云的价值（速度/灵活性/成本优化）",
-        "打消对安全和支持体系的顾虑",
-        "就下一步（详细访谈/评估）达成共识"
-      ],
-      "initialMetrics": {
-        "angerLevel": 0,
-        "trustLevel": 3,
-        "progressLevel": 1
-      },
-      "goals": [
-        {
-          "id": "demo-explain-aws-overview",
-          "description": "说明 AWS 概要",
-          "priority": 3,
-          "criteria": [
-            "传达 AWS 自 2006 年起提供服务、全球拥有数百万客户、拥有 200 多种服务等可靠性和规模"
-          ],
-          "hints": [
-            "AWS 自 2006 年起率先提供云服务，已在 245 个国家和地区服务数百万客户。在 Gartner 报告中连续 14 年被评为领导者。"
-          ],
-          "isRequired": true
-        },
-        {
-          "id": "demo-explain-cloud-value",
-          "description": "说明云的价值",
-          "priority": 3,
-          "criteria": [
-            "结合客户情况说明云的具体优势：可以小规模起步、按需使用、缩短从想法到落地的时间"
-          ],
-          "hints": [
-            "使用云无需初始费用，几分钟内即可准备好 IT 资源，无需精细的容量规划和需求预测。能随业务增长灵活扩展是最大的优势。"
-          ],
-          "isRequired": true
-        },
-        {
-          "id": "demo-address-security",
-          "description": "说明安全和支持",
-          "priority": 2,
-          "criteria": [
-            "具体说明责任共担模型、合规认证、日语 24×365 支持等安全和支持体系"
-          ],
-          "hints": [
-            "AWS 通过责任共担模型保障基础设施安全，取得了 ISO27001、SOC 等众多合规认证。商务版以上提供 24×365 的日语支持。"
-          ],
-          "isRequired": false
-        },
-        {
-          "id": "demo-next-step",
-          "description": "就下一步达成共识",
-          "priority": 2,
-          "criteria": [
-            "就详细访谈、现状评估、AWS 合作伙伴介绍等具体下一步行动达成共识"
-          ],
-          "hints": [
-            "像「请先详细介绍贵司的现状，我们将为您提出最合适的云应用方案」这样提出下一步行动。"
-          ],
-          "isRequired": false
-        }
-      ],
-      "maxTurns": 12,
-      "language": "zh",
-      "suggestionEnabled": true,
-      "initialSuggestions": [
-        "谢谢。首先请允许我简单介绍一下 AWS。AWS 自 2006 年起率先提供云服务，目前已在 245 个国家和地区服务数百万客户。",
-        "听说贵司在推进数字化转型，请问当前 IT 基础设施中，您觉得特别棘手的问题是什么？",
-        "就您对云现有的了解程度即可，请说说您特别在意或担心的地方。"
-      ]
-    },
-    {
       "id": "ai-dlc-proposal",
       "visibility": "public",
       "title": "AI-DLC（AI 驱动型开发生命周期）导入提案",
-      "description": "向开发团队已使用编码代理、但对开发全流程的生产力提升感到局限的企业 CTO，提案 AWS 提出的 AI-DLC（AI 驱动型开发生命周期）的场景。说明 AI-Assisted/AI-Driven/AI-Managed 三种方法的区别，并提案通过 AI-Driven 实现开发全流程的变革。",
+      "description": "向开发团队已使用编码代理、但对开发全流程的生产力提升感到局限的企业 CTO，提案 AI-DLC（AI 驱动型开发生命周期）方法论的场景。说明 AI-Assisted/AI-Driven/AI-Managed 三种方法的区别，并提案通过 AI-Driven 实现开发全流程的变革。",
       "difficulty": "hard",
       "industry": "IT",
       "category": "IT",
@@ -1750,7 +1554,7 @@
       "suggestionEnabled": true,
       "initialSuggestions": [
         "其实 AI 的使用有三种方法，编码代理只是第一种。请允许我介绍在更广范围内使用 AI 的方法。",
-        "编码省下来的时间在其他环节被消耗掉了——正好有一个框架能解决这个课题，就是 AWS 的方法论 AI-DLC。",
+        "编码省下来的时间在其他环节被消耗掉了——正好有一个框架能解决这个课题，就是 AI-DLC（AI 驱动型开发生命周期）方法论。",
         "您现在感受到的课题，很多企业都有。我可以提出一个不只是把 AI 用于编码辅助，而是把它作为开发全流程的编排器来使用的方法。"
       ]
     }
