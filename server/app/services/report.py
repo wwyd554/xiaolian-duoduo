@@ -1,7 +1,7 @@
-"""复盘报告生成 —— deepseek-reasoner 深度分析 + 数据聚合（目标状态/情绪趋势）。
+"""复盘报告生成 —— LLM（llm_reasoner_model，默认 deepseek-v4-flash）分析 + 数据聚合（目标状态/情绪趋势）。
 
 端点契约（前端 ResultPage）：先查 analysis-status，再调 analysis-results。
-报告按 session_id 持久化（analysis_reports 表），避免重复消耗 reasoner 额度。
+报告按 session_id 持久化（analysis_reports 表），避免重复消耗模型额度。
 开发期采用同步生成：analysis-results / feedback 端点首次命中即现场生成并缓存。
 """
 from __future__ import annotations
@@ -17,6 +17,7 @@ from ..database import db
 from ..agents.llm import call_model
 from ..agents.prompts import REPORT_SYSTEM_PROMPT, build_report_prompt
 from ..agents.scoring import _extract_json
+from ..config import settings
 
 logger = logging.getLogger("report")
 
@@ -389,7 +390,7 @@ def _generate(session_id: str) -> dict:
             raw = call_model(
                 system=REPORT_SYSTEM_PROMPT,
                 messages=[{"role": "user", "content": prompt}],
-                model="deepseek-reasoner",
+                model=settings.llm_reasoner_model,
                 max_tokens=8192,
                 label="feedback-report",
             )

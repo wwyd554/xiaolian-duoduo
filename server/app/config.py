@@ -19,8 +19,8 @@ class Settings:
 
     # DeepSeek（Anthropic 兼容端点）
     deepseek_api_key: str = os.getenv("DEEPSEEK_API_KEY", "")
-    llm_chat_model: str = os.getenv("LLM_CHAT_MODEL", "deepseek-chat")
-    llm_reasoner_model: str = os.getenv("LLM_REASONER_MODEL", "deepseek-reasoner")
+    llm_chat_model: str = os.getenv("LLM_CHAT_MODEL", "deepseek-v4-flash")
+    llm_reasoner_model: str = os.getenv("LLM_REASONER_MODEL", "deepseek-v4-flash")
     llm_max_tokens: int = int(os.getenv("LLM_MAX_TOKENS", "4096"))
     llm_timeout_seconds: float = float(os.getenv("LLM_TIMEOUT_SECONDS", "120"))
     llm_max_retries: int = int(os.getenv("LLM_MAX_RETRIES", "3"))

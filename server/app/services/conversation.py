@@ -1,7 +1,7 @@
 """对话轮核心逻辑 —— NPC 回复 + 实时评分（并行）+ 轮次上限。
 
 对应原 AgentCore 的 npc-conversation 与 realtime-scoring 两个代理，
-合并为单次请求内的两个并行 LLM 调用（每轮 2 次，均用 deepseek-chat）。
+合并为单次请求内的两个并行 LLM 调用（每轮 2 次，均用 llm_chat_model）。
 """
 from __future__ import annotations
 
@@ -14,6 +14,7 @@ from datetime import datetime, timezone
 from ..agents.llm import call_model
 from ..agents.prompts import build_npc_system_prompt, build_scoring_prompt
 from ..agents.scoring import parse_scoring_output
+from ..config import settings
 
 logger = logging.getLogger("conversation")
 
@@ -112,7 +113,7 @@ def _run_npc_turn(npc_system_prompt: str, history: list[dict], user_message: str
     return call_model(
         system=npc_system_prompt,
         messages=messages,
-        model="deepseek-chat",
+        model=settings.llm_chat_model,
         max_tokens=500,
         label="npc-conversation",
     )
@@ -137,7 +138,7 @@ def _run_scoring(
     model_text = call_model(
         system="你是一个严谨的销售对话评分引擎。",
         messages=[{"role": "user", "content": prompt}],
-        model="deepseek-chat",
+        model=settings.llm_chat_model,
         max_tokens=1024,
         label="realtime-scoring",
     )

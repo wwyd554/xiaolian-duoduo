@@ -19,6 +19,7 @@ from ..agents.llm import call_model
 from ..agents.prompts import SCENARIO_GEN_SYSTEM_PROMPT, build_scenario_gen_prompt
 from ..agents.scoring import _extract_json
 from ..auth.jwt import UserInfo, get_current_user, optional_user
+from ..config import settings
 from ..database import db
 from ..models import ScenarioShareRequest
 
@@ -229,7 +230,7 @@ def generate_scenario_draft(body: dict = Body(...), user: UserInfo = Depends(get
         raw = call_model(
             system=SCENARIO_GEN_SYSTEM_PROMPT,
             messages=[{"role": "user", "content": prompt}],
-            model="deepseek-chat",
+            model=settings.llm_chat_model,
             max_tokens=2048,
             label="scenario-gen",
         )

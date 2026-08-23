@@ -1,9 +1,9 @@
 """LLM 调用底座 —— 基于 agent-blueprint/scaffold/agent.py 精简。
 
 保留核心：外部化配置、结构化日志、重试+退避+超时、轨迹采集。
-模型：DeepSeek（官方 Anthropic 兼容端点），单客户端双模型：
-  - chat 模型（deepseek-chat）    ：对话 + 实时评分 + 合规检查
-  - reasoner 模型（deepseek-reasoner）：反馈报告 + 目标判断 + 记忆提取
+模型：DeepSeek（官方 Anthropic 兼容端点），单客户端双配置：
+  - chat 模型（llm_chat_model，默认 deepseek-v4-flash）    ：对话 + 实时评分 + 合规检查 + 场景生成
+  - reasoner 模型（llm_reasoner_model，默认 deepseek-v4-flash）：反馈报告 + 目标判断 + 记忆提取
 """
 from __future__ import annotations
 
