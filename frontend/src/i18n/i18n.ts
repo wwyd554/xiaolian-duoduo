@@ -2,7 +2,7 @@ import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 import LanguageDetector from "i18next-browser-languagedetector";
 
-// 言語リソースファイルのインポート
+// 语言资源文件导入
 import jaTranslation from "./locales/ja.json";
 import enTranslation from "./locales/en.json";
 import zhTranslation from "./locales/zh.json";
@@ -20,34 +20,34 @@ const resources = {
 };
 
 i18n
-  // 言語検出機能を使用
+  // 使用语言检测功能
   .use(LanguageDetector)
-  // react-i18nextのプラグインを使用
+  // 使用 react-i18next 插件
   .use(initReactI18next)
   .init({
     resources,
-    // デフォルト言語
+    // 默认语言
     fallbackLng: "zh",
     lng: "zh",
-    // デバッグオプション（開発時のみtrueにする）
+    // 调试选项（仅开发模式开启）
     debug: process.env.NODE_ENV === "development",
 
     interpolation: {
-      // Reactを使用しているため、XSSインジェクションを心配する必要はない
+      // 使用 React 渲染，无需担心 XSS 注入
       escapeValue: false,
     },
 
-    // 言語検出のオプション
+    // 语言检测选项
     detection: {
-      // 言語検出の順序
+      // 语言检测顺序
       order: ["localStorage", "navigator"],
-      // localStorage内のキー名
+      // localStorage 中的键名
       lookupLocalStorage: "i18nextLng",
-      // ユーザーの言語設定を保存
+      // 保存用户的语言设置
       caches: ["localStorage"],
     },
 
-    // 初期化時に翻訳がロードされるまで待機
+    // 初始化时等待翻译加载完成
     initImmediate: false,
   });
 
