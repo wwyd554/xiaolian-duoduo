@@ -19,8 +19,10 @@ class Settings:
 
     # DeepSeek（Anthropic 兼容端点）
     deepseek_api_key: str = os.getenv("DEEPSEEK_API_KEY", "")
-    llm_chat_model: str = os.getenv("LLM_CHAT_MODEL", "deepseek-v4-flash")
-    llm_reasoner_model: str = os.getenv("LLM_REASONER_MODEL", "deepseek-v4-flash")
+    # 模型名不写死在代码里，一律由 .env 指定（开发/生产各自配置）。
+    # 留空时 llm.py 会报错提示配置，避免误用默认型号。
+    llm_chat_model: str = os.getenv("LLM_CHAT_MODEL", "")
+    llm_reasoner_model: str = os.getenv("LLM_REASONER_MODEL", "")
     llm_max_tokens: int = int(os.getenv("LLM_MAX_TOKENS", "4096"))
     llm_timeout_seconds: float = float(os.getenv("LLM_TIMEOUT_SECONDS", "120"))
     llm_max_retries: int = int(os.getenv("LLM_MAX_RETRIES", "3"))

@@ -207,7 +207,7 @@ def get_default_scores() -> dict[str, int]:
 
 
 # ========================================
-# 反馈报告提示词（llm_reasoner_model，默认 deepseek-v4-flash）
+# 反馈报告提示词（llm_reasoner_model，模型名由 .env 配置）
 # ========================================
 
 REPORT_SYSTEM_PROMPT = """你是资深 B2B 销售教练与陪练复盘专家。你会收到一场销售角色扮演对话的完整记录、客户（NPC）每轮的情绪变化、以及这场商谈预设的目标清单。

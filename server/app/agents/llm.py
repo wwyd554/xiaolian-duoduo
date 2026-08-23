@@ -1,9 +1,9 @@
 """LLM 调用底座 —— 基于 agent-blueprint/scaffold/agent.py 精简。
 
 保留核心：外部化配置、结构化日志、重试+退避+超时、轨迹采集。
-模型：DeepSeek（官方 Anthropic 兼容端点），单客户端双配置：
-  - chat 模型（llm_chat_model，默认 deepseek-v4-flash）    ：对话 + 实时评分 + 合规检查 + 场景生成
-  - reasoner 模型（llm_reasoner_model，默认 deepseek-v4-flash）：反馈报告 + 目标判断 + 记忆提取
+模型：DeepSeek（官方 Anthropic 兼容端点），单客户端双配置，模型名由 .env 指定（不写死）：
+  - chat 模型（llm_chat_model）     ：对话 + 实时评分 + 合规检查 + 场景生成
+  - reasoner 模型（llm_reasoner_model）：反馈报告 + 目标判断 + 记忆提取
 """
 from __future__ import annotations
 
@@ -75,6 +75,11 @@ def call_model(
         label: 轨迹/日志标记（如 npc-conversation / realtime-scoring）
     """
     model = model or settings.llm_chat_model
+    if not model:
+        raise RuntimeError(
+            "未配置 LLM 模型：请在 server/.env 中设置 LLM_CHAT_MODEL"
+            "（以及报告用的 LLM_REASONER_MODEL），例如 LLM_CHAT_MODEL=deepseek-v4-flash"
+        )
     max_tokens = max_tokens or settings.llm_max_tokens
     client = get_client()
 

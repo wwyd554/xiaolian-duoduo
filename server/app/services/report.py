@@ -1,4 +1,4 @@
-"""复盘报告生成 —— LLM（llm_reasoner_model，默认 deepseek-v4-flash）分析 + 数据聚合（目标状态/情绪趋势）。
+"""复盘报告生成 —— LLM（llm_reasoner_model，模型名由 .env 配置）分析 + 数据聚合（目标状态/情绪趋势）。
 
 端点契约（前端 ResultPage）：先查 analysis-status，再调 analysis-results。
 报告按 session_id 持久化（analysis_reports 表），避免重复消耗模型额度。
