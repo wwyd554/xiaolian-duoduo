@@ -317,8 +317,7 @@
     "scenariosNav": "场景列表",
     "history": "历史记录",
     "settingsNav": "设置",
-    "profileNav": "个人资料",
-    "rankings": "排行榜"
+    "profileNav": "个人资料"
   },
   "rightPanels": {
     "scenarioTitle": "场景",
@@ -861,20 +860,6 @@
     "aiAnalysisFailed": "无法获取 AI 详细分析",
     "sessionLoadFailed": "加载会话信息时发生错误",
     "contactAdmin": "如问题无法解决，请联系管理员。"
-  },
-  "ranking": {
-    "title": "排行榜",
-    "daily": "日榜",
-    "weekly": "周榜",
-    "monthly": "月榜",
-    "scenario": "场景",
-    "period": "周期",
-    "rank": "排名",
-    "user": "用户",
-    "score": "分数",
-    "noData": "暂无数据",
-    "totalParticipants": "参与人数",
-    "yourRank": "你的排名"
   },
   "recording": {
     "title": "会话录制",

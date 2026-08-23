@@ -27,7 +27,6 @@ import {
   History as HistoryIcon,
   PlayArrow as PlayArrowIcon,
   Person as PersonIcon,
-  EmojiEvents as EmojiEventsIcon,
 } from "@mui/icons-material";
 import { AuthService } from "../services/AuthService";
 import { useTranslation } from "react-i18next";
@@ -127,12 +126,6 @@ const Header: React.FC<HeaderProps> = ({ pageTitle }) => {
     setDrawerOpen(false);
   };
 
-  // 跳转到排行榜页面
-  const handleRankingsClick = () => {
-    navigate("/rankings");
-    setDrawerOpen(false);
-  };
-
   // 抽屉的开合
   const toggleDrawer = () => {
     setDrawerOpen(!drawerOpen);
@@ -165,12 +158,6 @@ const Header: React.FC<HeaderProps> = ({ pageTitle }) => {
             <HistoryIcon />
           </ListItemIcon>
           <ListItemText primary={t("navigation.history")} />
-        </ListItemButton>
-        <ListItemButton onClick={handleRankingsClick}>
-          <ListItemIcon>
-            <EmojiEventsIcon />
-          </ListItemIcon>
-          <ListItemText primary={t("navigation.rankings")} />
         </ListItemButton>
       </List>
       <Divider />
@@ -248,13 +235,6 @@ const Header: React.FC<HeaderProps> = ({ pageTitle }) => {
                 sx={{ mx: 0.5 }}
               >
                 {t("navigation.history")}
-              </Button>
-              <Button
-                color="inherit"
-                onClick={handleRankingsClick}
-                sx={{ mx: 0.5 }}
-              >
-                {t("navigation.rankings")}
               </Button>
             </Box>
           )}

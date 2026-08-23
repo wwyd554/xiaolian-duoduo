@@ -11,7 +11,6 @@ import ConversationPage from "../pages/ConversationPage";
 import ResultPage from "../pages/ResultPage";
 import ProfilePage from "../pages/ProfilePage";
 import SessionHistoryPage from "../pages/history/SessionHistoryPage";
-import RankingPage from "../pages/RankingPage";
 import AudioAnalysisPage from "../pages/AudioAnalysisPage";
 import AvatarTestPage from "../pages/AvatarTestPage";
 import ScenarioCreatePage from "../pages/scenarios/ScenarioCreatePage";
@@ -36,7 +35,6 @@ const AppContent: React.FC = () => {
       return t("scenarios.edit.title");
     if (path === "/profile") return t("profile.title");
     if (path === "/history") return t("history.title");
-    if (path === "/rankings") return t("ranking.title");
     if (path === "/audio-analysis") return t("audioAnalysis.title");
     if (path === "/avatar-test") return "VRM表情测试";
     if (path.startsWith("/conversation/")) return t("conversation.title");
@@ -71,7 +69,6 @@ const AppContent: React.FC = () => {
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/history" element={<SessionHistoryPage />} />
           <Route path="/history/session/:sessionId" element={<ResultPage />} />
-          <Route path="/rankings" element={<RankingPage />} />
           <Route path="/audio-analysis" element={<AudioAnalysisPage />} />
           <Route path="/avatar-test" element={<AvatarTestPage />} />
         </Routes>

@@ -317,8 +317,7 @@
     "scenariosNav": "Scenarios",
     "history": "History",
     "settingsNav": "Settings",
-    "profileNav": "Profile",
-    "rankings": "Rankings"
+    "profileNav": "Profile"
   },
   "rightPanels": {
     "scenarioTitle": "Scenario",
@@ -861,20 +860,6 @@
     "aiAnalysisFailed": "Failed to get detailed AI analysis",
     "sessionLoadFailed": "An error occurred while loading session information",
     "contactAdmin": "If the problem persists, please contact the administrator."
-  },
-  "ranking": {
-    "title": "Rankings",
-    "daily": "Daily",
-    "weekly": "Weekly",
-    "monthly": "Monthly",
-    "scenario": "Scenario",
-    "period": "Period",
-    "rank": "Rank",
-    "user": "User",
-    "score": "Score",
-    "noData": "No data available",
-    "totalParticipants": "Total Participants",
-    "yourRank": "Your Rank"
   },
   "recording": {
     "title": "Session Recording",

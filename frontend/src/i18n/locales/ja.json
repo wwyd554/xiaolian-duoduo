@@ -317,8 +317,7 @@
     "scenariosNav": "シナリオ一覧",
     "history": "履歴",
     "settingsNav": "設定",
-    "profileNav": "プロフィール",
-    "rankings": "ランキング"
+    "profileNav": "プロフィール"
   },
   "rightPanels": {
     "scenarioTitle": "シナリオ",
@@ -861,20 +860,6 @@
     "aiAnalysisFailed": "AIによる詳細分析を取得できませんでした",
     "sessionLoadFailed": "セッション情報の読み込み中にエラーが発生しました",
     "contactAdmin": "問題が解決しない場合は、管理者にお問い合わせください。"
-  },
-  "ranking": {
-    "title": "ランキング",
-    "daily": "日次",
-    "weekly": "週次",
-    "monthly": "月次",
-    "scenario": "シナリオ",
-    "period": "期間",
-    "rank": "順位",
-    "user": "ユーザー",
-    "score": "スコア",
-    "noData": "データがありません",
-    "totalParticipants": "参加者数",
-    "yourRank": "あなたの順位"
   },
   "recording": {
     "title": "セッション録画",
