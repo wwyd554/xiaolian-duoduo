@@ -28,7 +28,7 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({
 }) => {
   const { t } = useTranslation();
 
-  // 入力フィールドの変更ハンドラー
+  // 输入字段的变更处理器
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
@@ -38,7 +38,7 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({
     }
   };
 
-  // セレクトフィールドの変更ハンドラー
+  // 下拉选择字段的变更处理器
   const handleSelectChange = (e: SelectChangeEvent<string>) => {
     const { name, value } = e.target;
     if (name) {
@@ -46,7 +46,7 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({
     }
   };
 
-  // 難易度オプション
+  // 难度选项
   const difficultyOptions = [
     { value: "easy", label: t("scenarios.difficulty.easy") },
     { value: "normal", label: t("scenarios.difficulty.normal") },
@@ -54,7 +54,7 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({
     { value: "expert", label: t("scenarios.difficulty.expert") },
   ];
 
-  // カテゴリオプション
+  // 分类选项
   const categoryOptions = [
     { value: "general", label: t("scenarios.category.general") },
     { value: "it", label: t("scenarios.category.it") },
@@ -80,7 +80,7 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({
       </Typography>
 
       <Box sx={{ mt: 3 }} component="form" noValidate>
-        {/* シナリオID */}
+        {/* 场景 ID */}
         <TextField
           fullWidth
           label={t("scenarios.fields.scenarioId")}
@@ -109,7 +109,7 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({
           data-testid="scenario-id-input"
         />
 
-        {/* タイトル */}
+        {/* 标题 */}
         <TextField
           fullWidth
           required
@@ -192,7 +192,7 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({
           </FormHelperText>
         </FormControl>
 
-        {/* カテゴリ */}
+        {/* 分类 */}
         <FormControl
           fullWidth
           margin="normal"
@@ -264,13 +264,13 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({
           </FormHelperText>
         </FormControl>
 
-        {/* 最大ターン数 */}
+        {/* 最大轮数 */}
         <FormControl
           fullWidth
           margin="normal"
           error={Boolean(validationErrors?.maxTurns)}
         >
-          {/* 最大会話ターン数の入力フィールド（1-100の範囲） */}
+          {/* 最大会话轮数的输入字段（范围 1-100） */}
           <TextField
             name="maxTurns"
             label={t("scenarios.fields.maxTurns")}

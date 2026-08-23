@@ -17,11 +17,11 @@ interface MessageInputProps {
   handleKeyDown: (event: React.KeyboardEvent) => void;
   sessionStarted: boolean;
   sessionEnded: boolean;
-  continuousListening?: boolean; // 常時マイク入力モードフラグ
+  continuousListening?: boolean; // 常开麦克风输入模式标志
 }
 
 /**
- * メッセージ入力コンポーネント
+ * 消息输入组件
  */
 const MessageInput: React.FC<MessageInputProps> = ({
   userInput,
@@ -44,16 +44,16 @@ const MessageInput: React.FC<MessageInputProps> = ({
     return null;
   }
 
-  // マイクボタンのツールチップテキスト
+  // 麦克风按钮的悬浮提示文本
   const micTooltip = isListening
-    ? t("conversation.input.stopVoice") // "音声入力を停止"
+    ? t("conversation.input.stopVoice") // "停止语音输入"
     : userInput
-      ? t("conversation.input.continueVoice") // "音声入力を継続（既存のテキストは保持されます）"
-      : t("conversation.input.startVoice"); // "音声入力を開始"
+      ? t("conversation.input.continueVoice") // "继续语音输入（保留已有文本）"
+      : t("conversation.input.startVoice"); // "开始语音输入"
 
   return (
     <>
-      {/* 音声認識フィードバック */}
+      {/* 语音识别反馈 */}
       <SpeechRecognitionFeedback
         isListening={isListening}
         isProcessing={isProcessing}
@@ -62,7 +62,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
         onSwitchToTextInput={switchToTextInput}
       />
 
-      {/* 入力エリア */}
+      {/* 输入区域 */}
       <Box display="flex" gap={1} px={1} py={0.5} alignItems="center">
         <TextField
           fullWidth

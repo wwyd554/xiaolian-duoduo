@@ -56,11 +56,11 @@ import type { SlideImageInfo } from "../types/api";
 import SlideZoomModal from "../components/conversation/SlideZoomModal";
 import ComplianceViolationsList from "../components/compliance/ComplianceViolationsList";
 
-// サービスのインポート
+// 服务的导入
 import { ApiService } from "../services/ApiService";
 import type { FeedbackAnalysisResult } from "../types/api";
 
-// Chart.jsの登録
+// Chart.js 的注册
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -104,17 +104,17 @@ const ResultPage: React.FC = () => {
   const [feedback, setFeedback] = useState<string[]>([]);
   const [tabValue, setTabValue] = useState(0);
 
-  // セッション種別の状態管理（音声分析かどうか）
+  // 会话类型的状态管理（是否为语音分析）
   const [isAudioAnalysis, setIsAudioAnalysis] = useState(false);
 
-  // シナリオ情報の状態管理
+  // 场景信息的状态管理
   const [scenario, setScenario] = useState<ScenarioInfo | null>(null);
-  // スライド画像の状態管理
+  // 幻灯片图片的状态管理
   const [slideImages, setSlideImages] = useState<SlideImageInfo[]>([]);
   const [slideZoomOpen, setSlideZoomOpen] = useState(false);
   const [slideZoomIndex, setSlideZoomIndex] = useState(0);
 
-  // シナリオ情報とスライド画像を取得するeffect
+  // 获取场景信息和幻灯片图片的 effect
   useEffect(() => {
     const fetchScenario = async () => {
       if (session?.scenarioId) {
@@ -125,7 +125,7 @@ const ResultPage: React.FC = () => {
           );
           setScenario(scenarioInfo);
 
-          // スライド画像を取得
+          // 获取幻灯片图片
           if (scenarioInfo.presentationFile) {
             try {
               const slidesResp = await apiService.getSlideImages(session.scenarioId);
@@ -138,7 +138,7 @@ const ResultPage: React.FC = () => {
                 })));
               }
             } catch {
-              // スライド取得失敗は無視
+              // 幻灯片获取失败时忽略
             }
           }
         } catch (error) {
@@ -163,21 +163,21 @@ const ResultPage: React.FC = () => {
   >([]);
   const [scenarioGoals, setScenarioGoals] = useState<Goal[]>([]);
 
-  // リファレンスチェック結果（Step Functionsで取得済みのデータ）
+  // 参考检查结果（Step Functions 中已获取的数据）
   const [referenceCheckData, setReferenceCheckData] = useState<ReferenceCheckResult | null>(null);
 
-  // 動画分析結果（Step Functionsで取得済みのデータ）
+  // 视频分析结果（Step Functions 中已获取的数据）
   const [videoAnalysisData, setVideoAnalysisData] = useState<VideoAnalysisResult | null>(null);
 
-  // 分析ステータス管理
+  // 分析状态管理
   const [analysisStatus, setAnalysisStatus] = useState<string>("not_started");
   const [analysisProgress, setAnalysisProgress] = useState<string>("");
   const [isPolling, setIsPolling] = useState<boolean>(false);
 
-  // APIサービスのインスタンス取得
+  // 获取 API 服务实例
   const apiService = ApiService.getInstance();
 
-  // 分析ステータスのポーリング
+  // 分析状态的轮询
   useEffect(() => {
     if (!sessionId || !isPolling) return;
 
@@ -188,29 +188,29 @@ const ResultPage: React.FC = () => {
         setAnalysisStatus(statusResponse.status);
 
         if (statusResponse.status === "completed") {
-          // 分析完了 - ポーリング停止してデータを再取得
+          // 分析完成 - 停止轮询并重新获取数据
           setIsPolling(false);
           clearInterval(pollInterval);
 
-          // 完全なセッションデータを再取得
+          // 重新获取完整的会话数据
           const completeData = await apiService.getSessionCompleteData(sessionId);
 
-          // 詳細フィードバックを設定
+          // 设置详细反馈
           if (completeData.feedback) {
             setDetailedFeedback(completeData.feedback);
           }
 
-          // リファレンスチェック結果を設定
+          // 设置参考检查结果
           if (completeData.referenceCheck) {
             setReferenceCheckData(completeData.referenceCheck);
           }
 
-          // 動画分析結果を設定
+          // 设置视频分析结果
           if (completeData.videoAnalysis) {
             setVideoAnalysisData(completeData.videoAnalysis);
           }
 
-          // ゴール結果を設定（初回取得時に未完了だった場合の反映）
+          // 设置目标结果（反映首次获取时未完成的情况）
           if (completeData.goalResults) {
             const updatedGoalStatuses = completeData.goalResults.goalStatuses.map(
               (status) => ({
@@ -242,7 +242,7 @@ const ResultPage: React.FC = () => {
 
             setScenarioGoals(updatedScenarioGoals);
 
-            // セッションのゴール情報も更新
+            // 同时更新会话的目标信息
             setSession((prev) => {
               if (!prev) return prev;
               return {
@@ -253,7 +253,7 @@ const ResultPage: React.FC = () => {
             });
           }
 
-          // 最終スコアを更新（フィードバックのoverallスコア）
+          // 更新最终分数（反馈的 overall 分数）
           if (completeData.feedback?.scores?.overall) {
             setSession((prev) => {
               if (!prev) return prev;
@@ -266,7 +266,7 @@ const ResultPage: React.FC = () => {
 
           setAnalysisProgress(t("results.analysisCompleted"));
         } else if (statusResponse.status === "failed" || statusResponse.status === "timeout") {
-          // 分析失敗 - ポーリング停止
+          // 分析失败 - 停止轮询
           setIsPolling(false);
           clearInterval(pollInterval);
           setError(statusResponse.errorMessage || t("results.analysisError"));
@@ -276,7 +276,7 @@ const ResultPage: React.FC = () => {
       } catch (err) {
         console.error("状态轮询错误:", err);
       }
-    }, 3000); // 3秒間隔でポーリング
+    }, 3000); // 以 3 秒间隔轮询
 
     return () => clearInterval(pollInterval);
   }, [sessionId, isPolling, apiService, t]);
@@ -288,17 +288,17 @@ const ResultPage: React.FC = () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleAudioAnalysisSession = (completeData: any, sessionId: string) => {
     try {
-      // 音声分析データから既にメッセージが構築されているのでそのまま使用
+      // 语音分析数据中已构建了消息，直接使用
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const messages = (completeData.messages || []).map((msg: any) => ({
         id: (msg.messageId as string) || crypto.randomUUID(),
         sender: msg.sender as "user" | "npc",
         content: msg.content as string,
         timestamp: new Date(msg.timestamp as string),
-        metrics: undefined, // 音声分析では個別メトリクスなし
+        metrics: undefined, // 语音分析中没有单独的指标
       }));
 
-      // 音声分析用のSessionオブジェクトを構築
+      // 构建用于语音分析的 Session 对象
       const constructedSession: Session = {
         id: sessionId,
         scenarioId: (completeData.sessionInfo?.scenarioId as string) || "default",
@@ -316,17 +316,17 @@ const ResultPage: React.FC = () => {
 
       setSession(constructedSession);
       setDetailedFeedback(completeData.feedback as FeedbackAnalysisResult);
-      setRealtimeMetricsHistory([]); // 音声分析ではリアルタイムメトリクス履歴なし
+      setRealtimeMetricsHistory([]); // 语音分析中没有实时指标历史
       setScenarioGoals((completeData.goalResults?.scenarioGoals as Goal[]) || []);
 
-      // リファレンスチェック結果を設定（音声分析セッション）
+      // 设置参考检查结果（语音分析会话）
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if ((completeData as any).referenceCheck) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         setReferenceCheckData((completeData as any).referenceCheck as ReferenceCheckResult);
       }
 
-      // 動画分析結果を設定（音声分析セッション）
+      // 设置视频分析结果（语音分析会话）
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if ((completeData as any).videoAnalysis) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -334,7 +334,7 @@ const ResultPage: React.FC = () => {
       }
     } catch (err) {
       console.error("音频分析会话处理错误:", err);
-      setError("音声分析結果の読み込み中にエラーが発生しました");
+      setError("加载语音分析结果时发生错误");
     }
   };
 
@@ -345,59 +345,59 @@ const ResultPage: React.FC = () => {
       try {
         setLoading(true);
 
-        // まず分析ステータスを確認
+        // 先确认分析状态
         try {
           const statusResponse = await apiService.getSessionAnalysisStatus(sessionId);
           setAnalysisStatus(statusResponse.status);
 
           if (statusResponse.status === "processing") {
-            // 分析中の場合はポーリングを開始
+            // 分析中则开始轮询
             setIsPolling(true);
             setAnalysisProgress(t("results.analysisInProgress"));
           }
         } catch {
-          // 分析ステータス取得スキップ（新規セッションの可能性）
+          // 跳过获取分析状态（可能是新会话）
         }
 
-        // セッション分析結果をAPIから取得
+        // 从 API 获取会话分析结果
         const completeData = await apiService.getSessionCompleteData(sessionId);
 
-        // 音声分析セッションかどうかを判定
+        // 判断是否为语音分析会话
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const sessionType = (completeData as any).sessionType;
         if (sessionType === "audio-analysis") {
-          // 音声分析セッションフラグを設定
+          // 设置语音分析会话标志
           setIsAudioAnalysis(true);
-          // 音声分析セッションの処理
+          // 语音分析会话的处理
           handleAudioAnalysisSession(completeData, sessionId);
-          setLoading(false); // ローディング状態を解除
+          setLoading(false); // 解除加载状态
           return;
         }
 
-        // 通常セッションの場合
+        // 普通会话的情况
         setIsAudioAnalysis(false);
 
-        // セッション基本情報からSessionオブジェクトを構築
+        // 从会话基本信息构建 Session 对象
         const sessionInfo = completeData.sessionInfo;
         const messages = completeData.messages
-          .filter((msg) => msg.sender === "user" || msg.sender === "npc") // systemメッセージを除外
+          .filter((msg) => msg.sender === "user" || msg.sender === "npc") // 排除 system 消息
           .map((msg) => ({
             id: msg.messageId || crypto.randomUUID(),
             sender: msg.sender as "user" | "npc",
             content: msg.content,
             timestamp: new Date(msg.timestamp),
-            metrics: undefined, // メトリクス情報は別途処理
+            metrics: undefined, // 指标信息另行处理
             presentedSlides: msg.presentedSlides,
           }));
 
-        // メッセージにメトリクス変化情報を追加
+        // 向消息添加指标变化信息
         const messagesWithMetrics = addMetricsChangesToMessages(messages);
 
-        // AgentCore移行後: realtimeMetricsが空でもfinalMetricsがあれば使用
+        // AgentCore 迁移后：即使 realtimeMetrics 为空，只要有 finalMetrics 就使用
         let finalMetrics: Metrics;
 
         if (completeData.realtimeMetrics && completeData.realtimeMetrics.length > 0) {
-          // リアルタイムメトリクスの最新値を使用
+          // 使用实时指标的最新值
           const latestMetrics =
             completeData.realtimeMetrics[completeData.realtimeMetrics.length - 1];
 
@@ -408,7 +408,7 @@ const ResultPage: React.FC = () => {
             analysis: latestMetrics.analysis,
           };
         } else if (completeData.finalMetrics) {
-          // finalMetricsがある場合はそれを使用（AgentCore経由のセッション）
+          // 有 finalMetrics 时使用它（经由 AgentCore 的会话）
           finalMetrics = {
             angerLevel: Number(completeData.finalMetrics.angerLevel) || 1,
             trustLevel: Number(completeData.finalMetrics.trustLevel) || 1,
@@ -416,7 +416,7 @@ const ResultPage: React.FC = () => {
             analysis: completeData.finalMetrics.analysis || "",
           };
         } else {
-          // どちらもない場合はデフォルト値を使用
+          // 两者都没有时使用默认值
           finalMetrics = {
             angerLevel: 1,
             trustLevel: 1,
@@ -425,13 +425,13 @@ const ResultPage: React.FC = () => {
           };
         }
 
-        // ゴール情報を設定（数値文字列を数値に変換）
+        // 设置目标信息（将数字字符串转换为数字）
         let goalStatuses: GoalStatus[] = [];
         let goalScore = 0;
         let scenarioGoals: Goal[] = [];
 
         if (completeData.goalResults) {
-          // goalStatusesの型変換
+          // goalStatuses 的类型转换
           goalStatuses = completeData.goalResults.goalStatuses.map(
             (status) => ({
               goalId: status.goalId,
@@ -451,7 +451,7 @@ const ResultPage: React.FC = () => {
           );
           goalScore = Number(completeData.goalResults.goalScore);
 
-          // scenarioGoalsの型変換
+          // scenarioGoals 的类型转换
           scenarioGoals = completeData.goalResults.scenarioGoals.map(
             (goal) => ({
               id: goal.id,
@@ -462,11 +462,11 @@ const ResultPage: React.FC = () => {
             }),
           );
         }
-        // 注: リアルタイムメトリクスからのgoalStatusesフォールバックは削除
-        // バックエンドのformatted_realtime_metricsにgoalStatusesが含まれないため機能しない
-        // goalResultsはfinal-feedbackレコードから取得される
+        // 注：已删除从实时指标获取 goalStatuses 的回退
+        // 因为后端的 formatted_realtime_metrics 不包含 goalStatuses，该回退无法工作
+        // goalResults 从 final-feedback 记录中获取
 
-        // scenarioGoalsが空の場合、シナリオ情報から取得を試みる
+        // scenarioGoals 为空时，尝试从场景信息获取
         if (scenarioGoals.length === 0 && sessionInfo.scenarioId) {
           try {
             const scenarioDetail = await apiService.getScenarioDetail(sessionInfo.scenarioId);
@@ -484,10 +484,10 @@ const ResultPage: React.FC = () => {
           }
         }
 
-        // 最終スコアを決定（Bedrockのoverallスコアのみ使用）
+        // 决定最终分数（仅使用 Bedrock 的 overall 分数）
         let finalScore = 0;
 
-        // 詳細フィードバックが取得できている場合はそのoverallスコアを使用
+        // 已获取详细反馈时使用其 overall 分数
         if (
           completeData.feedback &&
           completeData.feedback.scores &&
@@ -496,7 +496,7 @@ const ResultPage: React.FC = () => {
           finalScore = completeData.feedback.scores.overall;
         }
 
-        // 最終メトリクスの処理（finalMetricsがある場合は使用、なければリアルタイムメトリクスから）
+        // 最终指标的处理（有 finalMetrics 则使用，否则从实时指标获取）
         let processedFinalMetrics: Metrics;
         if (completeData.finalMetrics) {
           processedFinalMetrics = {
@@ -509,7 +509,7 @@ const ResultPage: React.FC = () => {
           processedFinalMetrics = finalMetrics;
         }
 
-        // Sessionオブジェクトを構築
+        // 构建 Session 对象
         const constructedSession: Session = {
           id: sessionId,
           scenarioId: sessionInfo.scenarioId || "default",
@@ -528,16 +528,16 @@ const ResultPage: React.FC = () => {
           goalStatuses: goalStatuses,
           goalScore: goalScore,
           endReason:
-            sessionInfo.status === "completed" ? "セッション完了" : undefined,
-          // コンプライアンス違反データを追加
+            sessionInfo.status === "completed" ? "会话完成" : undefined,
+          // 添加合规违规数据
           complianceViolations: completeData.complianceViolations || [],
         };
 
-        // セッション情報を設定
+        // 设置会话信息
         setSession(constructedSession);
 
-        // リアルタイムメトリクス履歴を保存（型変換）
-        // AgentCore移行後: realtimeMetricsが空の場合は空配列を設定
+        // 保存实时指标历史（类型转换）
+        // AgentCore 迁移后：realtimeMetrics 为空时设置为空数组
         const processedRealtimeMetrics: RealtimeMetric[] =
           (completeData.realtimeMetrics || []).map((metric) => ({
             angerLevel: Number(metric.angerLevel),
@@ -557,23 +557,23 @@ const ResultPage: React.FC = () => {
           }));
         setRealtimeMetricsHistory(processedRealtimeMetrics);
 
-        // シナリオゴールを保存
+        // 保存场景目标
         setScenarioGoals(scenarioGoals);
 
-        // レガシーフィードバックは削除（Bedrockで生成されるため不要）
+        // 删除旧版反馈（因由 Bedrock 生成而不需要）
         setFeedback([]);
 
-        // 詳細フィードバックを設定（APIから取得済み - complete-dataで統合）
+        // 设置详细反馈（已从 API 获取 - 已通过 complete-data 整合）
         if (completeData.feedback) {
           setDetailedFeedback(completeData.feedback);
         }
 
-        // リファレンスチェック結果を設定（Step Functionsで取得済み）
+        // 设置参考检查结果（已通过 Step Functions 获取）
         if (completeData.referenceCheck) {
           setReferenceCheckData(completeData.referenceCheck);
         }
 
-        // 動画分析結果を設定（Step Functionsで取得済み）
+        // 设置视频分析结果（已通过 Step Functions 获取）
         if (completeData.videoAnalysis) {
           setVideoAnalysisData(completeData.videoAnalysis);
         }
@@ -635,7 +635,7 @@ const ResultPage: React.FC = () => {
     );
   }
 
-  // 分析中の場合のUI
+  // 分析中的 UI
   if (isPolling && analysisStatus === "processing") {
     return (
       <Container maxWidth="lg" sx={{ py: 4 }}>
@@ -732,7 +732,7 @@ const ResultPage: React.FC = () => {
   return (
     <>
       <Container maxWidth="lg" sx={{ py: 4 }}>
-        {/* タブナビゲーション */}
+        {/* 标签页导航 */}
         <Box sx={{ borderBottom: 1, borderColor: "divider", mb: 3 }}>
           <Tabs
             value={tabValue}
@@ -776,7 +776,7 @@ const ResultPage: React.FC = () => {
         </Box>
 
         <TabPanel value={tabValue} index={0}>
-          {/* 総合スコア */}
+          {/* 综合分数 */}
           <Card sx={{ mb: 4, textAlign: "center", p: 3 }}>
             <CardContent>
               {detailedFeedback ? (
@@ -841,14 +841,14 @@ const ResultPage: React.FC = () => {
             </CardContent>
           </Card>
 
-          {/* エラー表示 */}
+          {/* 错误提示 */}
           {error && (
             <Alert severity="error" sx={{ mb: 4 }}>
               {error}
             </Alert>
           )}
 
-          {/* ローディング表示 */}
+          {/* 加载提示 */}
           {loading ? (
             <Box
               sx={{
@@ -869,9 +869,9 @@ const ResultPage: React.FC = () => {
               gap={3}
               sx={{ flexDirection: { xs: "column", md: "row" } }}
             >
-              {/* 詳細評価カラム */}
+              {/* 详细评价栏 */}
               <Box flexGrow={1} sx={{ minWidth: { xs: "100%", md: "300px" } }}>
-                {/* チャート表示 - パフォーマンス分析（詳細フィードバックがある場合のみ表示） */}
+                {/* 图表显示 - 绩效分析（仅在有详细反馈时显示） */}
                 {detailedFeedback && (
                   <Card sx={{ mb: 3, p: 2 }}>
                     <CardContent>
@@ -937,7 +937,7 @@ const ResultPage: React.FC = () => {
                   </Card>
                 )}
 
-                {/* メトリクス変化チャート（リアルタイムメトリクス履歴がある場合のみ表示） */}
+                {/* 指标变化图表（仅在有实时指标历史时显示） */}
                 {realtimeMetricsHistory.length > 0 && (
                   <Card sx={{ mb: 3, p: 2 }}>
                     <CardContent>
@@ -1013,7 +1013,7 @@ const ResultPage: React.FC = () => {
                   </Card>
                 )}
 
-                {/* キーポイント分析 */}
+                {/* 关键点分析 */}
                 <Card sx={{ mb: 3, p: 2 }}>
                   <CardContent>
                     <Box display="flex" alignItems="center" mb={1}>
@@ -1026,7 +1026,7 @@ const ResultPage: React.FC = () => {
 
                     {detailedFeedback ? (
                       <>
-                        {/* 強み */}
+                        {/* 优势 */}
                         {detailedFeedback.strengths.map(
                           (strength: string, index: number) => (
                             <Alert
@@ -1052,7 +1052,7 @@ const ResultPage: React.FC = () => {
                           ),
                         )}
 
-                        {/* 重要な洞察 */}
+                        {/* 重要的洞察 */}
                         {detailedFeedback.keyInsights?.map(
                           (insight: string, index: number) => (
                             <Alert
@@ -1065,7 +1065,7 @@ const ResultPage: React.FC = () => {
                           ),
                         )}
 
-                        {/* 次のステップ */}
+                        {/* 下一步 */}
                         {detailedFeedback.nextSteps && (
                           <Alert severity="info" sx={{ mb: 2 }}>
                             <Typography variant="subtitle2" gutterBottom>
@@ -1090,7 +1090,7 @@ const ResultPage: React.FC = () => {
                       {t("results.detailedEvaluation")}
                     </Typography>
 
-                    {/* 怒りメーター */}
+                    {/* 愤怒表 */}
                     <Box mb={3}>
                       <Box
                         display="flex"
@@ -1179,7 +1179,7 @@ const ResultPage: React.FC = () => {
                   </CardContent>
                 </Card>
 
-                {/* スキル詳細スコア（詳細フィードバックがある場合のみ表示） */}
+                {/* 技能详细分数（仅在有详细反馈时显示） */}
                 {detailedFeedback && (
                   <Card sx={{ mb: 3 }}>
                     <CardContent>
@@ -1187,7 +1187,7 @@ const ResultPage: React.FC = () => {
                         💯 {t("results.skillDetailedScore")}
                       </Typography>
 
-                      {/* コミュニケーション力 */}
+                      {/* 沟通能力 */}
                       <Box mb={2}>
                         <Box
                           display="flex"
@@ -1212,7 +1212,7 @@ const ResultPage: React.FC = () => {
                         />
                       </Box>
 
-                      {/* ニーズ把握 */}
+                      {/* 需求把握 */}
                       <Box mb={2}>
                         <Box
                           display="flex"
@@ -1262,7 +1262,7 @@ const ResultPage: React.FC = () => {
                         />
                       </Box>
 
-                      {/* 対応の柔軟性 */}
+                      {/* 应对灵活性 */}
                       <Box mb={2}>
                         <Box
                           display="flex"
@@ -1335,7 +1335,7 @@ const ResultPage: React.FC = () => {
                         />
                       </Box>
 
-                      {/* クロージングスキル */}
+                      {/* 成交技能 */}
                       <Box mb={2}>
                         <Box
                           display="flex"
@@ -1360,7 +1360,7 @@ const ResultPage: React.FC = () => {
                         />
                       </Box>
 
-                      {/* 傾聴スキル */}
+                      {/* 倾听技能 */}
                       <Box mb={2}>
                         <Box
                           display="flex"
@@ -1438,7 +1438,7 @@ const ResultPage: React.FC = () => {
                   </Card>
                 )}
 
-                {/* レガシーフィードバック - UI表示なし */}
+                {/* 旧版反馈 - 无 UI 显示 */}
                 {!detailedFeedback && (
                   <Card>
                     <CardContent>
@@ -1458,7 +1458,7 @@ const ResultPage: React.FC = () => {
                 )}
               </Box>
 
-              {/* サイドバー */}
+              {/* 侧边栏 */}
               <Box sx={{ width: { xs: "100%", md: "300px" }, flexShrink: 0 }}>
                 {/* NPC情報 */}
                 {scenario && (
@@ -1532,7 +1532,7 @@ const ResultPage: React.FC = () => {
                   </CardContent>
                 </Card>
 
-                {/* アクションボタン */}
+                {/* 操作按钮 */}
                 <Box display="flex" flexDirection="column" gap={2}>
                   <Button
                     variant="contained"
@@ -1554,7 +1554,7 @@ const ResultPage: React.FC = () => {
               </Box>
             </Box>
           )}
-          {/* ゴール達成状況セクション - 全幅で表示 */}
+          {/* 目标达成情况区域 - 全宽显示 */}
           {scenarioGoals && scenarioGoals.length > 0 && (
             <Box sx={{ mt: 3 }}>
               <GoalResultsSection
@@ -1601,7 +1601,7 @@ const ResultPage: React.FC = () => {
                     </Typography>
                     <Typography variant="body1">{msg.content}</Typography>
 
-                    {/* スライド選択サムネイル表示 */}
+                    {/* 幻灯片选择缩略图显示 */}
                     {msg.presentedSlides && msg.presentedSlides.length > 0 && slideImages.length > 0 && (
                       <Box sx={{ mt: 1, display: "flex", gap: 0.5, flexWrap: "wrap" }}>
                         {msg.presentedSlides.map((page: number) => {
@@ -1700,22 +1700,22 @@ const ResultPage: React.FC = () => {
           </Card>
         </TabPanel>
 
-        {/* コンプライアンス違反一覧タブ */}
+        {/* 合规违规列表标签页 */}
         <TabPanel value={tabValue} index={2}>
           <Box sx={{ maxWidth: 900, mx: "auto" }}>
             <Typography variant="h6" gutterBottom sx={{ mb: 3 }}>
-              {t("compliance.report", "コンプライアンス違反レポート")}
+              {t("compliance.report", "合规违规报告")}
             </Typography>
 
             {!session?.complianceViolations ||
               session.complianceViolations.length === 0 ? (
               <Alert severity="info" sx={{ mb: 3 }}>
                 <AlertTitle>
-                  {t("compliance.noDataTitle", "データなし")}
+                  {t("compliance.noDataTitle", "无数据")}
                 </AlertTitle>
                 {t(
                   "compliance.noData",
-                  "このセッションにはコンプライアンス違反データがありません。",
+                  "该会话中没有合规违规数据。",
                 )}
               </Alert>
             ) : (
@@ -1746,7 +1746,7 @@ const ResultPage: React.FC = () => {
           </Box>
         </TabPanel>
 
-        {/* ビデオ分析タブ（音声分析セッションでは非表示） */}
+        {/* 视频分析标签页（语音分析会话中不显示） */}
         {!isAudioAnalysis && (
           <TabPanel value={tabValue} index={3}>
             <Box sx={{ maxWidth: 900, mx: "auto" }}>
@@ -1764,7 +1764,7 @@ const ResultPage: React.FC = () => {
           </TabPanel>
         )}
 
-        {/* リファレンスチェックタブ */}
+        {/* 参考检查标签页 */}
         <TabPanel value={tabValue} index={isAudioAnalysis ? 3 : 4}>
           <Box sx={{ maxWidth: 900, mx: "auto" }}>
             <Card sx={{ mb: 3 }}>
@@ -1783,7 +1783,7 @@ const ResultPage: React.FC = () => {
         </TabPanel>
       </Container>
 
-      {/* スライド拡大モーダル */}
+      {/* 幻灯片放大模态框 */}
       {
         slideImages.length > 0 && (
           <SlideZoomModal

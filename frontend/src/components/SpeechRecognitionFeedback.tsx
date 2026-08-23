@@ -17,16 +17,16 @@ interface SpeechRecognitionFeedbackProps {
 }
 
 /**
- * 音声認識状態を視覚的に表示するコンポーネント
+ * 以可视化方式显示语音识别状态的组件
  *
- * 音声認識の状態（リスニング中、処理中、エラー）を視覚的に表示し、
- * エラー時にはテキスト入力へのフォールバックオプションを提供します。
+ * 以可视化方式显示语音识别状态（聆听中、处理中、错误），
+ * 出错时提供回退到文本输入的选项。
  *
- * アクセシビリティ対応：
- * - スクリーンリーダー互換性のためのARIA属性を追加
- * - キーボードナビゲーションのサポート
- * - 色覚異常を考慮した色のコントラスト
- * - 状態変化の通知
+ * 无障碍支持：
+ * - 为屏幕阅读器兼容性添加 ARIA 属性
+ * - 支持键盘导航
+ * - 考虑色觉异常的配色对比度
+ * - 状态变化的通知
  */
 const SpeechRecognitionFeedback: React.FC<SpeechRecognitionFeedbackProps> = ({
   isListening,
@@ -37,7 +37,7 @@ const SpeechRecognitionFeedback: React.FC<SpeechRecognitionFeedbackProps> = ({
 }) => {
   const { t } = useTranslation();
 
-  // エラー状態の場合
+  // 错误状态的情况
   if (errorState) {
     return (
       <Fade in={true}>
@@ -92,7 +92,7 @@ const SpeechRecognitionFeedback: React.FC<SpeechRecognitionFeedbackProps> = ({
     );
   }
 
-  // 接続中の場合
+  // 连接中的情况
   if (isConnecting) {
     return (
       <Fade in={true}>
@@ -103,7 +103,7 @@ const SpeechRecognitionFeedback: React.FC<SpeechRecognitionFeedbackProps> = ({
             gap: 1.5,
             p: 1.5,
             borderRadius: 1,
-            bgcolor: "rgba(156, 39, 176, 0.08)", // 接続中は紫系の色
+            bgcolor: "rgba(156, 39, 176, 0.08)", // 连接中为紫色系
             mb: 2,
           }}
           role="status"
@@ -161,7 +161,7 @@ const SpeechRecognitionFeedback: React.FC<SpeechRecognitionFeedbackProps> = ({
     );
   }
 
-  // リスニング中または処理中の場合
+  // 聆听中或处理中的情况
   if (isListening || isProcessing) {
     return (
       <Fade in={true}>
@@ -236,7 +236,7 @@ const SpeechRecognitionFeedback: React.FC<SpeechRecognitionFeedbackProps> = ({
     );
   }
 
-  // 非アクティブ状態（表示なし）
+  // 非激活状态（不显示）
   return null;
 };
 

@@ -3,22 +3,22 @@ import { getPollyLanguageCode } from "../i18n/utils/languageUtils";
 import { ApiService } from "./ApiService";
 
 /**
- * Amazon Pollyサービス
- * テキストの音声合成を行う
+ * Amazon Polly 服务
+ * 进行文本的语音合成
  */
 export class PollyService {
   private static instance: PollyService;
 
-  // デフォルトの読み上げ速度（1.0が標準、1.0より大きいと速く、小さいと遅い）
+  // 默认朗读速度（1.0 为标准，大于 1.0 更快，小于则更慢）
   private defaultSpeechRate: number = 1.25;
 
   /**
-   * コンストラクタ - シングルトンパターン
+   * 构造函数 - 单例模式
    */
   private constructor() { }
 
   /**
-   * シングルトンインスタンスを取得
+   * 获取单例实例
    */
   public static getInstance(): PollyService {
     if (!PollyService.instance) {
@@ -28,31 +28,31 @@ export class PollyService {
   }
 
   /**
-   * 読み上げ速度を設定
-   * @param rate 速度（1.0が標準、0.5～2.0の範囲で設定可能）
+   * 设置朗读速度
+   * @param rate 速度（1.0 为标准，可在 0.5～2.0 范围内设置）
    */
   public setSpeechRate(rate: number): void {
     this.defaultSpeechRate = Math.max(0.5, Math.min(2.0, rate));
   }
 
   /**
-   * 現在の読み上げ速度を取得
-   * @returns 現在の読み上げ速度
+   * 获取当前朗读速度
+   * @returns 当前朗读速度
    */
   public getSpeechRate(): number {
     return this.defaultSpeechRate;
   }
 
   /**
-   * テキストをSSMLに変換する（読み上げ速度の調整を含む）
-   * @param text 元のテキスト
-   * @param rate 読み上げ速度（指定がない場合はデフォルト値を使用）
-   * @returns SSMLフォーマットのテキスト
+   * 将文本转换为 SSML（包含朗读速度的调整）
+   * @param text 原始文本
+   * @param rate 朗读速度（未指定时使用默认值）
+   * @returns SSML 格式的文本
    */
   public textToSSML(text: string, rate?: number): string {
     const speechRate = rate || this.defaultSpeechRate;
 
-    // テキストをエスケープ（XMLの特殊文字を置換）
+    // 转义文本（替换 XML 特殊字符）
     const escapedText = text
       .replace(/&/g, "&amp;")
       .replace(/</g, "&lt;")
@@ -64,11 +64,11 @@ export class PollyService {
   }
 
   /**
-   * テキストを音声に変換する（SSML形式の速度調整付き）
-   * @param text 音声に変換するテキスト
-   * @param voiceId 音声のタイプ（必須: シナリオのNPC設定から取得）
-   * @param rate 読み上げ速度（オプション: 指定がない場合はデフォルト値を使用）
-   * @returns 音声のURL
+   * 将文本转换为语音（带 SSML 形式的语速调整）
+   * @param text 要转换为语音的文本
+   * @param voiceId 语音类型（必填：从场景的 NPC 设置中获取）
+   * @param rate 朗读速度（可选：未指定时使用默认值）
+   * @returns 语音 URL
    */
   public async synthesizeSpeech(
     text: string,
@@ -80,10 +80,10 @@ export class PollyService {
   }
 
   /**
-   * SSMLタグ付きテキストを音声に変換する
-   * @param ssmlText SSMLタグを含むテキスト
-   * @param voiceId 音声のタイプ（必須: シナリオのNPC設定から取得）
-   * @returns 音声のURL
+   * 将带 SSML 标签的文本转换为语音
+   * @param ssmlText 包含 SSML 标签的文本
+   * @param voiceId 语音类型（必填：从场景的 NPC 设置中获取）
+   * @returns 语音 URL
    */
   public async synthesizeSpeechWithSSML(
     ssmlText: string,
@@ -112,11 +112,11 @@ export class PollyService {
   }
 
   /**
-   * テキストを音声に変換し、visemeデータも取得する
-   * @param text 音声に変換するテキスト
-   * @param voiceId 音声のタイプ（必須）
-   * @param rate 読み上げ速度（オプション）
-   * @returns 音声URLとvisemeデータ
+   * 将文本转换为语音，同时获取 viseme 数据
+   * @param text 要转换为语音的文本
+   * @param voiceId 语音类型（必填）
+   * @param rate 朗读速度（可选）
+   * @returns 语音 URL 与 viseme 数据
    */
   public async synthesizeSpeechWithViseme(
     text: string,

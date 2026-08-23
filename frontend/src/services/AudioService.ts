@@ -1,20 +1,20 @@
 import { PollyService } from "./PollyService";
 
 /**
- * 音声再生サービス
+ * 语音播放服务
  *
- * テキストの音声合成や再生キューの管理を行うサービスクラスです。
- * Amazon Pollyとの統合により、テキストを高品質な日本語音声に変換し、
- * ブラウザで再生します。再生順序を制御するキュー機能や、複数の音声チャンクを
- * 連続して再生する機能を提供します。
+ * 负责文本语音合成与播放队列管理的服务类。
+ * 通过与 Amazon Polly 集成，将文本转换为高质量语音，
+ * 在浏览器中播放。提供控制播放顺序的队列功能以及将多个音频块
+ * 连续播放的功能。
  *
- * 主な機能:
- * - テキストを音声に変換し再生 (Amazon Polly利用)
- * - 音声再生キューの管理
- * - 音声の有効/無効切り替え
- * - 音量調整
- * - 長文テキストの分割と順次処理
- * - メッセージIDによる関連音声の管理
+ * 主要功能：
+ * - 将文本转换为语音并播放（使用 Amazon Polly）
+ * - 管理语音播放队列
+ * - 语音启用/禁用切换
+ * - 音量调节
+ * - 长文本的分割与顺序处理
+ * - 按消息 ID 管理关联语音
  */
 export class AudioService {
   private static instance: AudioService;
@@ -30,15 +30,15 @@ export class AudioService {
   private currentSynthesisTasks: Map<string, AbortController> = new Map();
   private pollyService: PollyService;
 
-  // イベントリスナーの追加
+  // 注册事件监听器
   private playbackCompleteListeners: Map<string, Set<() => void>> = new Map();
   private globalPlaybackListeners: Set<(messageId: string) => void> = new Set();
 
   /**
-   * コンストラクタ - シングルトンパターン
+   * 构造函数 - 单例模式
    *
-   * AudioServiceのインスタンス初期化を行います。PollyServiceのインスタンスを
-   * 取得し、音声合成機能を準備します。
+   * 初始化 AudioService 实例。获取 PollyService 实例，
+   * 并准备语音合成功能。
    *
    * @private
    */
@@ -47,12 +47,12 @@ export class AudioService {
   }
 
   /**
-   * シングルトンインスタンスを取得
+   * 获取单例实例
    *
-   * AudioServiceの唯一のインスタンスを返します。インスタンスがまだ
-   * 作成されていない場合は、新しく作成します。
+   * 返回 AudioService 的唯一实例。若实例尚未
+   * 创建，则新建一个。
    *
-   * @returns {AudioService} AudioServiceのシングルトンインスタンス
+   * @returns {AudioService} AudioService 的单例实例
    */
   public static getInstance(): AudioService {
     if (!AudioService.instance) {
@@ -62,12 +62,12 @@ export class AudioService {
   }
 
   /**
-   * 音声を有効/無効にする
+   * 启用/禁用语音
    *
-   * 音声出力の有効/無効状態を設定します。無効に設定すると、現在再生中の
-   * すべての音声が停止され、新たな音声合成リクエストは処理されません。
+   * 设置语音输出的启用/禁用状态。设为禁用时，当前正在播放的
+   * 所有语音都会停止，新的语音合成请求将不被处理。
    *
-   * @param {boolean} enabled 有効にする場合はtrue、無効にする場合はfalse
+   * @param {boolean} enabled 启用时为 true，禁用时为 false
    */
   public setAudioEnabled(enabled: boolean): void {
     this.audioEnabled = enabled;
@@ -78,34 +78,34 @@ export class AudioService {
   }
 
   /**
-   * 音量を設定
+   * 设置音量
    *
-   * 音声再生の音量レベルを設定します。指定された値は0.0～1.0の範囲に
-   * 制限されます。現在キューに入っている音声にも即時に音量変更が適用されます。
+   * 设置语音播放的音量级别。指定值将被限制在 0.0～1.0 范围内，
+   * 当前队列中的语音也会立即应用音量变更。
    *
-   * @param {number} volume 音量 (0.0-1.0の範囲、0.0は無音、1.0は最大音量)
+   * @param {number} volume 音量（0.0-1.0 范围，0.0 为静音，1.0 为最大音量）
    */
   public setVolume(volume: number): void {
     this.audioVolume = Math.max(0, Math.min(1, volume));
 
-    // 再生中の音声があれば音量を適用
+    // 若有正在播放的语音则应用音量
     this.audioQueue.forEach((item) => {
       item.audio.volume = this.audioVolume;
     });
   }
 
   /**
-   * テキストを音声に変換して再生キューに追加
+   * 将文本转换为语音并加入播放队列
    *
-   * テキストをAmazon Pollyを使用して音声に変換し、再生キューに追加します。
-   * テキストは適切なチャンクサイズに分割され、各チャンクは順番に処理されます。
-   * 同じメッセージIDの既存の合成タスクがある場合は、それをキャンセルして
-   * 新しいタスクを開始します。
+   * 使用 Amazon Polly 将文本转换为语音并加入播放队列。
+   * 文本会被分割为合适的块大小，各块按顺序处理。
+   * 若存在相同消息 ID 的现有合成任务，则将其取消并
+   * 开始新任务。
    *
-   * @param {string} text 音声に変換するテキスト
-   * @param {string} messageId メッセージID（複数の音声チャンクをグループ化するため）
-   * @param {string} [voiceId] 音声モデルID（シナリオのNPC設定から取得）
-   * @returns {Promise<void>} 処理完了を表すPromise
+   * @param {string} text 要转换为语音的文本
+   * @param {string} messageId 消息 ID（用于对多个语音块分组）
+   * @param {string} [voiceId] 语音模型 ID（从场景的 NPC 设置中获取）
+   * @returns {Promise<void>} 表示处理完成的 Promise
    */
   public async synthesizeAndQueueAudio(
     text: string,
@@ -117,28 +117,28 @@ export class AudioService {
     }
 
     try {
-      // 既存のタスクをキャンセル（同じメッセージID）
+      // 取消现有任务（相同消息 ID）
       if (this.currentSynthesisTasks.has(messageId)) {
         this.currentSynthesisTasks.get(messageId)?.abort();
         this.currentSynthesisTasks.delete(messageId);
       }
 
-      // テキスト分割（長すぎると Polly の制限に引っかかる可能性がある）
+      // 文本分割（过长可能触发 Polly 的限制）
       const textChunks = this.splitTextIntoChunks(text, 1000);
 
       for (const chunk of textChunks) {
-        // 新しい AbortController を作成
+        // 创建新的 AbortController
         const controller = new AbortController();
         this.currentSynthesisTasks.set(messageId, controller);
 
-        // Amazon Polly でテキストを音声に変換（visemeデータも取得）
-        // WR-007: voiceId未指定時は言語に応じたデフォルトにフォールバック
+        // 用 Amazon Polly 将文本转换为语音（同时获取 viseme 数据）
+        // WR-007：未指定 voiceId 时回退到按语言选择的默认值
         const effectiveVoiceId = voiceId || 'Takumi';
         const result = await this.pollyService.synthesizeSpeechWithViseme(chunk, effectiveVoiceId);
 
-        // タスクがキャンセルされていない場合のみ続行
+        // 仅当任务未被取消时继续
         if (!controller.signal.aborted) {
-          // 音声をキューに追加（visemeデータも一緒に保持）
+          // 将语音加入队列（同时保留 viseme 数据）
           const audio = new Audio(result.audioUrl);
           audio.volume = this.audioVolume;
 
@@ -149,7 +149,7 @@ export class AudioService {
             visemes: result.visemes && result.visemes.length > 0 ? result.visemes : undefined,
           });
 
-          // 再生中でなければ再生を開始
+          // 若未在播放则开始播放
           if (!this.isPlaying) {
             this.playNextAudio();
           }
@@ -158,22 +158,22 @@ export class AudioService {
     } catch (error) {
       console.error("语音合成错误:", error);
     } finally {
-      // タスクが完了したらマップから削除
+      // 任务完成后从 Map 中删除
       this.currentSynthesisTasks.delete(messageId);
     }
   }
 
   /**
-   * テキストを適切なチャンクサイズに分割する
+   * 将文本分割为合适的块大小
    *
-   * 長いテキストを文の区切りを考慮して適切なサイズのチャンクに分割します。
-   * 可能な限り自然な区切り（句読点など）でテキストを分割し、
-   * チャンクサイズの上限を超えないようにします。これにより、
-   * Pollyの制限内で自然な音声合成が可能になります。
+   * 考虑句子的边界，将长文本分割为合适大小的块。
+   * 尽可能在自然的分界处（如标点符号）分割文本，
+   * 使其不超过块大小上限。这样，
+   * 可在 Polly 的限制内实现自然的语音合成。
    *
-   * @param {string} text 分割するテキスト
-   * @param {number} chunkSize チャンクの最大サイズ（文字数）
-   * @returns {string[]} 分割されたテキストの配列
+   * @param {string} text 要分割的文本
+   * @param {number} chunkSize 块的最大大小（字符数）
+   * @returns {string[]} 分割后的文本数组
    * @private
    */
   private splitTextIntoChunks(text: string, chunkSize: number): string[] {
@@ -185,12 +185,12 @@ export class AudioService {
     let start = 0;
 
     while (start < text.length) {
-      // チャンクサイズか文の終わりの位置を探す
+      // 查找块大小或句子的结束位置
       let end = start + chunkSize;
       if (end >= text.length) {
         end = text.length;
       } else {
-        // 文の切れ目（。、!?）を探す
+        // 查找句子分界（。、!?）
         const sentenceBreaks = [
           text.lastIndexOf("。", end),
           text.lastIndexOf("、", end),
@@ -200,7 +200,7 @@ export class AudioService {
           text.lastIndexOf("！", end),
         ].filter((pos) => pos > start && pos < end);
 
-        // 文の切れ目があればそこで分割
+        // 若有句子分界则在此处分割
         if (sentenceBreaks.length > 0) {
           end = Math.max(...sentenceBreaks) + 1;
         }
@@ -214,15 +214,15 @@ export class AudioService {
   }
 
   /**
-   * Base64エンコードされた音声データを再生キューに追加
+   * 将 Base64 编码的音频数据加入播放队列
    *
-   * すでに音声合成された音声データ（Base64エンコードまたはURL）を再生キューに追加します。
-   * このメソッドは音声合成をスキップし、直接提供された音声データを使用します。
-   * 音声再生キューが空の場合は、追加後すぐに再生を開始します。
+   * 将已经合成的音频数据（Base64 编码或 URL）加入播放队列。
+   * 此方法跳过语音合成，直接使用提供的音频数据。
+   * 若播放队列为空，则添加后立即开始播放。
    *
-   * @param {string} audioData Base64エンコードされた音声データまたは音声URL
-   * @param {string} text 音声のテキスト内容（デバッグとログ記録用）
-   * @param {string} messageId メッセージID（複数の音声チャンクをグループ化するため）
+   * @param {string} audioData Base64 编码的音频数据或音频 URL
+   * @param {string} text 音频的文本内容（用于调试和日志记录）
+   * @param {string} messageId 消息 ID（用于对多个语音块分组）
    */
   public queueAudio(audioData: string, text: string, messageId: string): void {
     if (!this.audioEnabled) {
@@ -233,14 +233,14 @@ export class AudioService {
       const audio = new Audio(audioData);
       audio.volume = this.audioVolume;
 
-      // キューに追加
+      // 加入队列
       this.audioQueue.push({
         id: messageId,
         audio,
         text,
       });
 
-      // 再生中でなければ再生を開始
+      // 若未在播放则开始播放
       if (!this.isPlaying) {
         this.playNextAudio();
       }
@@ -250,11 +250,11 @@ export class AudioService {
   }
 
   /**
-   * キュー内の次の音声を再生
+   * 播放队列中的下一条语音
    *
-   * 音声キューの先頭にある音声を再生します。音声の再生が終了するか
-   * エラーが発生した場合、キューから削除し次の音声の再生を試みます。
-   * 音声が無効になっているかキューが空の場合は何も再生しません。
+   * 播放语音队列顶部的语音。当语音播放结束或
+   * 发生错误时，会从队列中删除并尝试播放下一条语音。
+   * 若语音被禁用或队列为空，则不播放任何内容。
    *
    * @private
    */
@@ -268,22 +268,22 @@ export class AudioService {
     const nextAudio = this.audioQueue[0];
 
     nextAudio.audio.onended = () => {
-      // 再生終了したら次の音声へ
+      // 播放结束后播放下一条语音
       const completedMessageId = nextAudio.id;
       this.audioQueue.shift();
 
-      // キューが空になった場合（このメッセージの再生が完了した場合）、リスナーに通知
+      // 队列为空时（该消息播放完成），通知监听器
       if (this.audioQueue.length === 0 || this.audioQueue[0].id !== completedMessageId) {
-        // 特定のメッセージに対するリスナーを実行
+        // 执行针对特定消息的监听器
         const listeners = this.playbackCompleteListeners.get(completedMessageId);
         if (listeners) {
           listeners.forEach(listener => listener());
         }
 
-        // グローバルリスナーを実行
+        // 执行全局监听器
         this.globalPlaybackListeners.forEach(listener => listener(completedMessageId));
 
-        // リスナーを削除（一回限りのイベント）
+        // 删除监听器（一次性事件）
         this.playbackCompleteListeners.delete(completedMessageId);
       }
 
@@ -295,24 +295,24 @@ export class AudioService {
       const errorMessageId = nextAudio.id;
       this.audioQueue.shift();
 
-      // エラー時にもリスナーに通知
+      // 出错时也通知监听器
       const listeners = this.playbackCompleteListeners.get(errorMessageId);
       if (listeners) {
         listeners.forEach(listener => listener());
       }
 
-      // グローバルリスナーを実行
+      // 执行全局监听器
       this.globalPlaybackListeners.forEach(listener => listener(errorMessageId));
 
-      // リスナーを削除（一回限りのイベント）
+      // 删除监听器（一次性事件）
       this.playbackCompleteListeners.delete(errorMessageId);
 
       this.playNextAudio();
     };
 
-    // 再生開始
+    // 开始播放
     nextAudio.audio.play().then(() => {
-      // 音声再生開始成功時にvisemeデータを配信（音声と同期）
+      // 语音播放成功启动时派发 viseme 数据（与语音同步）
       if (nextAudio.visemes) {
         window.dispatchEvent(new CustomEvent('visemeData', {
           detail: { messageId: nextAudio.id, visemes: nextAudio.visemes }
@@ -323,16 +323,16 @@ export class AudioService {
       const failedMessageId = nextAudio.id;
       this.audioQueue.shift();
 
-      // 再生開始失敗時にもリスナーに通知
+      // 播放启动失败时也通知监听器
       const listeners = this.playbackCompleteListeners.get(failedMessageId);
       if (listeners) {
         listeners.forEach(listener => listener());
       }
 
-      // グローバルリスナーを実行
+      // 执行全局监听器
       this.globalPlaybackListeners.forEach(listener => listener(failedMessageId));
 
-      // リスナーを削除（一回限りのイベント）
+      // 删除监听器（一次性事件）
       this.playbackCompleteListeners.delete(failedMessageId);
 
       this.playNextAudio();
@@ -340,119 +340,119 @@ export class AudioService {
   }
 
   /**
-   * 特定のメッセージIDに関連するすべての音声をキューから削除
+   * 从队列中删除与特定消息 ID 相关的所有语音
    *
-   * 指定されたメッセージIDに関連するすべての音声合成タスクと音声再生をキャンセルします。
-   * 再生中の音声が指定されたIDに一致する場合は停止し、キューからも削除します。
-   * 複数メッセージの音声が同時に処理されている場合に、特定のメッセージの音声だけを
-   * キャンセルするために使用します。
+   * 取消与指定消息 ID 相关的所有语音合成任务和语音播放。
+   * 若正在播放的语音与指定 ID 匹配，则停止并从队列中删除。
+   * 当多个消息的语音同时处理时，仅将特定消息的语音
+   * 用于取消。
    *
-   * @param {string} messageId メッセージID
+   * @param {string} messageId 消息 ID
    */
   public clearAudiosByMessageId(messageId: string): void {
-    // 実行中の合成タスクをキャンセル
+    // 取消正在执行的合成任务
     if (this.currentSynthesisTasks.has(messageId)) {
       this.currentSynthesisTasks.get(messageId)?.abort();
       this.currentSynthesisTasks.delete(messageId);
     }
 
-    // 再生中の音声を確認
+    // 检查正在播放的语音
     if (this.audioQueue.length > 0 && this.audioQueue[0].id === messageId) {
       this.audioQueue[0].audio.pause();
       this.audioQueue.shift();
       this.isPlaying = false;
 
-      // リスナーに通知
+      // 通知监听器
       const listeners = this.playbackCompleteListeners.get(messageId);
       if (listeners) {
         listeners.forEach(listener => listener());
       }
 
-      // グローバルリスナーにも通知
+      // 也通知全局监听器
       this.globalPlaybackListeners.forEach(listener => listener(messageId));
 
-      // リスナーを削除（一回限りのイベント）
+      // 删除监听器（一次性事件）
       this.playbackCompleteListeners.delete(messageId);
     }
 
-    // 残りのキューからも削除
+    // 也从剩余队列中删除
     this.audioQueue = this.audioQueue.filter((item) => item.id !== messageId);
 
-    // 再生を再開
+    // 恢复播放
     if (this.audioQueue.length > 0 && !this.isPlaying) {
       this.playNextAudio();
     }
   }
 
   /**
-   * すべての音声再生を停止
+   * 停止所有语音播放
    *
-   * 進行中のすべての音声合成タスクをキャンセルし、再生中の音声を停止して、
-   * 再生キューを空にします。ユーザーが音声を無効にした場合や、ページ遷移時などに
-   * 呼び出されます。
+   * 取消所有进行中的语音合成任务，停止正在播放的语音，
+   * 并清空播放队列。在用户禁用语音或页面跳转等情况下
+   * 会被调用。
    */
   public stopAllAudio(): void {
-    // すべての合成タスクをキャンセル
+    // 取消所有合成任务
     this.currentSynthesisTasks.forEach((controller) => {
       controller.abort();
     });
     this.currentSynthesisTasks.clear();
 
-    // 再生中のメッセージIDを記録（リスナー通知用）
+    // 记录播放中的消息 ID（用于通知监听器）
     const activeMessageIds = new Set<string>();
     this.audioQueue.forEach(item => activeMessageIds.add(item.id));
 
-    // 再生中の音声を停止
+    // 停止正在播放的语音
     if (this.audioQueue.length > 0) {
       this.audioQueue[0].audio.pause();
     }
 
-    // キューをクリア
+    // 清空队列
     this.audioQueue = [];
     this.isPlaying = false;
 
-    // すべてのメッセージIDに対応するリスナーに通知
+    // 通知所有消息 ID 对应的监听器
     activeMessageIds.forEach(messageId => {
       const listeners = this.playbackCompleteListeners.get(messageId);
       if (listeners) {
         listeners.forEach(listener => listener());
       }
 
-      // グローバルリスナーにも通知
+      // 也通知全局监听器
       this.globalPlaybackListeners.forEach(listener => listener(messageId));
 
-      // リスナーを削除（一回限りのイベント）
+      // 删除监听器（一次性事件）
       this.playbackCompleteListeners.delete(messageId);
     });
   }
 
   /**
-   * 音声が有効かどうかを取得
+   * 获取语音是否启用
    *
-   * 現在の音声再生の有効/無効状態を返します。
+   * 返回当前语音播放的启用/禁用状态。
    *
-   * @returns {boolean} 音声が有効な場合はtrue、無効な場合はfalse
+   * @returns {boolean} 语音启用时为 true，禁用时为 false
    */
   public isAudioEnabled(): boolean {
     return this.audioEnabled;
   }
 
   /**
-   * 現在の音量を取得
+   * 获取当前音量
    *
-   * 設定されている現在の音量レベルを返します。
+   * 返回当前设置的音量级别。
    *
-   * @returns {number} 音量 (0.0-1.0の範囲、0.0は無音、1.0は最大音量)
+   * @returns {number} 音量（0.0-1.0 范围，0.0 为静音，1.0 为最大音量）
    */
   public getVolume(): number {
     return this.audioVolume;
   }
 
   /**
-   * 特定のメッセージIDの音声再生完了時に実行されるリスナーを追加
+   * 添加在特定消息 ID 语音播放完成时执行的监听器
    * 
-   * @param messageId 監視するメッセージID
-   * @param callback 再生完了時に実行するコールバック関数
+   * @param messageId 要监视的消息 ID
+   * @param callback 播放完成时执行的回调函数
    */
   public addPlaybackCompleteListener(messageId: string, callback: () => void): void {
     if (!this.playbackCompleteListeners.has(messageId)) {
@@ -462,10 +462,10 @@ export class AudioService {
   }
 
   /**
-   * 特定のメッセージIDの音声再生完了リスナーを削除
+   * 删除特定消息 ID 的语音播放完成监听器
    * 
-   * @param messageId 対象のメッセージID
-   * @param callback 削除するコールバック関数（省略した場合はすべてのリスナーを削除）
+   * @param messageId 目标消息 ID
+   * @param callback 要删除的回调函数（省略时删除所有监听器）
    */
   public removePlaybackCompleteListener(messageId: string, callback?: () => void): void {
     if (!this.playbackCompleteListeners.has(messageId)) return;
@@ -478,18 +478,18 @@ export class AudioService {
   }
 
   /**
-   * すべての音声再生完了イベントを監視するグローバルリスナーを追加
+   * 添加监听所有语音播放完成事件的全局监听器
    * 
-   * @param callback 再生完了時に実行するコールバック関数（メッセージIDが引数として渡される）
+   * @param callback 播放完成时执行的回调函数（消息 ID 作为参数传入）
    */
   public addGlobalPlaybackListener(callback: (messageId: string) => void): void {
     this.globalPlaybackListeners.add(callback);
   }
 
   /**
-   * グローバル再生完了リスナーを削除
+   * 删除全局播放完成监听器
    * 
-   * @param callback 削除するコールバック関数
+   * @param callback 要删除的回调函数
    */
   public removeGlobalPlaybackListener(callback: (messageId: string) => void): void {
     this.globalPlaybackListeners.delete(callback);

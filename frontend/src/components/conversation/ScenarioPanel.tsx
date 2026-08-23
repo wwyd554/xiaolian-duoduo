@@ -8,8 +8,8 @@ interface ScenarioPanelProps {
 }
 
 /**
- * シナリオ説明パネルコンポーネント
- * 右側オーバーレイ内にシナリオの説明文を表示する
+ * 场景说明面板组件
+ * 在右侧覆盖层内显示场景说明文字
  */
 const ScenarioPanel: React.FC<ScenarioPanelProps> = ({ scenario }) => {
   const { t } = useTranslation();

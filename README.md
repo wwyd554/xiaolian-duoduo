@@ -1,208 +1,80 @@
-# AI営業ロールプレイ
+# AI 销售陪练系统
 
 ## 概要
-生成AIを活用した営業スキル向上のためのロールプレイングシステムです。感情表現豊かなAIとの音声対話を通じて、実践的な営業スキルを身につけることができます。
-若手営業担当者を対象に、AIとのインタラクティブなシミュレーションを通じて営業スキルの向上を図るシステムです。
 
-### 主要機能
+基于生成式 AI 的销售技能陪练系统：通过与情绪表达丰富的 AI 角色进行语音/文字对话，在实战模拟中提升销售技巧。面向销售新人及进阶销售人员，提供交互式场景演练与数据化复盘。
 
-- **AIとの音声対話**: Amazon Bedrock AgentCore Runtimeを活用した自然な会話
-- **3Dアバター**: VRMモデルによるNPCの3D表示、リップシンク、感情連動表情、ジェスチャーアニメーション
-- **リアルタイム音声認識**: Amazon Transcribe Streaming（WebSocket）によるリアルタイム音声認識
-- **リアルタイム感情フィードバック**: 怒りメーター、信頼度、進捗度の可視化
-- **音声合成**: Amazon Polly（SSML対応）による自然な音声読み上げ、シナリオごとの音声モデル選択
-- **多様なシナリオ**: カスタマイズ可能な営業シーン、VRMアバターアップロード対応
-- **詳細な分析レポート**: セッション後の改善提案とフィードバック
-- **対話中の映像分析**: Amazon Nova Premiereによる視線・表情・身振りの分析
-- **コンプライアンス違反チェック**: Amazon Bedrock Guardrailsによるリアルタイム違反検出
-- **リファレンスチェック**: Amazon Bedrock Knowledge Baseを活用した参照資料の適切性評価
-- **ランキング機能**: ユーザー間の成績比較とモチベーション向上
-- **国際化対応**: 日本語・英語の多言語サポート
+## 主要功能
 
-### 画面イメージ
+- **AI 语音对话**：DeepSeek 驱动的 NPC 对话（支持文字与语音输入）
+- **3D 虚拟形象**：VRM 模型 NPC 展示，支持口型同步、情绪表情、手势动画
+- **实时语音识别**：WebSocket 流式识别（本地 faster-whisper，生产可切火山引擎）
+- **实时情绪反馈**：愤怒度、信任度、商谈进度可视化
+- **语音合成**：edge-tts 自然语音朗读，按场景选择音色
+- **丰富场景**：17 个内置中文场景 + AI 场景生成器（上传行业资料自动生成）
+- **详细复盘报告**：12 维评分、目标达成分析、改进建议
+- **会话历史**：历史记录、搜索、评分排序
+- **排行榜**：用户间成绩对比
+- **多语言**：中文 / 英语 / 日语
 
-![](./docs/image/demo_image_1.png)
-![](./docs/image/demo_image_2.png)
-![](./docs/image/demo_image_3.png)
-![](./docs/image/demo_image_4.png)
+## 技术栈
 
-### 技術スタック
-
-**フロントエンド**
-- React 19 + TypeScript 5.9
+**前端**
+- React 19 + TypeScript
 - Material UI 7
-- Vite 7（ビルドツール）
-- AWS Amplify v6（認証）
-- React Context API（状態管理）
-- three.js + @pixiv/three-vrm（3Dアバター）
-- i18next + react-i18next（国際化）
-- Chart.js + react-chartjs-2（データ可視化）
-- React Router DOM 7（ルーティング）
-- Jest 30 + React Testing Library + Playwright（テスト）
+- Vite 7（构建工具）
+- three.js + @pixiv/three-vrm（3D 虚拟形象）
+- i18next + react-i18next（国际化）
+- Chart.js + react-chartjs-2（数据可视化）
+- React Router DOM 7（路由）
+- Jest + React Testing Library + Playwright（测试）
 
-**バックエンド**
-- AWS CDK 2.x（インフラストラクチャ）
-- Amazon Bedrock AgentCore Runtime（AIエージェント実行基盤）
-- AWS Lambda (Python 3.9 / TypeScript) + API Gateway (REST + WebSocket)
-- Amazon Bedrock (Claude 4.5 Haiku)
-- Amazon Nova Premiere（動画分析）
-- Amazon Polly（音声合成、SSML対応）
-- Amazon Transcribe Streaming（リアルタイム音声認識、WebSocket）
-- Amazon Bedrock Guardrails（コンプライアンスチェック）
-- Amazon Bedrock Knowledge Base（PDF参照評価）
-- DynamoDB + RDS PostgreSQL
-- Amazon S3（PDF資料、音声ファイル、動画録画、VRMアバター）
-- Amazon CloudFront（静的配信 + VRMファイル配信）
-- Amazon Cognito（認証）
-- CDK Nag（セキュリティチェック）
+**后端（本地化实现，`server/`）**
+- FastAPI + Uvicorn
+- DeepSeek API（Anthropic 兼容端点；模型名由 `.env` 配置，开发期 `deepseek-v4-flash`）
+- SQLite（场景 / 会话 / 消息 / 报告 / 排行榜）
+- edge-tts（语音合成）+ faster-whisper（语音识别）
+- JWT + 邀请码认证
 
-### アーキテクチャ
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="./docs/image/Architecture.png">
-  <source media="(prefers-color-scheme: light)" srcset="./docs/image/Architecture.png">
-  <img src="./docs/image/Architecture.png" alt="Architecture" style="background-color: #1a1a2e;">
-</picture>
+> `cdk/` 目录保留原 AWS 参考实现（已被 `server/` 本地实现替代，仅供对照参考）。
 
-## セットアップ
+## 部署方式
 
-### 前提条件
+详见《[部署手册.md](./部署手册.md)》，支持：
 
-- Docker
-- Node.js 22.x以上
-- Python 3.12以上
-- AWS CLI最新版
-- AWS CDK最新版
+1. **免 Docker 直接运行**（本地开发：后端 uvicorn + 前端 vite preview）
+2. **Docker Compose 一键部署**（生产：backend + frontend + 数据卷）
 
-### デプロイ方法
-
-#### AWS CloudShellを使った簡単デプロイ
-
-事前準備不要で、AWS CloudShellを使って簡単にデプロイできます：
-
-1. **AWS コンソールにログイン**して、画面上部のCloudShellアイコン（ターミナルマーク）をクリックします
-
-2. **以下のコマンドを実行**
-```bash
-# リポジトリをクローン
-git clone https://github.com/aws-samples/sample-ai-sales-roleplay.git
-cd sample-ai-sales-roleplay
-
-# デプロイスクリプトを実行
-chmod +x bin.sh
-./bin.sh
-```
-
-3. **デプロイオプション**（任意）
-```bash
-# セルフサインアップ機能を無効化
-./bin.sh --disable-self-register
-
-# 別のリージョンを使用
-export AWS_DEFAULT_REGION=ap-northeast-1
-./bin.sh
-
-# 個別モデル指定
-./bin.sh --conversation-model "global.anthropic.claude-sonnet-4-5-20250929-v1:0"
-
-# 詳細なカスタマイズ
-./bin.sh --cdk-json-override '{"context":{"default":{"allowedSignUpEmailDomains":["example.com"]}}}'
-```
-
-4. **デプロイ完了後、表示されるURLからアプリケーションにアクセスできます**
-
-#### 手動インストール
-
-1. **リポジトリのクローン**
-```bash
-git clone https://github.com/aws-samples/sample-ai-sales-roleplay.git
-cd sample-ai-sales-roleplay
-```
-
-2. **依存関係のインストール**
-```bash
-# フロントエンド
-cd frontend
-npm install
-
-# バックエンド
-cd ../cdk
-npm install
-```
-
-3. **環境構築**
-[AI営業ロールプレイの環境構築](./cdk/README.md) を参照
-
-## ドキュメント
-
-### デプロイ・設定
-- [bin.sh デプロイスクリプト リファレンス](docs/deployment/bin-sh-reference.md)
-
-### 機能仕様
-- [シナリオ作成ガイド](docs/scenario-creation.md)
-- [動画分析機能](docs/video-analysis.md)
-
-### API・技術仕様
-- [Polly Lexiconガイド](docs/custom-resources/polly-lexicon-guide.md)
-
-### 運用・コスト
-- [コスト試算](docs/cost/コスト試算.md)
-
-## プロジェクト構造
+## 项目结构
 
 ```
-├── frontend/                    # Reactアプリケーション
-│   ├── src/
-│   │   ├── components/         # UIコンポーネント
-│   │   │   ├── avatar/         # 3Dアバター（VRM表示、リップシンク、表情、ジェスチャー）
-│   │   │   ├── conversation/   # 会話画面コンポーネント
-│   │   │   ├── compliance/     # コンプライアンス関連
-│   │   │   ├── recording/      # 録画関連
-│   │   │   ├── referenceCheck/ # リファレンスチェック
-│   │   │   └── common/         # 共通コンポーネント
-│   │   ├── pages/              # アプリケーションページ
-│   │   ├── services/           # APIサービス、認証等
-│   │   ├── hooks/              # カスタムReactフック
-│   │   ├── types/              # TypeScript型定義
-│   │   ├── utils/              # ユーティリティ関数
-│   │   ├── i18n/               # 国際化設定（日本語・英語）
-│   │   └── config/             # 設定ファイル
-│   └── docs/                   # フロントエンド固有ドキュメント
-├── cdk/                        # AWS CDKインフラコード
-│   ├── lib/
-│   │   ├── constructs/         # 再利用可能なCDKコンストラクト
-│   │   │   ├── api/            # API Gateway関連
-│   │   │   ├── storage/        # S3、DynamoDB関連
-│   │   │   └── compute/        # Lambda関連
-│   │   └── stacks/             # デプロイ可能なスタック
-│   ├── agents/                 # Bedrock AgentCore エージェント定義
-│   │   ├── npc-conversation/   # NPC会話エージェント
-│   │   ├── realtime-scoring/   # リアルタイムスコアリングエージェント
-│   │   ├── audio-analysis/     # 音声分析エージェント
-│   │   ├── feedback-analysis/  # フィードバック分析エージェント
-│   │   └── video-analysis/     # 動画分析エージェント
-│   ├── lambda/                 # Lambda関数実装
-│   │   ├── agentcore-api/      # AgentCore Runtime API連携
-│   │   ├── evaluation-api/     # 評価API
-│   │   ├── scoring/            # スコアリングエンジン
-│   │   ├── textToSpeech/       # 音声合成（SSML対応）
-│   │   ├── transcribeWebSocket/ # 音声認識WebSocket
-│   │   ├── scenarios/          # シナリオ管理
-│   │   ├── sessions/           # セッション管理
-│   │   ├── sessionAnalysis/    # セッション分析
-│   │   ├── audioAnalysis/      # 音声分析
-│   │   ├── guardrails/         # Guardrails管理
-│   │   ├── rankings/           # ランキング機能
-│   │   ├── videos/             # 動画処理（Nova Premiere連携）
-│   │   ├── avatars/            # アバター管理（VRMアップロード）
-│   │   └── custom-resources/   # カスタムリソース管理
-│   └── data/                   # 初期データ（シナリオ、Guardrails設定）
-├── docs/                       # プロジェクトドキュメント
-│   ├── cost/                   # コスト試算
-│   ├── custom-resources/       # カスタムリソースガイド
-│   ├── deployment/             # デプロイガイド
-│   └── image/                  # 画面イメージ・アーキテクチャ図
-└── .kiro/                      # Kiro AI設定ファイル
+├── server/                     # 本地化后端（FastAPI + SQLite + DeepSeek）
+│   ├── app/
+│   │   ├── api/               # 路由（sessions/scenarios/analysis/transcribe/tts/guardrails...）
+│   │   ├── services/          # 业务（对话/评分/报告/ASR/TTS）
+│   │   ├── agents/            # LLM 调用底座 + 提示词
+│   │   ├── auth/              # 邀请码 + JWT
+│   │   └── models.py          # Pydantic 模型
+│   └── data/                  # SQLite 数据库与场景种子
+├── frontend/                   # React 前端
+│   └── src/
+│       ├── components/        # UI 组件（avatar/conversation/compliance/recording...）
+│       ├── pages/             # 页面
+│       ├── services/          # API 服务、认证
+│       ├── i18n/              # 国际化（zh/en/ja）
+│       └── types/ utils/ hooks/
+├── cdk/                        # 原 AWS 参考实现（已废弃，保留对照）
+├── docs/                       # 项目文档
+├── 部署手册.md                 # 本地化部署指南
+└── 方案A改造计划.md            # 本地化改造方案与决策记录
 ```
+
+## 文档
+
+- [部署手册.md](./部署手册.md) — 部署与运行指南
+- [方案A改造计划.md](./方案A改造计划.md) — 本地化改造方案（阶段 0-6）
+- [汉化交接文档.md](./汉化交接文档.md) — 原项目交接说明
+- [场景审查报告.md](./场景审查报告.md) — 场景库审查结论
 
 ## Security
 

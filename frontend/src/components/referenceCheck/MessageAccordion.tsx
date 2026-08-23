@@ -18,7 +18,7 @@ import { useTranslation } from "react-i18next";
 import type { ReferenceCheckEvaluation } from "../../types/api";
 
 /**
- * メッセージの型定義
+ * 消息的类型定义
  */
 interface Message {
   message: string;
@@ -28,7 +28,7 @@ interface Message {
 }
 
 /**
- * メッセージアコーディオンのプロパティ
+ * 消息手风琴组件的属性
  */
 interface MessageAccordionProps {
   message: Message;
@@ -36,10 +36,10 @@ interface MessageAccordionProps {
 }
 
 /**
- * メッセージの評価区分に応じたプロパティを取得
+ * 根据消息的评估分类获取相应属性
  * @param evaluation 評価区分（3分類）
  * @param t 翻訳関数
- * @returns メッセージプロパティ
+ * @returns 消息属性
  */
 const getMessageProps = (
   evaluation: ReferenceCheckEvaluation,
@@ -57,7 +57,7 @@ const getMessageProps = (
       return {
         color: "warning" as const,
         icon: <WarningIcon />,
-        label: t("referenceCheck.status.issue", "問題あり"),
+        label: t("referenceCheck.status.issue", "有问题"),
         commentBgColor: "#fff3e0",
       };
     case "not_applicable":
@@ -72,7 +72,7 @@ const getMessageProps = (
 };
 
 /**
- * メッセージアコーディオンコンポーネント
+ * 消息手风琴组件
  */
 const MessageAccordion: React.FC<MessageAccordionProps> = ({
   message,
@@ -88,7 +88,7 @@ const MessageAccordion: React.FC<MessageAccordionProps> = ({
           <Box display="flex" alignItems="center" gap={1}>
             {messageProps.icon}
             <Typography variant="subtitle1">
-              {t("referenceCheck.messageNumber", "メッセージ {{number}}", {
+              {t("referenceCheck.messageNumber", "消息 {{number}}", {
                 number: index + 1,
               })}
             </Typography>
@@ -103,25 +103,25 @@ const MessageAccordion: React.FC<MessageAccordionProps> = ({
       </AccordionSummary>
       <AccordionDetails>
         <Box>
-          {/* ユーザーメッセージ */}
+          {/* 用户消息 */}
           <Paper sx={{ p: 2, mb: 2, bgcolor: "#e3f2fd" }}>
             <Typography variant="subtitle2" color="primary" gutterBottom>
-              {t("referenceCheck.userMessage", "ユーザーの発言")}
+              {t("referenceCheck.userMessage", "用户的发言")}
             </Typography>
             <Typography variant="body2">{message.message}</Typography>
           </Paper>
 
-          {/* 関連ドキュメント */}
+          {/* 相关文档 */}
           <Paper sx={{ p: 2, mb: 2, bgcolor: "#f5f5f5" }}>
             <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-              {t("referenceCheck.relatedDocument", "関連ドキュメント")}
+              {t("referenceCheck.relatedDocument", "相关文档")}
             </Typography>
             <Typography variant="body2">
               {message.relatedDocument || "N/A"}
             </Typography>
           </Paper>
 
-          {/* レビューコメント */}
+          {/* 评价意见 */}
           <Paper
             sx={{
               p: 2,
@@ -137,7 +137,7 @@ const MessageAccordion: React.FC<MessageAccordionProps> = ({
               }
               gutterBottom
             >
-              {t("referenceCheck.reviewComment", "レビューコメント")}
+              {t("referenceCheck.reviewComment", "评价意见")}
             </Typography>
             <Typography variant="body2">
               {message.reviewComment || "N/A"}

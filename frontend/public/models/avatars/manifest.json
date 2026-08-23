@@ -4,9 +4,9 @@
   "avatars": [
     {
       "id": "default",
-      "name": "デフォルトアバター",
+      "name": "默认头像",
       "modelPath": "default_girl1.vrm",
-      "description": "標準的なビジネスパーソンのアバター",
+      "description": "标准的商务人士头像",
       "isDefault": true
     }
   ]

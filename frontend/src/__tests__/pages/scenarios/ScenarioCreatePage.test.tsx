@@ -4,7 +4,7 @@ import "@testing-library/jest-dom";
 import { BrowserRouter } from "react-router-dom";
 import ScenarioCreatePage from "../../../pages/scenarios/ScenarioCreatePage";
 
-// モック
+// mock
 jest.mock("react-router-dom", () => ({
   ...jest.requireActual("react-router-dom"),
   useNavigate: () => jest.fn(),
@@ -24,7 +24,7 @@ jest.mock("react-i18next", () => ({
   },
 }));
 
-// ApiServiceのモック
+// ApiService 的 mock
 const mockApiService = {
   getGuardrails: jest.fn().mockResolvedValue([
     {
@@ -52,7 +52,7 @@ jest.mock("../../../services/ApiService", () => ({
   },
 }));
 
-// AvatarServiceのモック（import.meta.env対策）
+// AvatarService 的 mock（应对 import.meta.env）
 const mockAvatarService = {
   createAvatar: jest.fn().mockResolvedValue({
     avatarId: "test-avatar-id-123",
@@ -71,17 +71,17 @@ jest.mock("../../../services/AvatarService", () => ({
   },
 }));
 
-// テスト用コンポーネントラッパー
+// 测试用组件包装器
 const renderWithRouter = (component: React.ReactElement) => {
   return render(<BrowserRouter>{component}</BrowserRouter>);
 };
 
 describe("ScenarioCreatePage Component", () => {
   beforeEach(() => {
-    // クリーンアップ
+    // 清理
     jest.clearAllMocks();
 
-    // モックの再設定
+    // 重新设置 mock
     mockApiService.getGuardrails.mockResolvedValue([
       {
         arn: "arn:aws:bedrock:us-east-1:123456789012:guardrail/GeneralCompliance",
@@ -101,14 +101,14 @@ describe("ScenarioCreatePage Component", () => {
   it("renders the form with initial step", async () => {
     renderWithRouter(<ScenarioCreatePage />);
 
-    // タイトルが表示されるか確認
+    // 确认标题是否显示
     expect(screen.getByText("scenarios.create.title")).toBeInTheDocument();
 
-    // 最初のステップが表示されているか確認（複数の要素があるのでgetAllByTextを使用）
+    // 确认第一步是否显示（存在多个元素，因此使用 getAllByText）
     const stepLabels = screen.getAllByText("scenarios.create.steps.basicInfo");
     expect(stepLabels.length).toBeGreaterThan(0);
 
-    // フォーム要素が表示されるまで待機
+    // 等待表单元素显示
     await waitFor(
       () => {
         expect(screen.getByTestId("title-input")).toBeInTheDocument();
@@ -116,12 +116,12 @@ describe("ScenarioCreatePage Component", () => {
       },
       { timeout: 10000 },
     );
-  }, 30000); // タイムアウトを30秒に延長
+  }, 30000); // 将超时延长至 30 秒
 
   it("validates required fields before proceeding", async () => {
     renderWithRouter(<ScenarioCreatePage />);
 
-    // フォームの読み込み完了を待つ
+    // 等待表单加载完成
     await waitFor(
       () => {
         expect(screen.getByTestId("title-input")).toBeInTheDocument();
@@ -129,26 +129,26 @@ describe("ScenarioCreatePage Component", () => {
       { timeout: 10000 },
     );
 
-    // 必須フィールドに入力せずに「次へ」ボタンをクリック
+    // 不填写必填字段直接点击「下一步」按钮
     const nextButton = screen.getByRole("button", { name: "common.next" });
     fireEvent.click(nextButton);
 
-    // バリデーションエラーが表示されるか確認（エラーメッセージが表示されない場合はスキップ）
+    // 确认是否显示校验错误（未显示错误消息时跳过）
     await waitFor(
       () => {
-        // バリデーションエラーが表示されるか、またはフォームが次のステップに進まないことを確認
+        // 确认显示校验错误，或表单未进入下一步
         const titleInput = screen.getByTestId("title-input");
-        expect(titleInput).toBeInTheDocument(); // まだ最初のステップにいることを確認
+        expect(titleInput).toBeInTheDocument(); // 确认仍停留在第一步
       },
       { timeout: 10000 },
     );
-  }, 30000); // タイムアウトを30秒に延長
+  }, 30000); // 将超时延长至 30 秒
 
   it("proceeds to the next step when fields are valid", async () => {
-    // userEvent を使わずに高速化
+    // 不使用 userEvent 以提升速度
     renderWithRouter(<ScenarioCreatePage />);
 
-    // フォームの読み込み完了を待つ
+    // 等待表单加载完成
     await waitFor(
       () => {
         expect(screen.getByTestId("title-input")).toBeInTheDocument();
@@ -156,7 +156,7 @@ describe("ScenarioCreatePage Component", () => {
       { timeout: 10000 },
     );
 
-    // フィールドに値を直接設定して高速化
+    // 直接给字段设值以提升速度
     const titleInput = screen.getByTestId("title-input").querySelector("input");
     const descriptionInput = screen
       .getByTestId("description-input")
@@ -177,15 +177,15 @@ describe("ScenarioCreatePage Component", () => {
       });
     }
 
-    // カテゴリを選択 - テストIDを使用
+    // 选择类别 - 使用测试 ID
     const categorySelect = screen.getByTestId("category-select");
     fireEvent.mouseDown(categorySelect);
 
-    // 「次へ」ボタンをクリック - userEvent.clickではなくfireEventを使用して高速化
+    // 点击「下一步」按钮 - 使用 fireEvent 而非 userEvent.click 以提升速度
     const nextButton = screen.getByRole("button", { name: "common.next" });
     fireEvent.click(nextButton);
 
-    // 次のステップに進んだか確認
+    // 确认是否进入下一步
     await waitFor(
       () => {
         expect(
@@ -194,14 +194,14 @@ describe("ScenarioCreatePage Component", () => {
       },
       { timeout: 10000 },
     );
-  }, 30000); // タイムアウトを30秒に延長
+  }, 30000); // 将超时延长至 30 秒
 
-  // 「戻るボタン」のテスト - テキスト検索に基づく実装に修正
+  // 「返回按钮」的测试 - 已修正为基于文本搜索的实现
   it("can navigate back to the previous step", async () => {
-    // userEvent を使わずに高速化
+    // 不使用 userEvent 以提升速度
     renderWithRouter(<ScenarioCreatePage />);
 
-    // フォームの読み込み完了を待つ
+    // 等待表单加载完成
     await waitFor(
       () => {
         expect(screen.getByTestId("title-input")).toBeInTheDocument();
@@ -209,7 +209,7 @@ describe("ScenarioCreatePage Component", () => {
       { timeout: 10000 },
     );
 
-    // フィールドに値を直接設定して高速化
+    // 直接给字段设值以提升速度
     const titleInput = screen.getByTestId("title-input").querySelector("input");
     const descriptionInput = screen
       .getByTestId("description-input")
@@ -217,7 +217,7 @@ describe("ScenarioCreatePage Component", () => {
 
     if (titleInput) {
       fireEvent.change(titleInput, {
-        target: { value: "テストシナリオタイトル" },
+        target: { value: "测试场景标题" },
       });
     }
 
@@ -225,16 +225,16 @@ describe("ScenarioCreatePage Component", () => {
       fireEvent.change(descriptionInput, {
         target: {
           value:
-            "これはテストシナリオの説明文です。バリデーションを通過するのに十分な長さにします。",
+            "这是测试场景的说明文字，长度足以通过校验。",
         },
       });
     }
 
-    // 次へボタンを直接クリック
+    // 直接点击下一步按钮
     const nextButton = screen.getByRole("button", { name: "common.next" });
     fireEvent.click(nextButton);
 
-    // 次のステップに進んだか確認
+    // 确认是否进入下一步
     await waitFor(
       () => {
         expect(
@@ -244,18 +244,18 @@ describe("ScenarioCreatePage Component", () => {
       { timeout: 10000 },
     );
 
-    // 戻るボタンを見つけてクリック - ボタンのラベルに関係なく、最初のボタンが戻るボタンと想定
+    // 找到返回按钮并点击 - 不依赖按钮标签，假设第一个按钮是返回按钮
     const buttons = screen.getAllByRole("button");
-    fireEvent.click(buttons[0]); // 最初のボタンをクリック（通常は戻るボタン）
+    fireEvent.click(buttons[0]); // 点击第一个按钮（通常为返回按钮）
 
-    // 前のステップに戻ったか確認
+    // 确认是否返回上一步
     await waitFor(
       () => {
         expect(screen.getByTestId("title-input")).toBeInTheDocument();
       },
       { timeout: 10000 },
     );
-  }, 30000); // テスト全体のタイムアウトを30秒に延長
+  }, 30000); // 将整个测试的超时延长至 30 秒
 
   it("includes avatarId in createScenario request when avatar is uploaded", async () => {
     renderWithRouter(<ScenarioCreatePage />);
@@ -267,22 +267,22 @@ describe("ScenarioCreatePage Component", () => {
       { timeout: 10000 },
     );
 
-    // createScenarioが呼ばれた際にavatarIdが含まれることを検証するため、
-    // モックの呼び出し引数を確認する
-    // アバターアップロード成功時、createScenarioのリクエストにavatarIdが含まれるべき
+    // 为验证调用 createScenario 时包含 avatarId，
+    // 确认 mock 的调用参数
+    // 头像上传成功时，createScenario 的请求中应包含 avatarId
     mockApiService.createScenario.mockResolvedValue({
       scenarioId: "new-scenario-id",
       scenario: {},
     });
 
-    // createScenarioに渡されるデータにavatarIdフィールドが含まれることを
-    // 型レベルで確認（フロントエンド側の送信ロジックの回帰テスト）
+    // 在类型层面确认传给 createScenario 的数据包含 avatarId 字段
+    // （前端发送逻辑的回归测试）
     const scenarioDataWithAvatar = {
-      title: "テスト",
-      description: "テスト説明",
+      title: "测试",
+      description: "测试说明",
       difficulty: "normal",
       category: "general",
-      npc: { name: "NPC", role: "役職", company: "会社", voiceId: "Takumi" },
+      npc: { name: "NPC", role: "职务", company: "公司", voiceId: "Takumi" },
       avatarId: "test-avatar-id-123",
     };
 
@@ -309,11 +309,11 @@ describe("ScenarioCreatePage Component", () => {
     });
 
     const scenarioDataWithoutAvatar = {
-      title: "テスト",
-      description: "テスト説明",
+      title: "测试",
+      description: "测试说明",
       difficulty: "normal",
       category: "general",
-      npc: { name: "NPC", role: "役職", company: "会社", voiceId: "Takumi" },
+      npc: { name: "NPC", role: "职务", company: "公司", voiceId: "Takumi" },
     };
 
     await mockApiService.createScenario(scenarioDataWithoutAvatar);

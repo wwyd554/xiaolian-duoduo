@@ -23,7 +23,7 @@ interface SidebarPanelProps {
 }
 
 /**
- * サイドバーパネルコンポーネント
+ * 侧边栏面板组件
  */
 const SidebarPanel: React.FC<SidebarPanelProps> = ({
   audioEnabled,
@@ -39,17 +39,17 @@ const SidebarPanel: React.FC<SidebarPanelProps> = ({
   goalStatuses,
 }) => {
   const { t } = useTranslation();
-  // タブ切り替え用の状態
+  // 选项卡切换用的状态
   const [tabValue, setTabValue] = useState(0);
-  // サイドバーの折りたたみ状態
+  // 侧边栏的折叠状态
   const [collapsed, setCollapsed] = useState(false);
 
-  // タブ変更ハンドラー
+  // 选项卡变更处理器
   const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   };
 
-  // 折りたたみ切り替えハンドラー
+  // 折叠切换处理器
   const toggleCollapse = () => {
     setCollapsed(!collapsed);
   };
@@ -79,7 +79,7 @@ const SidebarPanel: React.FC<SidebarPanelProps> = ({
         },
       }}
     >
-      {/* 折りたたみボタン */}
+      {/* 折叠按钮 */}
       <Box
         display="flex"
         justifyContent="flex-end"
@@ -101,9 +101,9 @@ const SidebarPanel: React.FC<SidebarPanelProps> = ({
       </Box>
 
       {!collapsed ? (
-        // 展開時の表示
+        // 展开时的显示
         <>
-          {/* タブ切り替え */}
+          {/* 选项卡切换 */}
           <Tabs
             value={tabValue}
             onChange={handleTabChange}
@@ -123,7 +123,7 @@ const SidebarPanel: React.FC<SidebarPanelProps> = ({
             />
           </Tabs>
 
-          {/* タブパネル */}
+          {/* 选项卡面板 */}
           <Box
             hidden={tabValue !== 0}
             id="metrics-panel"
@@ -144,7 +144,7 @@ const SidebarPanel: React.FC<SidebarPanelProps> = ({
             <GoalsPanel goals={goals} goalStatuses={goalStatuses} />
           </Box>
 
-          {/* 設定パネル - 常に表示 */}
+          {/* 设置面板 - 始终显示 */}
           <Box mt={2}>
             <SessionSettingsPanel
               audioEnabled={audioEnabled}
@@ -157,7 +157,7 @@ const SidebarPanel: React.FC<SidebarPanelProps> = ({
           </Box>
         </>
       ) : (
-        // 折りたたみ時の表示（アイコンのみ）
+        // 折叠时的显示（仅图标）
         <Box
           display="flex"
           flexDirection="column"

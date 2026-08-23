@@ -17,10 +17,10 @@ import {
 } from "../i18n/utils/languageUtils";
 
 /**
- * 言語切り替えコンポーネント
+ * 语言切换组件
  *
- * ヘッダーなどに配置して言語切り替えを行うためのUIを提供します。
- * デスクトップではドロップダウン、モバイルではアイコンボタンとメニューを表示します。
+ * 提供用于放置在顶部栏等处进行语言切换的 UI。
+ * 桌面端显示下拉框，移动端显示图标按钮和菜单。
  */
 const LanguageSwitcher: React.FC = () => {
   const { i18n, t } = useTranslation();
@@ -39,35 +39,35 @@ const LanguageSwitcher: React.FC = () => {
   // 当前语言
   const currentLanguage = i18n.language || "zh";
 
-  // 言語切り替えハンドラー
+  // 语言切换处理器
   const handleLanguageChange = (event: SelectChangeEvent) => {
     const newLang = event.target.value;
     i18n.changeLanguage(newLang);
-    // localStorage に保存して永続化
+    // 保存到 localStorage 进行持久化
     localStorage.setItem("i18nextLng", newLang);
   };
 
-  // モバイル用メニューを開く
+  // 打开移动端菜单
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
 
-  // モバイル用メニューを閉じる
+  // 关闭移动端菜单
   const handleMenuClose = () => {
     setAnchorEl(null);
   };
 
-  // モバイル用メニューで言語を選択した時
+  // 在移动端菜单选择语言时
   const handleMenuItemClick = (lang: string) => {
     i18n.changeLanguage(lang);
-    // localStorage に保存して永続化
+    // 保存到 localStorage 进行持久化
     localStorage.setItem("i18nextLng", lang);
     handleMenuClose();
   };
 
   return (
     <>
-      {/* デスクトップ表示用のセレクトボックス（アイコン付き） */}
+      {/* 桌面端显示用的选择框（带图标） */}
       <Box sx={{ display: { xs: "none", md: "flex" }, alignItems: "center", gap: 1 }}>
         <TranslateIcon sx={{ color: "inherit", fontSize: "1.2rem" }} />
         <FormControl size="small" sx={{ minWidth: 120 }}>
@@ -82,8 +82,8 @@ const LanguageSwitcher: React.FC = () => {
                 display: "flex",
                 alignItems: "center",
               },
-              fontFamily: "inherit", // フォントファミリーを継承
-              color: "inherit", // テキストの色を継承
+              fontFamily: "inherit", // 继承字体系列
+              color: "inherit", // 继承文本颜色
             }}
           >
             {supportedLanguages.map((lang) => (
@@ -95,7 +95,7 @@ const LanguageSwitcher: React.FC = () => {
         </FormControl>
       </Box>
 
-      {/* モバイル表示用のアイコンボタン */}
+      {/* 移动端显示用的图标按钮 */}
       <Box sx={{ display: { xs: "flex", md: "none" } }}>
         <IconButton
           onClick={handleMenuOpen}

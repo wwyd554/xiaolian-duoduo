@@ -1,25 +1,25 @@
 /**
- * VRM表情コントローラー
- * 感情状態からVRM表情へのマッピングとスムーズなトランジションを制御
+ * VRM 表情控制器
+ * 控制从感情状态到 VRM 表情的映射与平滑过渡
  */
 import { VRM } from '@pixiv/three-vrm';
 import { EmotionState } from '../../types/index';
 import { EMOTION_TO_VRM_EXPRESSION, ExpressionBlendEntry, VRMExpressionName } from '../../types/avatar';
 
-// トランジション速度（1秒あたりの変化量）- デフォルト
+// 过渡速度（每秒变化量）- 默认
 const DEFAULT_TRANSITION_SPEED = 3.0;
 
-// 感情種類に応じたトランジション速度
+// 按感情类型区分的过渡速度
 const EMOTION_TRANSITION_SPEEDS: Record<string, number> = {
-  angry: 5.0,    // 急激な感情変化 → 高速
-  sad: 2.0,      // 穏やかな感情変化 → 低速
-  happy: 3.5,    // やや速め
-  relaxed: 2.0,  // 穏やか → 低速
+  angry: 5.0,    // 急剧的感情变化 → 高速
+  sad: 2.0,      // 平缓的感情变化 → 低速
+  happy: 3.5,    // 稍快
+  relaxed: 2.0,  // 平缓 → 低速
   neutral: 3.0,  // 標準
 };
 
-// 感情間の中間状態マッピング（自然なトランジション経路）
-// 中間状態が必要なケースのみ定義。未定義は直接トランジション。
+// 感情之间的中间状态映射（自然的过渡路径）
+// 仅定义需要中间状态的场景，未定义则直接过渡。
 const EMOTION_TRANSITION_PATH: Partial<Record<string, Partial<Record<string, string>>>> = {
   neutral: { happy: 'relaxed' },
   happy: { sad: 'neutral' },
@@ -28,8 +28,8 @@ const EMOTION_TRANSITION_PATH: Partial<Record<string, Partial<Record<string, str
   relaxed: { angry: 'neutral', sad: 'neutral' },
 };
 
-// VRM表情名のマッピング（VRoid Studio / VRM 1.0対応）
-// VRoid Studioで作成されたモデルは異なる表情名を使用することがある
+// VRM 表情名称的映射（支持 VRoid Studio / VRM 1.0）
+// VRoid Studio 创建的模型可能使用不同的表情名称
 const EXPRESSION_NAME_MAP: Record<string, string[]> = {
   happy: ['happy', 'Joy', 'joy', 'Happy', 'smile', 'Smile'],
   angry: ['angry', 'Angry', 'anger', 'Anger'],
@@ -46,7 +46,7 @@ export class ExpressionController {
   private targetIntensity: number = 0;
   private targetBlend: ExpressionBlendEntry[] = [];
   private availableExpressions: string[] = [];
-  // 中間状態トランジション用
+  // 用于中间状态过渡
   private intermediateExpression: VRMExpressionName | null = null;
   private transitionPhase: 'direct' | 'fadeOut' | 'intermediate' | 'fadeIn' = 'direct';
   // 変更検知用
@@ -54,22 +54,22 @@ export class ExpressionController {
 
   constructor(vrm: VRM) {
     this.vrm = vrm;
-    // 利用可能な表情を取得
+    // 获取可用表情
     if (vrm.expressionManager) {
       this.availableExpressions = vrm.expressionManager.expressions.map(e => e.expressionName);
     }
   }
 
   /**
-   * 実際に使用可能な表情名を取得
+   * 获取实际可用的表情名称
    */
   private getActualExpressionName(targetName: string): string | null {
-    // まず直接マッチを試す
+    // 首先尝试直接匹配
     if (this.availableExpressions.includes(targetName)) {
       return targetName;
     }
 
-    // マッピングから探す
+    // 从映射中查找
     const candidates = EXPRESSION_NAME_MAP[targetName] || [targetName];
     for (const candidate of candidates) {
       if (this.availableExpressions.includes(candidate)) {
@@ -77,7 +77,7 @@ export class ExpressionController {
       }
     }
 
-    // 部分一致で探す（大文字小文字を無視）
+    // 以部分匹配查找（忽略大小写）
     const lowerTarget = targetName.toLowerCase();
     for (const expr of this.availableExpressions) {
       if (expr.toLowerCase().includes(lowerTarget) || lowerTarget.includes(expr.toLowerCase())) {
@@ -89,7 +89,7 @@ export class ExpressionController {
   }
 
   /**
-   * 感情状態を設定
+   * 设置感情状态
    */
   setEmotion(emotion: EmotionState): void {
     const mapping = EMOTION_TO_VRM_EXPRESSION[emotion];
@@ -99,7 +99,7 @@ export class ExpressionController {
     this.targetBlend = mapping.blend ?? [];
     this.isDirty = true;
 
-    // 中間状態トランジションの判定
+    // 中间状态过渡的判定
     if (previousExpression !== mapping.expression && previousExpression !== 'neutral') {
       const paths = EMOTION_TRANSITION_PATH[previousExpression];
       const intermediate = paths?.[mapping.expression];
@@ -117,31 +117,31 @@ export class ExpressionController {
   }
 
   /**
-   * 毎フレーム呼び出し、表情をスムーズにトランジション
-   * ※ vrm.update()より先に呼び出すこと（vrm.update()内でexpressionManager.update()が実行される）
+   * 每帧调用，平滑过渡表情
+   * ※ 必须在 vrm.update() 之前调用（vrm.update() 内部会执行 expressionManager.update()）
    */
   update(deltaTime: number): void {
     if (!this.vrm.expressionManager) return;
 
-    // 変更がなく、ターゲットに到達済みならスキップ
+    // 无变化且已到达目标时跳过
     if (!this.isDirty && this.currentExpression === this.targetExpression &&
       Math.abs(this.currentIntensity - this.targetIntensity) < 0.001) {
       return;
     }
 
-    // 感情種類に応じたトランジション速度を取得
+    // 获取按感情类型区分的过渡速度
     const speed = EMOTION_TRANSITION_SPEEDS[this.targetExpression] || DEFAULT_TRANSITION_SPEED;
     const step = speed * deltaTime;
 
-    // 中間状態トランジション処理
+    // 中间状态过渡处理
     if (this.intermediateExpression && this.transitionPhase !== 'direct') {
       this.updateIntermediateTransition(step);
     } else {
-      // 直接トランジション（従来のロジック）
+      // 直接过渡（原有逻辑）
       this.updateDirectTransition(step);
     }
 
-    // すべての表情をリセット（ブレンド用の表情も含む）
+    // 重置所有表情（包括用于混合的表情）
     const resetExpressions = ['happy', 'angry', 'sad', 'relaxed', 'blink'];
     for (const exprName of resetExpressions) {
       const actualName = this.getActualExpressionName(exprName);
@@ -150,7 +150,7 @@ export class ExpressionController {
       }
     }
 
-    // 現在の表情を適用
+    // 应用当前表情
     if (this.currentExpression !== 'neutral') {
       const actualName = this.getActualExpressionName(this.currentExpression);
       if (actualName) {
@@ -158,7 +158,7 @@ export class ExpressionController {
       }
     }
 
-    // ブレンド表情を適用
+    // 应用混合表情
     if (this.currentExpression === this.targetExpression && this.targetBlend.length > 0) {
       const blendRatio = this.targetIntensity > 0 ? this.currentIntensity / this.targetIntensity : 0;
       for (const entry of this.targetBlend) {
@@ -169,7 +169,7 @@ export class ExpressionController {
       }
     }
 
-    // ターゲットに到達したらdirtyフラグをクリア
+    // 到达目标后清除 dirty 标志
     if (this.currentExpression === this.targetExpression &&
       Math.abs(this.currentIntensity - this.targetIntensity) < 0.001) {
       this.isDirty = false;
@@ -177,26 +177,26 @@ export class ExpressionController {
   }
 
   /**
-   * 中間状態を経由するトランジション
+   * 经中间状态的过渡
    */
   private updateIntermediateTransition(step: number): void {
     if (this.transitionPhase === 'fadeOut') {
-      // 現在の表情をフェードアウト
+      // 淡出当前表情
       this.currentIntensity = Math.max(0, this.currentIntensity - step);
       if (this.currentIntensity <= 0) {
-        // 中間状態に切り替え
+        // 切换到中间状态
         this.currentExpression = this.intermediateExpression!;
         this.transitionPhase = 'intermediate';
       }
     } else if (this.transitionPhase === 'intermediate') {
-      // 中間状態を短時間表示
+      // 短暂显示中间状态
       this.currentIntensity = Math.min(0.4, this.currentIntensity + step);
       if (this.currentIntensity >= 0.4) {
-        // ターゲットへのフェードイン開始
+        // 开始淡入到目标
         this.transitionPhase = 'fadeIn';
       }
     } else if (this.transitionPhase === 'fadeIn') {
-      // 中間状態からフェードアウトしてターゲットへ
+      // 从中间状态淡出到目标
       this.currentIntensity = Math.max(0, this.currentIntensity - step);
       if (this.currentIntensity <= 0) {
         this.currentExpression = this.targetExpression;
@@ -208,7 +208,7 @@ export class ExpressionController {
   }
 
   /**
-   * 直接トランジション（従来のロジック）
+   * 直接过渡（原有逻辑）
    */
   private updateDirectTransition(step: number): void {
     if (this.currentExpression !== this.targetExpression) {
@@ -227,11 +227,11 @@ export class ExpressionController {
   }
 
   /**
-   * 現在の表情ブレンドで使用中のblink値を取得
-   * AnimationControllerが瞬きアニメーションと競合しないようにするため
+   * 获取当前表情混合中使用的 blink 值
+   * 为避免 AnimationController 与眨眼动画冲突
    */
   getExpressionBlinkValue(): number {
-    // ターゲット表情に到達していない場合は0
+    // 未到达目标表情时为 0
     if (this.currentExpression !== this.targetExpression) return 0;
     if (this.targetBlend.length === 0) return 0;
 
@@ -243,10 +243,10 @@ export class ExpressionController {
   }
 
   /**
-   * リソース解放
+   * 资源释放
    */
   dispose(): void {
-    // 特にリソース解放は不要
+    // 特别地，无需释放资源
   }
 }
 

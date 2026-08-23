@@ -2,23 +2,23 @@ import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import MessageInput from "../../components/conversation/MessageInput";
 
-// モック
+// mock
 jest.mock("react-i18next", () => ({
   useTranslation: () => ({
     t: (key: string) => {
       const translations: { [key: string]: string } = {
-        "conversation.input.placeholder": "メッセージを入力してください...",
-        "conversation.input.send": "メッセージを送信",
-        "conversation.input.startVoice": "音声入力を開始",
-        "conversation.input.stopVoice": "音声入力を停止",
-        "conversation.input.continueVoice": "音声入力を継続（既存のテキストは保持されます）",
+        "conversation.input.placeholder": "请输入消息...",
+        "conversation.input.send": "发送消息",
+        "conversation.input.startVoice": "开始语音输入",
+        "conversation.input.stopVoice": "停止语音输入",
+        "conversation.input.continueVoice": "继续语音输入（保留现有文本）",
       };
       return translations[key] || key;
     },
   }),
 }));
 
-// SpeechRecognitionFeedbackをモック
+// mock SpeechRecognitionFeedback
 jest.mock(
   "../../components/SpeechRecognitionFeedback",
   () => (props: Record<string, unknown>) => (
@@ -50,7 +50,7 @@ describe("MessageInput", () => {
     jest.clearAllMocks();
   });
 
-  test("セッションが開始されていない場合は表示されない", () => {
+  test("会话未开始时不显示", () => {
     const { container } = render(
       <MessageInput {...defaultProps} sessionStarted={false} />,
     );
@@ -58,7 +58,7 @@ describe("MessageInput", () => {
     expect(container).toBeEmptyDOMElement();
   });
 
-  test("セッションが終了している場合は表示されない", () => {
+  test("会话已结束时不显示", () => {
     const { container } = render(
       <MessageInput {...defaultProps} sessionEnded={true} />,
     );
@@ -66,98 +66,94 @@ describe("MessageInput", () => {
     expect(container).toBeEmptyDOMElement();
   });
 
-  test("テキスト入力が正しく機能する", () => {
+  test("文本输入正常工作", () => {
     render(<MessageInput {...defaultProps} />);
 
-    const textField =
-      screen.getByPlaceholderText("メッセージを入力してください...");
-    fireEvent.change(textField, { target: { value: "テストメッセージ" } });
+    const textField = screen.getByPlaceholderText("请输入消息...");
+    fireEvent.change(textField, { target: { value: "测试消息" } });
 
-    expect(defaultProps.setUserInput).toHaveBeenCalledWith("テストメッセージ");
+    expect(defaultProps.setUserInput).toHaveBeenCalledWith("测试消息");
   });
 
-  test("送信ボタンのクリックでメッセージ送信が呼ばれる", () => {
-    render(<MessageInput {...defaultProps} userInput="テストメッセージ" />);
+  test("点击发送按钮时调用发送消息", () => {
+    render(<MessageInput {...defaultProps} userInput="测试消息" />);
 
-    const sendButton = screen.getByRole("button", { name: "メッセージを送信" });
+    const sendButton = screen.getByRole("button", { name: "发送消息" });
     fireEvent.click(sendButton);
 
     expect(defaultProps.sendMessage).toHaveBeenCalledTimes(1);
   });
 
-  test("空のメッセージでは送信ボタンが無効化される", () => {
+  test("空消息时发送按钮被禁用", () => {
     render(<MessageInput {...defaultProps} userInput="" />);
 
-    const sendButton = screen.getByRole("button", { name: "メッセージを送信" });
+    const sendButton = screen.getByRole("button", { name: "发送消息" });
     expect(sendButton).toBeDisabled();
   });
 
-  test("音声入力ボタンのクリックで音声認識が開始される", () => {
+  test("点击语音输入按钮时开始语音识别", () => {
     render(<MessageInput {...defaultProps} />);
 
-    const micButton = screen.getByRole("button", { name: "音声入力を開始" });
+    const micButton = screen.getByRole("button", { name: "开始语音输入" });
     fireEvent.click(micButton);
 
     expect(defaultProps.startSpeechRecognition).toHaveBeenCalledTimes(1);
   });
 
-  test("処理中は入力フィールドが無効化される", () => {
+  test("处理中输入字段被禁用", () => {
     render(<MessageInput {...defaultProps} isProcessing={true} />);
 
-    const textField =
-      screen.getByPlaceholderText("メッセージを入力してください...");
+    const textField = screen.getByPlaceholderText("请输入消息...");
     expect(textField).toBeDisabled();
 
-    const sendButton = screen.getByRole("button", { name: "メッセージを送信" });
+    const sendButton = screen.getByRole("button", { name: "发送消息" });
     expect(sendButton).toBeDisabled();
 
-    const micButton = screen.getByRole("button", { name: "音声入力を開始" });
+    const micButton = screen.getByRole("button", { name: "开始语音输入" });
     expect(micButton).toBeDisabled();
   });
 
-  test("リスニング中は入力フィールドが無効化される", () => {
-    render(<MessageInput {...defaultProps} isListening={true} userInput="テスト音声入力" />);
+  test("监听中输入字段被禁用", () => {
+    render(<MessageInput {...defaultProps} isListening={true} userInput="测试语音输入" />);
 
-    const textField =
-      screen.getByPlaceholderText("メッセージを入力してください...");
+    const textField = screen.getByPlaceholderText("请输入消息...");
     expect(textField).toBeDisabled();
 
-    // リスニング中でもテキストがあれば送信ボタンは有効（ユーザーが手動で送信可能）
-    const sendButton = screen.getByRole("button", { name: "メッセージを送信" });
+    // 监听中只要文本存在发送按钮即可用（用户可手动发送）
+    const sendButton = screen.getByRole("button", { name: "发送消息" });
     expect(sendButton).toBeEnabled();
 
-    // isListening=trueの時、ボタンのラベルは「音声入力を停止」になり、停止ボタンとして有効
-    const micButton = screen.getByRole("button", { name: "音声入力を停止" });
+    // isListening=true 时按钮标签变为「停止语音输入」，作为停止按钮可用
+    const micButton = screen.getByRole("button", { name: "停止语音输入" });
     expect(micButton).toBeEnabled();
   });
 
-  test("リスニング中でもテキストがあれば送信ボタンをクリックできる", () => {
-    render(<MessageInput {...defaultProps} isListening={true} userInput="テスト音声入力" />);
+  test("监听中有文本时也可点击发送按钮", () => {
+    render(<MessageInput {...defaultProps} isListening={true} userInput="测试语音输入" />);
 
-    const sendButton = screen.getByRole("button", { name: "メッセージを送信" });
+    const sendButton = screen.getByRole("button", { name: "发送消息" });
     expect(sendButton).toBeEnabled();
     fireEvent.click(sendButton);
     expect(defaultProps.sendMessage).toHaveBeenCalledTimes(1);
   });
 
-  test("リスニング中でもテキストが空なら送信ボタンは無効", () => {
+  test("监听中文本为空时发送按钮禁用", () => {
     render(<MessageInput {...defaultProps} isListening={true} userInput="" />);
 
-    const sendButton = screen.getByRole("button", { name: "メッセージを送信" });
+    const sendButton = screen.getByRole("button", { name: "发送消息" });
     expect(sendButton).toBeDisabled();
   });
 
-  test("キーボードイベント（Enter）が適切に処理される", () => {
-    render(<MessageInput {...defaultProps} userInput="テストメッセージ" />);
+  test("键盘事件（Enter）被正确处理", () => {
+    render(<MessageInput {...defaultProps} userInput="测试消息" />);
 
-    const textField =
-      screen.getByPlaceholderText("メッセージを入力してください...");
+    const textField = screen.getByPlaceholderText("请输入消息...");
     fireEvent.keyDown(textField, { key: "Enter" });
 
     expect(defaultProps.handleKeyDown).toHaveBeenCalled();
   });
 
-  test("SpeechRecognitionFeedbackコンポーネントに正しいプロパティが渡される", () => {
+  test("SpeechRecognitionFeedback 组件接收到正确的属性", () => {
     render(
       <MessageInput
         {...defaultProps}

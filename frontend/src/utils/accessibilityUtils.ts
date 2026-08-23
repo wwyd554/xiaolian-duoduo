@@ -1,14 +1,14 @@
 /**
- * アクセシビリティユーティリティ
+ * 无障碍工具
  *
- * アクセシビリティ関連のヘルパー関数と定数を提供します。
- * WCAG 2.1 AA基準に準拠したアクセシビリティを確保するために使用します。
+ * 提供无障碍相关的辅助函数与常量。
+ * 用于确保符合 WCAG 2.1 AA 标准的无障碍性。
  *
  * @module accessibilityUtils
- * @author AI営業ロールプレイ開発チーム
+ * @author AI 销售角色扮演开发团队
  * @version 1.0.0
  * @example
- * // フォーカススタイルの取得
+ * // 获取焦点样式
  * import { getFocusStyles } from '../utils/accessibilityUtils';
  *
  * const styles = {
@@ -17,67 +17,67 @@
  */
 
 /**
- * アクセシブルな色の定義
+ * 无障碍颜色的定义
  *
- * WCAG 2.1 AAに準拠した、十分なコントラスト比を持つ色の定義です。
- * 明るい背景に対して4.5:1以上のコントラスト比を確保しています。
+ * 符合 WCAG 2.1 AA、具有足够对比度的颜色定义。
+ * 对于浅色背景确保 4.5:1 以上的对比度。
  *
  * @type {Object}
- * @property {string} success - 成功状態を表す色（緑色）
- * @property {string} warning - 警告状態を表す色（琥珀色）
- * @property {string} error - エラー状態を表す色（赤色）
- * @property {string} info - 情報状態を表す色（青色）
- * @property {string} primaryText - 主要テキスト色
- * @property {string} secondaryText - 副次テキスト色
- * @property {string} disabledText - 無効テキスト色
- * @property {string} lightBackground - 明るい背景色
- * @property {string} focusOutline - フォーカスアウトライン色
+ * @property {string} success - 表示成功状态的颜色（绿色）
+ * @property {string} warning - 表示警告状态的颜色（琥珀色）
+ * @property {string} error - 表示错误状态的颜色（红色）
+ * @property {string} info - 表示信息状态的颜色（蓝色）
+ * @property {string} primaryText - 主要文本颜色
+ * @property {string} secondaryText - 次要文本颜色
+ * @property {string} disabledText - 禁用文本颜色
+ * @property {string} lightBackground - 浅色背景颜色
+ * @property {string} focusOutline - 焦点轮廓颜色
  */
 export const accessibleColors = {
-  // 主要な色
-  success: "#2e7d32", // 緑色 - 成功状態
-  warning: "#ed6c02", // 琥珀色 - 警告状態
-  error: "#d32f2f", // 赤色 - エラー状態
-  info: "#0288d1", // 青色 - 情報状態
+  // 主要颜色
+  success: "#2e7d32", // 绿色 - 成功状态
+  warning: "#ed6c02", // 琥珀色 - 警告状态
+  error: "#d32f2f", // 红色 - 错误状态
+  info: "#0288d1", // 蓝色 - 信息状态
 
-  // テキスト色
-  primaryText: "#1a1a1a", // 主要テキスト (コントラスト比 14:1)
-  secondaryText: "#616161", // 副次テキスト (コントラスト比 7:1)
-  disabledText: "#757575", // 無効テキスト (コントラスト比 4.6:1)
+  // 文本颜色
+  primaryText: "#1a1a1a", // 主要文本（对比度 14:1）
+  secondaryText: "#616161", // 次要文本（对比度 7:1）
+  disabledText: "#757575", // 禁用文本（对比度 4.6:1）
 
-  // 背景色
-  lightBackground: "#f5f5f5", // 明るい背景
-  focusOutline: "#1976d2", // フォーカスアウトライン
+  // 背景颜色
+  lightBackground: "#f5f5f5", // 浅色背景
+  focusOutline: "#1976d2", // 焦点轮廓
 };
 
 /**
- * メトリクス値に基づいて色を取得する
+ * 根据指标值获取颜色
  *
- * 指定されたメトリクス値と種類に基づいて、アクセシブルな色を返します。
- * 色覚異常を考慮し、色だけでなく値も併用して情報を伝えます。
+ * 根据指定的指标值与类型，返回无障碍颜色。
+ * 考虑色觉障碍，不仅使用颜色，还结合数值传达信息。
  *
- * @param {number} value - メトリクス値 (1-10)
- * @param {'anger' | 'trust' | 'progress'} type - メトリクスの種類
- * @returns {string} - 色コード (hex)
+ * @param {number} value - 指标值（1-10）
+ * @param {'anger' | 'trust' | 'progress'} type - 指标类型
+ * @returns {string} - 颜色代码（hex）
  *
  * @example
- * // 怒りメーターの色を取得
+ * // 获取怒气计的颜色
  * const angerColor = getMetricsColor(8, 'anger'); // => '#d32f2f'
  *
- * // 信頼度の色を取得
+ * // 获取信任度的颜色
  * const trustColor = getMetricsColor(9, 'trust'); // => '#2e7d32'
  */
 export const getMetricsColor = (
   value: number,
   type: "anger" | "trust" | "progress",
 ): string => {
-  // 怒りメーターの場合は逆になる（高いほど赤）
+  // 怒气计则相反（越高越红）
   if (type === "anger") {
     if (value >= 8) return accessibleColors.error;
     if (value >= 5) return accessibleColors.warning;
     return accessibleColors.success;
   }
-  // 信頼度や進捗度の場合（高いほど緑）
+  // 信任度或进度的情况（越高越绿）
   else {
     if (value >= 8) return accessibleColors.success;
     if (value >= 5) return accessibleColors.info;
@@ -86,28 +86,28 @@ export const getMetricsColor = (
 };
 
 /**
- * メトリクス値に基づいて状態テキストを取得する
+ * 根据指标值获取状态文本
  *
- * 指定されたメトリクス値と種類に基づいて、状態を表す文字列を返します。
- * スクリーンリーダーのユーザーに対して、視覚的な色の情報を補完します。
+ * 根据指定的指标值与类型，返回表示状态的字符串。
+ * 为屏幕阅读器用户补充视觉颜色信息。
  *
- * @param {number} value - メトリクス値 (1-10)
- * @param {'anger' | 'trust' | 'progress'} type - メトリクスの種類
- * @returns {string} - 状態を表す文字列
+ * @param {number} value - 指标值（1-10）
+ * @param {'anger' | 'trust' | 'progress'} type - 指标类型
+ * @returns {string} - 表示状态的字符串
  *
  * @example
- * // 怒りメーターの状態テキストを取得
- * const angerStatus = getMetricsStatus(8, 'anger'); // => '非常に高い（危険）'
+ * // 获取怒气计的状态文本
+ * const angerStatus = getMetricsStatus(8, 'anger'); // => '非常高（危险）'
  *
- * // 信頼度の状態テキストを取得
- * const trustStatus = getMetricsStatus(9, 'trust'); // => '非常に高い（良好）'
+ * // 获取信任度的状态文本
+ * const trustStatus = getMetricsStatus(9, 'trust'); // => '非常高（良好）'
  */
 export const getMetricsStatus = (
   value: number,
   type: "anger" | "trust" | "progress",
   t?: (key: string) => string,
 ): string => {
-  // t関数が提供されている場合はi18nキーを使用
+  // 提供了 t 函数时使用 i18n 键
   if (t) {
     if (type === "anger") {
       if (value >= 8) return t("metrics.status.anger.veryHigh");
@@ -119,13 +119,13 @@ export const getMetricsStatus = (
       return t("metrics.status.positive.low");
     }
   }
-  // フォールバック: t関数なしの場合は英語テキスト
+  // 兜底：无 t 函数时使用英文文本
   if (type === "anger") {
     if (value >= 8) return "Very High (Danger)";
     if (value >= 5) return "Moderate (Caution)";
     return "Low (Good)";
   }
-  // 信頼度や進捗度の場合
+  // 信任度或进度的情况
   else {
     if (value >= 8) return "Very High (Good)";
     if (value >= 5) return "Moderate (Normal)";
@@ -134,23 +134,23 @@ export const getMetricsStatus = (
 };
 
 /**
- * アクセシブルなフォーカススタイルを取得する
+ * 获取无障碍焦点样式
  *
- * キーボードフォーカスのための視覚的なスタイルを返します。
- * フォーカス可能な要素に適用することで、キーボードユーザーの操作性を向上させます。
- * WCAG 2.1 AA基準に準拠した、視認性の高いフォーカススタイルを提供します。
+ * 返回用于键盘焦点的视觉样式。
+ * 将其应用于可聚焦元素，可提升键盘用户的可操作性。
+ * 提供符合 WCAG 2.1 AA 标准、高可见性的焦点样式。
  *
- * @returns {Object} - フォーカススタイルのオブジェクト
+ * @returns {Object} - 焦点样式的对象
  *
  * @example
- * // Reactコンポーネントでの使用例
+ * // React 组件中的使用示例
  * const styles = {
  *   button: {
- *     // 通常のスタイル
+ *     // 常规样式
  *     padding: '8px 16px',
  *     backgroundColor: '#0288d1',
  *     color: '#ffffff',
- *     // フォーカス時のスタイル
+ *     // 焦点时的样式
  *     '&:focus': getFocusStyles()
  *   }
  * };
@@ -163,22 +163,22 @@ export const getFocusStyles = () => ({
 });
 
 /**
- * アニメーション設定を取得する
+ * 获取动画设置
  *
- * アクセシビリティに配慮したアニメーション設定を返します。
- * prefers-reduced-motionの設定を尊重し、必要に応じてアニメーションを削減します。
- * ユーザーがシステム設定でアニメーションの削減を選択している場合、
- * 自動的にアニメーションを無効化します。
+ * 返回考虑无障碍性的动画设置。
+ * 尊重 prefers-reduced-motion 设置，必要时减少动画。
+ * 当用户在系统设置中选择减少动画时，
+ * 自动禁用动画。
  *
- * @param {string} animationName - アニメーション名
- * @param {number} duration - アニメーション時間（ミリ秒）
- * @returns {Object} - アニメーション設定のオブジェクト
+ * @param {string} animationName - 动画名称
+ * @param {number} duration - 动画时长（毫秒）
+ * @returns {Object} - 动画设置的对象
  *
  * @example
- * // アクセシブルなフェードインアニメーションの設定
+ * // 无障碍淡入动画的设置
  * const fadeInAnimation = getAccessibleAnimation('fadeIn', 300);
  *
- * // CSSスタイルに適用
+ * // 应用于 CSS 样式
  * const styles = {
  *   ...fadeInAnimation
  * };

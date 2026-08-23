@@ -13,9 +13,9 @@ import { AuthService } from "../../services/AuthService";
 import { useTranslation } from "react-i18next";
 
 /**
- * ユーザー名編集コンポーネント
+ * 用户名编辑组件
  *
- * ユーザー名を表示および編集するためのUIを提供
+ * 提供用于显示和编辑用户名的 UI
  */
 const UserNameEditor: React.FC = () => {
   const { t } = useTranslation();
@@ -32,10 +32,10 @@ const UserNameEditor: React.FC = () => {
     severity: "success",
   });
 
-  // 認証サービスからユーザー情報を取得
+  // 从认证服务获取用户信息
   const authService = AuthService.getInstance();
 
-  // コンポーネントマウント時に現在のユーザー情報を取得
+  // 组件挂载时获取当前用户信息
   useEffect(() => {
     const fetchUserData = async () => {
       try {
@@ -52,10 +52,10 @@ const UserNameEditor: React.FC = () => {
     fetchUserData();
   }, [authService, t]);
 
-  // 編集モードの切り替え
+  // 编辑模式的切换
   const handleEditToggle = async () => {
     setIsEditing(!isEditing);
-    // 編集モードをキャンセルした場合、元のユーザー名に戻す
+    // 取消编辑模式时恢复原用户名
     if (isEditing) {
       try {
         const currentUser = await authService.getCurrentUser();
@@ -68,7 +68,7 @@ const UserNameEditor: React.FC = () => {
     }
   };
 
-  // ユーザー名の保存
+  // 用户名的保存
   const handleSave = async () => {
     try {
       await authService.updatePreferredUsername(username);
@@ -88,7 +88,7 @@ const UserNameEditor: React.FC = () => {
     }
   };
 
-  // 通知を閉じる
+  // 关闭通知
   const handleCloseNotification = () => {
     setNotification({ ...notification, open: false });
   };
@@ -148,7 +148,7 @@ const UserNameEditor: React.FC = () => {
 
       <Divider sx={{ my: 2 }} />
 
-      {/* ユーザーID表示部分 */}
+      {/* 用户 ID 显示部分 */}
       <Box sx={{ mt: 2 }}>
         <Typography variant="subtitle2" gutterBottom>
           {t("profile.userId")}

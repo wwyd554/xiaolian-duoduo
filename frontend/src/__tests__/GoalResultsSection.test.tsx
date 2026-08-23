@@ -1,15 +1,15 @@
 /**
- * GoalResultsSection コンポーネントのテスト
+ * GoalResultsSection 组件的测试
  *
- * バグ再現: goalStatusesにachieved: trueのデータがあるのに
- * 結果画面で0/1（未達成）と表示される問題の回帰テスト
+ * 缺陷复现: 虽然 goalStatuses 中存在 achieved: true 的数据，
+ * 但结果页面仍显示为 0/1（未达成）问题的回归测试
  */
 import React from "react";
 import { render, screen } from "@testing-library/react";
 import GoalResultsSection from "../components/conversation/GoalResultsSection";
 import type { Goal, GoalStatus } from "../types/index";
 
-// i18next モック
+// i18next mock
 jest.mock("react-i18next", () => ({
   useTranslation: () => ({
     t: (key: string, fallback: string) => fallback,
@@ -19,14 +19,14 @@ jest.mock("react-i18next", () => ({
 describe("GoalResultsSection", () => {
   const baseGoal: Goal = {
     id: "goal-1770703368830",
-    description: "挨拶をする",
+    description: "进行问候",
     isRequired: true,
     priority: 3,
-    criteria: ["挨拶をします"],
+    criteria: ["进行问候"],
   };
 
-  describe("ゴール達成状況の正しい表示", () => {
-    test("achieved: trueのgoalStatusがある場合、達成ゴール数が正しく表示される", () => {
+  describe("目标达成状态的正确显示", () => {
+    test("存在 achieved: true 的 goalStatus 时，达成目标数正确显示", () => {
       const goals: Goal[] = [baseGoal];
       const goalStatuses: GoalStatus[] = [
         {
@@ -39,16 +39,16 @@ describe("GoalResultsSection", () => {
 
       render(<GoalResultsSection goals={goals} goalStatuses={goalStatuses} />);
 
-      // 達成ゴール数・必須ゴール達成の両方が1/1と表示されること
+      // 达成目标数和必达目标达成均为 1/1 显示
       const counts = screen.getAllByText("1 / 1");
-      expect(counts).toHaveLength(2); // 達成ゴール数 + 必須ゴール達成
-      // プログレスが100%と表示されること
+      expect(counts).toHaveLength(2); // 达成目标数 + 必达目标达成
+      // 进度显示为 100%
       expect(screen.getByText("100%")).toBeTruthy();
-      // チェックアイコンが表示されること
+      // 勾选图标显示
       expect(screen.getByTestId("CheckCircleIcon")).toBeTruthy();
     });
 
-    test("achieved: falseのgoalStatusがある場合、未達成として表示される", () => {
+    test("存在 achieved: false 的 goalStatus 时，显示为未达成", () => {
       const goals: Goal[] = [baseGoal];
       const goalStatuses: GoalStatus[] = [
         {
@@ -60,30 +60,30 @@ describe("GoalResultsSection", () => {
 
       render(<GoalResultsSection goals={goals} goalStatuses={goalStatuses} />);
 
-      // 達成ゴール数・必須ゴール達成の両方が0/1と表示されること
+      // 达成目标数和必达目标达成均为 0/1 显示
       const counts = screen.getAllByText("0 / 1");
       expect(counts).toHaveLength(2);
-      // キャンセルアイコンが表示されること
+      // 取消图标显示
       expect(screen.getByTestId("CancelIcon")).toBeTruthy();
     });
 
-    test("goalStatusesが空配列の場合、全て未達成として表示される（バグ再現シナリオ）", () => {
-      // このテストケースが今回のバグの再現
-      // バックエンドから goalResults が null で返ってきた場合、
-      // フロントで goalStatuses が空配列になり、全て未達成として表示される
+    test("goalStatuses 为空数组时，全部显示为未达成（缺陷复现场景）", () => {
+      // 本测试用例即本次缺陷的复现
+      // 当后端返回的 goalResults 为 null 时，
+      // 前端 goalStatuses 变为空数组，全部显示为未达成
       const goals: Goal[] = [baseGoal];
       const goalStatuses: GoalStatus[] = [];
 
       render(<GoalResultsSection goals={goals} goalStatuses={goalStatuses} />);
 
-      // 達成ゴール数が0/1と表示されること
+      // 达成目标数显示为 0/1
       const counts = screen.getAllByText("0 / 1");
       expect(counts).toHaveLength(2);
-      // プログレスが0%と表示されること
+      // 进度显示为 0%
       expect(screen.getByText("0%")).toBeTruthy();
     });
 
-    test("goalIdが一致しない場合、デフォルト値（未達成）が使われる", () => {
+    test("goalId 不匹配时使用默认值（未达成）", () => {
       const goals: Goal[] = [baseGoal];
       const goalStatuses: GoalStatus[] = [
         {
@@ -95,22 +95,22 @@ describe("GoalResultsSection", () => {
 
       render(<GoalResultsSection goals={goals} goalStatuses={goalStatuses} />);
 
-      // goalIdが一致しないため、必須ゴール達成は0/1
-      // ただしgoalStatuses.filter(s => s.achieved)は1なので達成ゴール数は1/1
-      expect(screen.getByText("0 / 1")).toBeTruthy(); // 必須ゴール達成
+      // goalId 不匹配，因此必达目标达成显示 0/1
+      // 但 goalStatuses.filter(s => s.achieved) 为 1，因此达成目标数显示 1/1
+      expect(screen.getByText("0 / 1")).toBeTruthy(); // 必达目标达成
     });
   });
 
-  describe("複数ゴールの達成状況", () => {
-    test("複数ゴールで一部達成の場合、正しいカウントが表示される", () => {
+  describe("多目标的达成状态", () => {
+    test("多目标部分达成时，正确计数显示", () => {
       const goals: Goal[] = [
         baseGoal,
         {
           id: "goal-2",
-          description: "自己紹介をする",
+          description: "进行自我介绍",
           isRequired: false,
           priority: 2,
-          criteria: ["自己紹介をします"],
+          criteria: ["进行自我介绍"],
         },
       ];
       const goalStatuses: GoalStatus[] = [
@@ -128,21 +128,21 @@ describe("GoalResultsSection", () => {
 
       render(<GoalResultsSection goals={goals} goalStatuses={goalStatuses} />);
 
-      // 達成ゴール数が1/2と表示されること
+      // 达成目标数显示为 1/2
       expect(screen.getByText("1 / 2")).toBeTruthy();
-      // プログレスバーの値が表示されること
+      // 进度条的值显示
       expect(screen.getByText("100%")).toBeTruthy();
       expect(screen.getByText("30%")).toBeTruthy();
     });
   });
 
-  describe("必須ゴールの達成状況", () => {
-    test("必須ゴールが達成された場合、必須ゴール達成数が正しく表示される", () => {
+  describe("必达目标的达成状态", () => {
+    test("必达目标达成时，必达目标达成数正确显示", () => {
       const goals: Goal[] = [
         { ...baseGoal, isRequired: true },
         {
           id: "goal-2",
-          description: "自己紹介をする",
+          description: "进行自我介绍",
           isRequired: false,
           priority: 2,
           criteria: [],
@@ -163,15 +163,15 @@ describe("GoalResultsSection", () => {
 
       render(<GoalResultsSection goals={goals} goalStatuses={goalStatuses} />);
 
-      // 達成ゴール数が2/2
+      // 达成目标数 2/2
       expect(screen.getByText("2 / 2")).toBeTruthy();
-      // 必須ゴール達成が1/1
+      // 必达目标达成 1/1
       expect(screen.getByText("1 / 1")).toBeTruthy();
     });
   });
 
-  describe("goalsが空の場合", () => {
-    test("goalsが空配列の場合、何も表示されない", () => {
+  describe("goals 为空时", () => {
+    test("goals 为空数组时，不显示任何内容", () => {
       const { container } = render(
         <GoalResultsSection goals={[]} goalStatuses={[]} />,
       );

@@ -7,9 +7,9 @@ interface CoachingHintBarProps {
 }
 
 /**
- * コーチングヒントバーコンポーネント
- * 💡アイコン + テキストのコンパクトなバー形式
- * 入力エリア上部に表示される
+ * 辅导提示条组件
+ * 💡图标 + 文本的紧凑条状形式
+ * 显示在输入区域上方
  */
 const CoachingHintBar: React.FC<CoachingHintBarProps> = ({ hint }) => {
   const { t } = useTranslation();

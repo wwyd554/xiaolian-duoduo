@@ -1,5 +1,5 @@
 /**
- * コンポーネント関連の型定義
+ * 组件相关的类型定义
  */
 
 import { ReactNode } from "react";
@@ -14,7 +14,7 @@ import {
 import { ScenarioFormData } from "./forms";
 
 /**
- * IME入力中の判定のためのキーボードイベント型
+ * 用于判断 IME 输入中的键盘事件类型
  */
 export type CompositionEventType = React.KeyboardEvent & {
   nativeEvent: {
@@ -23,27 +23,27 @@ export type CompositionEventType = React.KeyboardEvent & {
 };
 
 /**
- * 絵文字フィードバックコンポーネントのプロパティ
+ * 表情反馈组件的属性
  */
 export interface EmojiFeedbackProps {
-  // 感情メトリクス
-  angerLevel: number; // 怒りレベル（0-100）
-  trustLevel: number; // 信頼度（0-100）
-  progressLevel: number; // 進捗度（0-100）
+  // 情感指标
+  angerLevel: number; // 怒气水平（0-100）
+  trustLevel: number; // 信任度（0-100）
+  progressLevel: number; // 进度（0-100）
 
-  // 表示オプション
+  // 显示选项
   size?: "small" | "medium" | "large";
   animationEnabled?: boolean;
 
-  // アクセシビリティ
+  // 无障碍
   announceStateChanges?: boolean;
 
-  // イベントハンドラ
+  // 事件处理器
   onEmotionChange?: (emotion: EmotionState) => void;
 }
 
 /**
- * 感情状態の詳細情報
+ * 情感状态的详细信息
  */
 export interface EmotionDetail {
   emoji: string;
@@ -53,7 +53,7 @@ export interface EmotionDetail {
 }
 
 /**
- * ステップコンポーネントの共通プロパティ
+ * 步骤组件的通用属性
  */
 export interface StepComponentProps {
   children?: ReactNode;
@@ -66,7 +66,7 @@ export interface StepComponentProps {
 }
 
 /**
- * フォームフィールドの共通プロパティ
+ * 表单字段的通用属性
  */
 export interface FormFieldProps {
   label: string;
@@ -80,7 +80,7 @@ export interface FormFieldProps {
 }
 
 /**
- * セレクトオプション
+ * 选择选项
  */
 export interface SelectOption {
   value: string;
@@ -89,7 +89,7 @@ export interface SelectOption {
 }
 
 /**
- * ゴール設定ステップのプロパティ
+ * 目标设置步骤的属性
  */
 export interface GoalsStepProps {
   formData: {
@@ -107,7 +107,7 @@ export interface GoalsStepProps {
 }
 
 /**
- * NPC情報設定ステップのプロパティ
+ * NPC 信息设置步骤的属性
  */
 export interface NPCInfoStepProps {
   formData: {
@@ -119,20 +119,20 @@ export interface NPCInfoStepProps {
     data: Partial<NPCInfo & { initialMessage?: string; voiceId?: string }>,
   ) => void;
   validationErrors?: Record<string, string | null>;
-  // VRMアバターアップロード
+  // VRM 头像上传
   avatarFile?: File | null;
   avatarFileName?: string;
   onAvatarFileChange?: (file: File | null) => void;
-  // 音声モデル選択
+  // 语音模型选择
   voiceId?: string;
   onVoiceIdChange?: (voiceId: string) => void;
-  // アバター表示On/Off
+  // 头像显示开/关
   enableAvatar?: boolean;
   onEnableAvatarChange?: (enabled: boolean) => void;
 }
 
 /**
- * プレビューステップのプロパティ
+ * 预览步骤的属性
  */
 export interface PreviewStepProps {
   formData: ScenarioFormData & {
@@ -141,7 +141,7 @@ export interface PreviewStepProps {
 }
 
 /**
- * 共有設定ステップのプロパティ
+ * 共享设置步骤的属性
  */
 export interface SharingStepProps {
   formData: {
@@ -161,7 +161,7 @@ export interface SharingStepProps {
 }
 
 /**
- * 録画コンポーネント関連の型定義
+ * 录制组件相关的类型定义
  */
 export interface VideoManagerRef {
   forceStopRecording: () => Promise<void>;

@@ -3,30 +3,30 @@ import { render, screen } from "@testing-library/react";
 import ReferenceCheckResults from "../../components/referenceCheck/ReferenceCheckResults";
 import type { ReferenceCheckResult } from "../../types/api";
 
-// i18nのモック（デフォルト値を返す）
+// i18n 的 mock（返回默认值）
 jest.mock("react-i18next", () => ({
   useTranslation: () => ({
     t: (key: string, _defaultValue?: unknown, options?: unknown) => {
       const translations: { [key: string]: string } = {
-        "referenceCheck.noIssuesTitle": "問題なし",
-        "referenceCheck.noIssues": "整合性に問題は見つかりませんでした。",
-        "referenceCheck.issuesFoundTitle": "問題が発見されました",
-        "referenceCheck.issuesFoundDescription": "問題が見つかりました。",
-        "referenceCheck.problemMessages": "問題のあるメッセージ",
-        "referenceCheck.allMessages": "全メッセージの詳細",
-        "referenceCheck.status.success": "適切",
-        "referenceCheck.status.issue": "問題あり",
-        "referenceCheck.status.notApplicable": "対象外",
-        "referenceCheck.userMessage": "ユーザーの発言",
-        "referenceCheck.relatedDocument": "関連ドキュメント",
-        "referenceCheck.reviewComment": "レビューコメント",
-        "referenceCheck.explanationTitle": "リファレンスチェックについて",
-        "referenceCheck.explanation1": "説明1",
-        "referenceCheck.explanation2": "説明2",
+        "referenceCheck.noIssuesTitle": "没有问题",
+        "referenceCheck.noIssues": "未发现一致性问题。",
+        "referenceCheck.issuesFoundTitle": "发现问题",
+        "referenceCheck.issuesFoundDescription": "发现有问题。",
+        "referenceCheck.problemMessages": "存在问题的消息",
+        "referenceCheck.allMessages": "全部消息详情",
+        "referenceCheck.status.success": "适当",
+        "referenceCheck.status.issue": "存在问题",
+        "referenceCheck.status.notApplicable": "不适用",
+        "referenceCheck.userMessage": "用户发言",
+        "referenceCheck.relatedDocument": "相关文档",
+        "referenceCheck.reviewComment": "审核意见",
+        "referenceCheck.explanationTitle": "关于资料检查",
+        "referenceCheck.explanation1": "说明1",
+        "referenceCheck.explanation2": "说明2",
       };
       if (key === "referenceCheck.messageNumber") {
         const opts = options as { number: number } | undefined;
-        return `メッセージ ${opts?.number ?? ""}`;
+        return `消息 ${opts?.number ?? ""}`;
       }
       return translations[key] || key;
     },
@@ -34,17 +34,16 @@ jest.mock("react-i18next", () => ({
 }));
 
 /**
- * ReferenceCheckResultsコンポーネントのテスト
+ * ReferenceCheckResults 组件的测试
  *
- * issuesCountに応じた表示分岐と、問題リストに「issue」のみが
- * 抽出されることを検証する。
+ * 验证根据 issuesCount 的显示分支，以及问题列表中仅提取「issue」。
  */
 describe("ReferenceCheckResults", () => {
   const createData = (
     evaluations: ReferenceCheckResult["messages"][number]["evaluation"][],
   ): ReferenceCheckResult => ({
     messages: evaluations.map((evaluation, index) => ({
-      message: `発言${index + 1}`,
+      message: `发言${index + 1}`,
       relatedDocument: "",
       reviewComment: "",
       evaluation,
@@ -55,54 +54,54 @@ describe("ReferenceCheckResults", () => {
     },
   });
 
-  test("issuesCountが0の場合「問題なし」が表示される", () => {
+  test("issuesCount 为 0 时显示「没有问题」", () => {
     const data = createData(["appropriate", "not_applicable"]);
     render(<ReferenceCheckResults data={data} issuesCount={0} />);
 
-    expect(screen.getByText("問題なし")).toBeInTheDocument();
-    expect(screen.queryByText("問題が発見されました")).not.toBeInTheDocument();
+    expect(screen.getByText("没有问题")).toBeInTheDocument();
+    expect(screen.queryByText("发现问题")).not.toBeInTheDocument();
   });
 
-  test("対象外のみの会話では「問題なし」が表示される", () => {
-    // 挨拶や一般的な進行など資料参照が不要な発言のみのケース
+  test("仅不适用对象的会话显示「没有问题」", () => {
+    // 仅问候和一般推进等无需资料参考的发言场景
     const data = createData(["not_applicable", "not_applicable"]);
     render(<ReferenceCheckResults data={data} issuesCount={0} />);
 
-    expect(screen.getByText("問題なし")).toBeInTheDocument();
+    expect(screen.getByText("没有问题")).toBeInTheDocument();
   });
 
-  test("issuesCountが1以上の場合「問題が発見されました」が表示される", () => {
+  test("issuesCount 大于等于 1 时显示「发现问题」", () => {
     const data = createData(["issue", "appropriate"]);
     render(<ReferenceCheckResults data={data} issuesCount={1} />);
 
-    // AlertTitle内は件数表示で複数ノードに分割されるため部分一致で確認
+    // AlertTitle 内为数量显示被拆分为多个节点，因此用部分匹配确认
     expect(
-      screen.getByText((content) => content.includes("問題が発見されました")),
+      screen.getByText((content) => content.includes("发现问题")),
     ).toBeInTheDocument();
-    expect(screen.queryByText("問題なし")).not.toBeInTheDocument();
+    expect(screen.queryByText("没有问题")).not.toBeInTheDocument();
   });
 
-  test("問題のあるメッセージセクションにはissueのみが抽出される", () => {
+  test("存在问题的消息部分仅提取 issue", () => {
     const data = createData(["issue", "appropriate", "not_applicable"]);
     render(<ReferenceCheckResults data={data} issuesCount={1} />);
 
-    // 「問題のあるメッセージ」見出しが表示される
-    expect(screen.getByText("問題のあるメッセージ")).toBeInTheDocument();
+    // 「存在问题的消息」标题显示
+    expect(screen.getByText("存在问题的消息")).toBeInTheDocument();
 
-    // 問題ありセクション + 全メッセージ詳細で「問題あり」ラベルが表示される
-    // issueは1件なので、問題セクションに1つ、全メッセージに1つ = 2箇所
-    expect(screen.getAllByText("問題あり").length).toBe(2);
+    // 问题部分 + 全部消息详情中显示「存在问题」标签
+    // issue 为 1 条，因此问题部分 1 处、全部消息 1 处 = 2 处
+    expect(screen.getAllByText("存在问题").length).toBe(2);
   });
 
-  test("全メッセージ詳細セクションには全件数が表示される", () => {
+  test("全部消息详情部分显示全部数量", () => {
     const data = createData(["issue", "appropriate", "not_applicable"]);
     render(<ReferenceCheckResults data={data} issuesCount={1} />);
 
-    // 全メッセージ詳細セクションが存在する（件数表示で分割されるため部分一致）
+    // 全部消息详情部分存在（数量显示被拆分，因此用部分匹配）
     expect(
-      screen.getByText((content) => content.includes("全メッセージの詳細")),
+      screen.getByText((content) => content.includes("全部消息详情")),
     ).toBeInTheDocument();
-    // 対象外ラベルが全メッセージ詳細に表示される
-    expect(screen.getByText("対象外")).toBeInTheDocument();
+    // 不适用标签在全部消息详情中显示
+    expect(screen.getByText("不适用")).toBeInTheDocument();
   });
 });

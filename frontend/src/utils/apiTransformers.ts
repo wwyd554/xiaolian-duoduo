@@ -1,8 +1,8 @@
 /**
- * バックエンドレスポンスの変換ユーティリティ
+ * 后端响应转换工具
  *
- * バックエンド（Python）はsnake_caseでレスポンスを返すため、
- * フロントエンド（TypeScript camelCase）に変換する関数群を提供する。
+ * 由于后端（Python）以 snake_case 返回响应，
+ * 因此提供转换为前端（TypeScript camelCase）的函数组。
  */
 
 import type {
@@ -15,10 +15,10 @@ import type {
 } from "../types/api";
 
 // ============================================================
-// バックエンド生データ型（snake_case）
+// 后端原始数据类型（snake_case）
 // ============================================================
 
-/** バックエンドから返されるComplianceViolationの生データ型 */
+/** 后端返回的 ComplianceViolation 原始数据类型 */
 interface RawComplianceViolation {
   rule_id: string;
   rule_name: string;
@@ -32,7 +32,7 @@ interface RawComplianceViolation {
   message_params?: Record<string, string | number>;
 }
 
-/** バックエンドから返されるImportStatsの生データ型 */
+/** 后端返回的 ImportStats 原始数据类型 */
 interface RawImportStats {
   imported_scenarios: number;
   updated_scenarios: number;
@@ -41,7 +41,7 @@ interface RawImportStats {
   errors: number;
 }
 
-/** バックエンドから返されるComplianceCheckの生データ型 */
+/** 后端返回的 ComplianceCheck 原始数据类型 */
 interface RawComplianceCheck {
   score?: number;
   passed?: boolean;
@@ -51,7 +51,7 @@ interface RawComplianceCheck {
   recommendations?: string[];
 }
 
-/** バックエンドから返されるImportResponseの生データ型 */
+/** 后端返回的 ImportResponse 原始数据类型 */
 interface RawImportResponse {
   success: boolean;
   message?: string;
@@ -61,7 +61,7 @@ interface RawImportResponse {
   updatedScenarios?: number;
 }
 
-/** バックエンドから返されるVideoAnalysisResultの生データ型 */
+/** 后端返回的 VideoAnalysisResult 原始数据类型 */
 interface RawVideoAnalysisResult {
   overallScore: number;
   eyeContact: number;
@@ -78,7 +78,7 @@ interface RawVideoAnalysisResult {
 // ============================================================
 
 /**
- * バックエンドのComplianceViolation（snake_case）をフロントエンド型（camelCase）に変換
+ * 将后端的 ComplianceViolation（snake_case）转换为前端类型（camelCase）
  */
 export function transformComplianceViolation(
   raw: RawComplianceViolation,
@@ -98,20 +98,20 @@ export function transformComplianceViolation(
 }
 
 /**
- * ComplianceCheck内のviolations配列を変換
- * バックエンドのsnake_case形式またはフロントエンド形式のどちらも受け付ける
+ * 转换 ComplianceCheck 内的 violations 数组
+ * 同时接受后端的 snake_case 形式或前端形式
  */
 export function transformComplianceCheck(
   raw: RawComplianceCheck | ComplianceCheck | undefined,
 ): ComplianceCheck | undefined {
   if (!raw) return undefined;
 
-  // 既にフロントエンド型（camelCase）の場合はviolationsのみ正規化して返す
+  // 已是前端类型（camelCase）时，仅规范化 violations 并返回
   if ('riskLevel' in raw || ('violations' in raw && Array.isArray(raw.violations) && raw.violations.length > 0 && 'ruleId' in raw.violations[0])) {
     return raw as ComplianceCheck;
   }
 
-  // バックエンド型（snake_case）の場合は変換
+  // 后端类型（snake_case）时进行转换
   const rawCheck = raw as RawComplianceCheck;
   return {
     score: rawCheck.score ?? 0,
@@ -126,7 +126,7 @@ export function transformComplianceCheck(
 }
 
 /**
- * バックエンドのImportStats（snake_case）をフロントエンド型（camelCase）に変換
+ * 将后端的 ImportStats（snake_case）转换为前端类型（camelCase）
  */
 export function transformImportStats(raw: RawImportStats): ImportStats {
   return {
@@ -139,18 +139,18 @@ export function transformImportStats(raw: RawImportStats): ImportStats {
 }
 
 /**
- * ImportResponse内のstatsを変換
- * バックエンドのsnake_case形式またはフロントエンド形式のどちらも受け付ける
+ * 转换 ImportResponse 内的 stats
+ * 同时接受后端的 snake_case 形式或前端形式
  */
 export function transformImportResponse(
   raw: RawImportResponse | ImportResponse,
 ): ImportResponse {
-  // 既にフロントエンド型の場合はそのまま返す
+  // 已是前端类型时直接返回
   if (raw.stats && 'importedScenarios' in raw.stats) {
     return raw as ImportResponse;
   }
 
-  // バックエンド型の場合は変換
+  // 后端类型时进行转换
   const rawResp = raw as RawImportResponse;
   return {
     success: rawResp.success,
@@ -159,8 +159,8 @@ export function transformImportResponse(
 }
 
 /**
- * VideoAnalysisResultのstrengths/improvementsを正規化
- * 旧形式（string[]）を AnalysisFeedbackItem[] に変換する
+ * 规范化 VideoAnalysisResult 的 strengths/improvements
+ * 将旧格式（string[]）转换为 AnalysisFeedbackItem[]
  */
 export function normalizeAnalysisItems(
   items: (AnalysisFeedbackItem | string)[] | undefined,
@@ -172,7 +172,7 @@ export function normalizeAnalysisItems(
 }
 
 /**
- * VideoAnalysisResultのstrengths/improvementsを正規化
+ * 规范化 VideoAnalysisResult 的 strengths/improvements
  */
 export function transformVideoAnalysisResult(
   raw: RawVideoAnalysisResult | VideoAnalysisResult | undefined,
@@ -191,8 +191,8 @@ export function transformVideoAnalysisResult(
 }
 
 /**
- * メトリクス文字列値を安全にnumberに変換する
- * NaN/Infinity/undefined/null時はデフォルト値を返す
+ * 安全地将指标字符串值转换为 number
+ * 为 NaN/Infinity/undefined/null 时返回默认值
  */
 export function safeParseMetric(
   value: string | number | undefined | null,

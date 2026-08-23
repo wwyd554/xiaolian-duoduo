@@ -1,12 +1,12 @@
 import type { Goal, GoalStatus, Scenario } from "../types/index";
 
 /**
- * シナリオからゴールステータスの初期状態を生成する
- * @param scenario ゴールを含むシナリオ
- * @returns 初期化されたゴールステータスの配列
+ * 从场景生成目标状态的初始状态
+ * @param scenario 包含目标的场景
+ * @returns 初始化后的目标状态数组
  */
 export const initializeGoalStatuses = (scenario: Scenario): GoalStatus[] => {
-  // goalsが空の場合は空配列を返す（objectivesはレガシーフィールド）
+  // goals 为空时返回空数组（objectives 为遗留字段）
   const effectiveGoals =
     scenario.goals && scenario.goals.length > 0
       ? scenario.goals
@@ -30,10 +30,10 @@ export const initializeGoalStatuses = (scenario: Scenario): GoalStatus[] => {
 };
 
 /**
- * シナリオIDに基づいてゴールを取得する
- * @param scenarioId シナリオID
- * @param scenarios 全シナリオデータ
- * @returns 指定されたシナリオのゴール配列
+ * 根据场景 ID 获取目标
+ * @param scenarioId 场景 ID
+ * @param scenarios 全部场景数据
+ * @returns 指定场景的目标数组
  */
 export const getGoalsByScenarioId = (
   scenarioId: string,
@@ -47,10 +47,10 @@ export const getGoalsByScenarioId = (
 };
 
 /**
- * ゴールスコアを計算する
- * @param goalStatuses ゴール達成状況
- * @param goals ゴール定義
- * @returns 0-100のスコア
+ * 计算目标得分
+ * @param goalStatuses 目标达成情况
+ * @param goals 目标定义
+ * @returns 0-100 的得分
  */
 export const calculateGoalScore = (
   goalStatuses: GoalStatus[],
@@ -74,10 +74,10 @@ export const calculateGoalScore = (
 };
 
 /**
- * 必須ゴールがすべて達成されたかチェックする
- * @param goalStatuses ゴール達成状況
- * @param goals ゴール定義
- * @returns すべての必須ゴールが達成された場合true
+ * 检查所有必填目标是否均已达成
+ * @param goalStatuses 目标达成情况
+ * @param goals 目标定义
+ * @returns 所有必填目标均达成时返回 true
  */
 export const areAllRequiredGoalsAchieved = (
   goalStatuses: GoalStatus[],
@@ -94,36 +94,36 @@ export const areAllRequiredGoalsAchieved = (
 
 
 /**
- * ゴールステータスの更新をマージする
+ * 合并目标状态的更新
  *
- * 以下のルールに従ってマージする:
- * - 一度達成したゴールは達成状態を維持する（後退しない）
- * - progressは下がらない（最大値を維持する）
- * - 達成済みゴールのprogressは100を維持する
- * - 達成時にachievedAtタイムスタンプを記録する（未設定の場合のみ）
+ * 按以下规则进行合并：
+ * - 已达成的目标保持达成状态（不后退）
+ * - progress 不下降（保持最大值）
+ * - 已达成目标的 progress 保持为 100
+ * - 达成时记录 achievedAt 时间戳（仅在未设置时）
  *
- * @param prevStatus 現在のゴールステータス
- * @param update 更新データ（部分的なGoalStatus）
- * @returns マージされたゴールステータス
+ * @param prevStatus 当前目标状态
+ * @param update 更新数据（部分 GoalStatus）
+ * @returns 合并后的目标状态
  */
 export const mergeGoalStatus = (
   prevStatus: GoalStatus,
   update: Partial<GoalStatus>,
 ): GoalStatus => {
-  // 一度達成したゴールは達成状態を維持する
+  // 已达成的目标保持达成状态
   const wasAchieved = prevStatus.achieved;
   const isNowAchieved = wasAchieved || Boolean(update.achieved);
 
-  // progressは下がらないようにする（達成済みなら100を維持）
+  // 确保 progress 不下降（已达成则保持 100）
   const updateProgress = typeof update.progress === "number" ? update.progress : 0;
   const newProgress = wasAchieved
     ? 100
     : Math.max(prevStatus.progress, updateProgress);
 
-  // achievedAtはスプレッドから除外し、明示的に制御する
-  // updateにachievedAtが含まれている場合、スプレッドでprevStatusの値が
-  // 意図せず上書きされることを防ぐ
-  // 注意: GoalStatusはプレーンオブジェクト前提。ゲッターやSymbolキーは対象外
+  // 从展开中排除 achievedAt，显式控制
+  // 当 update 包含 achievedAt 时，防止展开意外
+  // 覆盖 prevStatus 的值
+  // 注意：GoalStatus 假定为普通对象。getter 和 Symbol 键不在范围内
   const restUpdate = Object.fromEntries(
     Object.entries(update).filter(([key]) => key !== "achievedAt"),
   );
@@ -133,7 +133,7 @@ export const mergeGoalStatus = (
     ...restUpdate,
     achieved: isNowAchieved,
     progress: newProgress,
-    // 達成時にタイムスタンプを記録（未設定の場合のみ）
+    // 达成时记录时间戳（仅在未设置时）
     achievedAt:
       isNowAchieved && !prevStatus.achievedAt
         ? new Date()
@@ -142,11 +142,11 @@ export const mergeGoalStatus = (
 };
 
 /**
- * ゴールステータス配列を更新データとマージする
+ * 将目标状态数组与更新数据合并
  *
- * @param prevStatuses 現在のゴールステータス配列
- * @param updates 更新データの配列
- * @returns マージされたゴールステータス配列
+ * @param prevStatuses 当前目标状态数组
+ * @param updates 更新数据数组
+ * @returns 合并后的目标状态数组
  */
 export const mergeGoalStatuses = (
   prevStatuses: GoalStatus[],
@@ -163,13 +163,13 @@ export const mergeGoalStatuses = (
 
 
 /**
- * GoalStatusをAPI送信用にシリアライズする
+ * 将 GoalStatus 序列化为 API 发送用
  *
- * achievedAtのDate→ISO文字列変換を安全に行い、
- * undefinedがオブジェクトに含まれることを防ぐ。
+ * 安全地进行 achievedAt 的 Date→ISO 字符串转换，
+ * 防止 undefined 被包含进对象。
  *
- * @param status ゴールステータス
- * @returns API送信用のプレーンオブジェクト
+ * @param status 目标状态
+ * @returns 用于 API 发送的普通对象
  */
 export const serializeGoalStatus = (
   status: GoalStatus,
@@ -180,7 +180,7 @@ export const serializeGoalStatus = (
     progress: typeof status.progress === "number" ? status.progress : 0,
   };
 
-  // achievedAtがある場合のみISO文字列に変換して含める
+  // 仅在存在 achievedAt 时转换为 ISO 字符串并包含
   if (status.achievedAt) {
     if (status.achievedAt instanceof Date) {
       serialized.achievedAt = status.achievedAt.toISOString();

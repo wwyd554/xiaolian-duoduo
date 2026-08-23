@@ -13,9 +13,9 @@ interface RightPanelContainerProps {
 }
 
 /**
- * 右側パネルコンテナコンポーネント
- * GoalsPanel + ScenarioPanel + PersonaPanel を縦並びで配置
- * 📋ボタンで一括表示/非表示を制御
+ * 右侧面板容器组件
+ * 将 GoalsPanel + ScenarioPanel + PersonaPanel 纵向排列
+ * 通过 📋 按钮控制批量显示/隐藏
  */
 const RightPanelContainer: React.FC<RightPanelContainerProps> = ({
   visible,
@@ -34,7 +34,7 @@ const RightPanelContainer: React.FC<RightPanelContainerProps> = ({
         height: "100%",
         overflowY: "auto",
         p: 1.5,
-        // スクロールバーをコンパクトに
+        // 让滚动条更紧凑
         "&::-webkit-scrollbar": { width: 4 },
         "&::-webkit-scrollbar-thumb": {
           backgroundColor: "rgba(0,0,0,0.15)",
@@ -42,14 +42,14 @@ const RightPanelContainer: React.FC<RightPanelContainerProps> = ({
         },
       }}
     >
-      {/* ゴールパネル - 既存GoalsPanelをオーバーレイスタイルでラップ */}
+      {/* 目标面板 - 用覆盖层样式包裹现有 GoalsPanel */}
       <Box
         sx={{
           background: "rgba(255, 255, 255, 0.92)",
           backdropFilter: "blur(8px)",
           borderRadius: 3,
           boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
-          // GoalsPanelのCardスタイルをオーバーライド
+          // 覆盖 GoalsPanel 的 Card 样式
           "& .MuiCard-root": {
             boxShadow: "none",
             background: "transparent",

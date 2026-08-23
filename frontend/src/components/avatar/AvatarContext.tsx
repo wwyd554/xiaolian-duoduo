@@ -1,6 +1,6 @@
 /**
- * アバターContext
- * アバター情報の状態管理とCloudFront経由のVRMモデル読み込みを提供
+ * 化身 Context
+ * 提供化身信息状态管理及经 CloudFront 的 VRM 模型加载
  */
 import React, {
   createContext,
@@ -13,14 +13,14 @@ import React, {
 import { AvatarInfo, AvatarContextState } from '../../types/avatar';
 
 /**
- * アバターContextの値の型定義
+ * 化身 Context 值的类型定义
  */
 interface AvatarContextValue extends AvatarContextState {
   loadAvatar: (avatarId: string, s3Key?: string) => Promise<void>;
 }
 
 /**
- * アバターContextのデフォルト値
+ * 化身 Context 的默认值
  */
 const defaultContextValue: AvatarContextValue = {
   currentAvatarId: null,
@@ -32,30 +32,30 @@ const defaultContextValue: AvatarContextValue = {
 };
 
 /**
- * アバターContext
+ * 化身 Context
  */
 const AvatarContext = createContext<AvatarContextValue>(defaultContextValue);
 
 /**
- * CloudFront経由のアバターCDN URL
+ * 经 CloudFront 的化身 CDN URL
  */
 const AVATAR_CDN_URL = import.meta.env.VITE_AVATAR_CDN_URL || '';
 
 /**
- * デフォルトアバターのモデルパス（ローカルアセット）
+ * 默认化身的模型路径（本地资源）
  */
 const DEFAULT_AVATAR_MODEL_PATH = '/models/avatars/default_girl1.vrm';
 
 /**
- * AvatarProviderのプロパティ
+ * AvatarProvider 的属性
  */
 interface AvatarProviderProps {
   children: ReactNode;
 }
 
 /**
- * アバターContextプロバイダー
- * アバター情報の状態管理を提供するコンポーネント
+ * 化身 Context 提供者
+ * 提供化身信息状态管理的组件
  */
 export const AvatarProvider: React.FC<AvatarProviderProps> = ({ children }) => {
   // 状態管理
@@ -65,15 +65,15 @@ export const AvatarProvider: React.FC<AvatarProviderProps> = ({ children }) => {
   const [error, setError] = useState<Error | null>(null);
 
   /**
-   * アバターを読み込む
-   * avatarIdが指定された場合はCloudFront経由でVRMモデルを参照
-   * 未指定の場合はデフォルトアバターを使用
-   * @param avatarId - 読み込むアバターのID
-   * @param s3Key - S3キー（"avatars/{userId}/{avatarId}/{fileName}" 形式）
+   * 加载化身
+   * 指定了 avatarId 时经 CloudFront 引用 VRM 模型
+   * 未指定时使用默认化身
+   * @param avatarId - 要加载的化身 ID
+   * @param s3Key - S3 键（"avatars/{userId}/{avatarId}/{fileName}" 格式）
    */
   const loadAvatar = useCallback(async (avatarId: string, s3Key?: string): Promise<void> => {
-    // 同じアバターが既に読み込まれている場合はスキップ
-    // ただしs3Keyが新たに提供された場合は再読み込み
+    // 相同化身已加载时跳过
+    // 但若新提供了 s3Key 则重新加载
     if (currentAvatarId === avatarId && avatarInfo) {
       if (!s3Key || avatarInfo.s3Key === s3Key) {
         return;
@@ -85,7 +85,7 @@ export const AvatarProvider: React.FC<AvatarProviderProps> = ({ children }) => {
 
     try {
       if (avatarId === 'default' || !avatarId) {
-        // デフォルトアバター
+        // 默认化身
         setCurrentAvatarId('default');
         setAvatarInfo({
           id: 'default',
@@ -93,9 +93,9 @@ export const AvatarProvider: React.FC<AvatarProviderProps> = ({ children }) => {
           modelPath: DEFAULT_AVATAR_MODEL_PATH,
         });
       } else if (AVATAR_CDN_URL && s3Key) {
-        // s3Keyは "avatars/{userId}/{avatarId}/{fileName}" 形式
-        // VITE_AVATAR_CDN_URLは "https://xxx.cloudfront.net/avatars" なので
-        // s3Keyから先頭の "avatars/" を除去して結合
+        // s3Key 为 "avatars/{userId}/{avatarId}/{fileName}" 格式
+        // 由于 VITE_AVATAR_CDN_URL 是 "https://xxx.cloudfront.net/avatars"
+        // 去除 s3Key 开头的 "avatars/" 后进行拼接
         const relativePath = s3Key.replace(/^avatars\//, '');
         const modelPath = `${AVATAR_CDN_URL}/${relativePath}`;
         setCurrentAvatarId(avatarId);
@@ -133,7 +133,7 @@ export const AvatarProvider: React.FC<AvatarProviderProps> = ({ children }) => {
     }
   }, [currentAvatarId, avatarInfo]);
 
-  // Contextの値をメモ化
+  // 记忆化 Context 的值
   const contextValue = useMemo<AvatarContextValue>(
     () => ({
       currentAvatarId,
@@ -159,9 +159,9 @@ export const AvatarProvider: React.FC<AvatarProviderProps> = ({ children }) => {
 };
 
 /**
- * アバターContextを使用するカスタムフック
- * @returns アバターContextの値
- * @throws AvatarProvider外で使用された場合にエラー
+ * 使用化身 Context 的自定义钩子
+ * @returns 化身 Context 的值
+ * @throws 在 AvatarProvider 之外使用时会报错
  */
 // eslint-disable-next-line react-refresh/only-export-components
 export const useAvatar = (): AvatarContextValue => {

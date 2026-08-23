@@ -30,12 +30,12 @@ const SharingStep: React.FC<SharingStepProps> = ({
   const { t } = useTranslation();
   const [newUser, setNewUser] = useState("");
 
-  // Selectコンポーネントの制御された状態を確保するため、常に文字列値を提供
+  // 为确保 Select 组件的受控状态，始终提供字符串值
   const guardrailValue = formData.guardrail ?? "";
 
-  // 表示用の名前を生成（任意のプレフィックス除去）
+  // 生成用于显示的名称（去除任意前缀）
   const getDisplayName = (fullName: string): string => {
-    // 最初のハイフンまでをプレフィックスとして除去
+    // 去除第一个连字符之前的前缀
     // 例: "dev-FinanceCompliance" → "FinanceCompliance"
     // 例: "my-company-FinanceCompliance" → "FinanceCompliance"
     const hyphenIndex = fullName.indexOf('-');
@@ -43,7 +43,7 @@ const SharingStep: React.FC<SharingStepProps> = ({
   };
 
 
-  // 公開設定の変更ハンドラー
+  // 公开设置的变更处理器
   const handleVisibilityChange = (
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
@@ -52,7 +52,7 @@ const SharingStep: React.FC<SharingStepProps> = ({
     });
   };
 
-  // Guardrail選択の変更ハンドラー
+  // 护栏选择的变更处理器
   const handleGuardrailChange = (event: SelectChangeEvent<string>) => {
     const selectedValue = event.target.value;
     if (selectedValue === "") {
@@ -65,7 +65,7 @@ const SharingStep: React.FC<SharingStepProps> = ({
     });
   };
 
-  // ユーザー追加ハンドラー
+  // 添加用户处理器
   const handleAddUser = () => {
     if (newUser.trim() && !formData.sharedWithUsers.includes(newUser.trim())) {
       updateFormData({
@@ -75,7 +75,7 @@ const SharingStep: React.FC<SharingStepProps> = ({
     }
   };
 
-  // ユーザー削除ハンドラー
+  // 删除用户处理器
   const handleDeleteUser = (userToDelete: string) => {
     updateFormData({
       sharedWithUsers: formData.sharedWithUsers.filter(
@@ -136,7 +136,7 @@ const SharingStep: React.FC<SharingStepProps> = ({
           </RadioGroup>
         </FormControl>
 
-        {/* 共有ユーザーの設定（共有が選択されている場合のみ表示） */}
+        {/* 共享用户设置（仅在选择共享时显示） */}
         {formData.visibility === "shared" && (
           <Box sx={{ mt: 3 }}>
             <Typography variant="subtitle2" gutterBottom>
@@ -214,7 +214,7 @@ const SharingStep: React.FC<SharingStepProps> = ({
             onChange={handleGuardrailChange}
             displayEmpty
             renderValue={(selected) => {
-              // 選択された値のプレフィックスを除去して表示
+              // 去除所选值的前缀后显示
               return selected ? getDisplayName(selected as string) : "";
             }}
           >

@@ -3,41 +3,41 @@ import { render, screen } from "@testing-library/react";
 import MessageList from "../../components/conversation/MessageList";
 import type { Scenario, Metrics } from "../../types/index";
 
-// i18nモック（キーをそのまま返すことで分岐を識別しやすくする）
+// i18n mock（直接返回 key 对应的中文以便识别分支）
 jest.mock("react-i18next", () => ({
   useTranslation: () => ({
     t: (key: string) => {
       const translations: { [key: string]: string } = {
-        "conversation.startQuestion": "商談を開始しますか？",
-        "conversation.startButton": "商談開始",
-        "conversation.startButtonNoRecording": "商談開始（録画なし）",
-        "conversation.cameraInitializing": "カメラ初期化中...",
-        "conversation.cameraInitializingMessage": "カメラを初期化しています...",
-        "conversation.cameraAccessFailed": "カメラへのアクセスに失敗しました",
-        "conversation.recordingDisabledMessage": "ビデオ録画はオフです",
+        "conversation.startQuestion": "开始商谈吗？",
+        "conversation.startButton": "开始商谈",
+        "conversation.startButtonNoRecording": "开始商谈（无录制）",
+        "conversation.cameraInitializing": "摄像头初始化中...",
+        "conversation.cameraInitializingMessage": "正在初始化摄像头...",
+        "conversation.cameraAccessFailed": "访问摄像头失败",
+        "conversation.recordingDisabledMessage": "视频录制已关闭",
       };
       return translations[key] || key;
     },
   }),
 }));
 
-// dialogueEngineのgetSessionEndReasonをモック（セッション終了表示に使用）
+// mock dialogueEngine 的 getSessionEndReason（用于会话结束提示）
 jest.mock("../../utils/dialogueEngine", () => ({
-  getSessionEndReason: () => "セッション終了理由",
+  getSessionEndReason: () => "会话结束原因",
 }));
 
-describe("MessageList - ビデオ録画オン/オフによる開始ボタンの挙動", () => {
+describe("MessageList - 视频录制开/关对开始按钮的影响", () => {
   const mockScenario: Scenario = {
     id: "test-scenario",
-    title: "テストシナリオ",
-    description: "テスト用シナリオの説明",
+    title: "测试场景",
+    description: "测试用场景说明",
     difficulty: "normal",
     industry: "IT",
     npc: {
       id: "npc-1",
-      name: "テスト太郎",
-      role: "部長",
-      company: "テスト株式会社",
+      name: "测试太郎",
+      role: "部长",
+      company: "测试株式会社",
       personality: [],
       avatar: "👤",
       description: "",
@@ -70,8 +70,8 @@ describe("MessageList - ビデオ録画オン/オフによる開始ボタンの�
     jest.clearAllMocks();
   });
 
-  describe("録画オン時（videoRecordingEnabled = true）", () => {
-    test("カメラ未初期化かつエラーなしの場合、開始ボタンは無効でカメラ初期化中ラベルになる", () => {
+  describe("录制开启时（videoRecordingEnabled = true）", () => {
+    test("摄像头未初始化且无错误时，开始按钮禁用并显示摄像头初始化中标签", () => {
       render(
         <MessageList
           {...defaultProps}
@@ -83,10 +83,10 @@ describe("MessageList - ビデオ録画オン/オフによる開始ボタンの�
 
       const button = screen.getByTestId("start-conversation-button");
       expect(button).toBeDisabled();
-      expect(button).toHaveTextContent("カメラ初期化中...");
+      expect(button).toHaveTextContent("摄像头初始化中...");
     });
 
-    test("カメラ初期化完了の場合、開始ボタンは有効で通常の商談開始ラベルになる", () => {
+    test("摄像头初始化完成时，开始按钮启用并显示常规开始商谈标签", () => {
       render(
         <MessageList
           {...defaultProps}
@@ -98,10 +98,10 @@ describe("MessageList - ビデオ録画オン/オフによる開始ボタンの�
 
       const button = screen.getByTestId("start-conversation-button");
       expect(button).toBeEnabled();
-      expect(button).toHaveTextContent("商談開始");
+      expect(button).toHaveTextContent("开始商谈");
     });
 
-    test("カメラエラーの場合、開始ボタンは有効で録画なしラベルになる", () => {
+    test("摄像头错误时，开始按钮启用并显示无录制标签", () => {
       render(
         <MessageList
           {...defaultProps}
@@ -113,12 +113,12 @@ describe("MessageList - ビデオ録画オン/オフによる開始ボタンの�
 
       const button = screen.getByTestId("start-conversation-button");
       expect(button).toBeEnabled();
-      expect(button).toHaveTextContent("商談開始（録画なし）");
+      expect(button).toHaveTextContent("开始商谈（无录制）");
     });
   });
 
-  describe("録画オフ時（videoRecordingEnabled = false）", () => {
-    test("カメラ初期化状態に関わらず開始ボタンは即有効で録画なしラベルになる", () => {
+  describe("录制关闭时（videoRecordingEnabled = false）", () => {
+    test("无论摄像头初始化状态如何，开始按钮立即可用并显示无录制标签", () => {
       render(
         <MessageList
           {...defaultProps}
@@ -130,10 +130,10 @@ describe("MessageList - ビデオ録画オン/オフによる開始ボタンの�
 
       const button = screen.getByTestId("start-conversation-button");
       expect(button).toBeEnabled();
-      expect(button).toHaveTextContent("商談開始（録画なし）");
+      expect(button).toHaveTextContent("开始商谈（无录制）");
     });
 
-    test("録画オフを示すメッセージが表示される", () => {
+    test("显示录制关闭的消息", () => {
       render(
         <MessageList
           {...defaultProps}
@@ -141,10 +141,10 @@ describe("MessageList - ビデオ録画オン/オフによる開始ボタンの�
         />,
       );
 
-      expect(screen.getByText("ビデオ録画はオフです")).toBeInTheDocument();
+      expect(screen.getByText("视频录制已关闭")).toBeInTheDocument();
     });
 
-    test("録画オフ時はカメラ初期化中メッセージを表示しない", () => {
+    test("录制关闭时不显示摄像头初始化中消息", () => {
       render(
         <MessageList
           {...defaultProps}
@@ -155,13 +155,13 @@ describe("MessageList - ビデオ録画オン/オフによる開始ボタンの�
       );
 
       expect(
-        screen.queryByText("カメラを初期化しています..."),
+        screen.queryByText("正在初始化摄像头..."),
       ).not.toBeInTheDocument();
     });
   });
 
-  describe("videoRecordingEnabled未指定（デフォルト = 録画オン）", () => {
-    test("デフォルトでは録画オンとして扱われ、カメラ未初期化時はボタンが無効になる", () => {
+  describe("videoRecordingEnabled 未指定（默认 = 录制关闭）", () => {
+    test("默认按录制关闭处理，开始按钮可直接使用（无录制）", () => {
       render(
         <MessageList
           {...defaultProps}
@@ -171,8 +171,8 @@ describe("MessageList - ビデオ録画オン/オフによる開始ボタンの�
       );
 
       const button = screen.getByTestId("start-conversation-button");
-      expect(button).toBeDisabled();
-      expect(button).toHaveTextContent("カメラ初期化中...");
+      expect(button).not.toBeDisabled();
+      expect(button).toHaveTextContent("开始商谈（无录制）");
     });
   });
 });

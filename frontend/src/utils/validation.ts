@@ -1,5 +1,5 @@
 /**
- * シナリオフォーム用バリデーションユーティリティ
+ * 场景表单用校验工具
  */
 
 import type { ScenarioFormData } from "../types";
@@ -21,7 +21,7 @@ export const validateBasicInfo = (
     maxTurns: null as string | null,
   };
 
-  // シナリオIDのバリデーション（任意フィールド）
+  // 场景 ID 的校验（可选字段）
   if (scenarioId && scenarioId.trim()) {
     const scenarioIdPattern = /^[a-zA-Z0-9-]+$/;
     if (!scenarioIdPattern.test(scenarioId.trim())) {
@@ -31,7 +31,7 @@ export const validateBasicInfo = (
     }
   }
 
-  // タイトルのバリデーション
+  // 标题的校验
   if (!title.trim()) {
     errors.title = "scenarios.validation.titleRequired";
   } else if (title.trim().length < 3) {
@@ -40,7 +40,7 @@ export const validateBasicInfo = (
     errors.title = "scenarios.validation.titleTooLong";
   }
 
-  // 説明のバリデーション
+  // 说明的校验
   if (!description.trim()) {
     errors.description = "scenarios.validation.descriptionRequired";
   } else if (description.trim().length < 10) {
@@ -49,17 +49,17 @@ export const validateBasicInfo = (
     errors.description = "scenarios.validation.descriptionTooLong";
   }
 
-  // カテゴリのバリデーション
+  // 分类的校验
   if (!category.trim()) {
     errors.category = "scenarios.validation.categoryRequired";
   }
 
-  // 言語のバリデーション
+  // 语言的校验
   if (!language.trim()) {
     errors.language = "scenarios.validation.languageRequired";
   }
 
-  // 最大ターン数のバリデーション（任意フィールド、1-100の範囲内であること）
+  // 最大轮数的校验（可选字段，需在 1-100 范围内）
   if (maxTurns !== undefined) {
     if (maxTurns <= 0) {
       errors.maxTurns = "scenarios.validation.maxTurnsPositive";
@@ -82,7 +82,7 @@ export const validateNpcInfo = (
     company: null as string | null,
   };
 
-  // 名前のバリデーション
+  // 姓名的校验
   if (!name.trim()) {
     errors.name = "scenarios.validation.npcNameRequired";
   } else if (name.trim().length < 2) {
@@ -91,14 +91,14 @@ export const validateNpcInfo = (
     errors.name = "scenarios.validation.npcNameTooLong";
   }
 
-  // 役職のバリデーション
+  // 职务的校验
   if (!role.trim()) {
     errors.role = "scenarios.validation.npcRoleRequired";
   } else if (role.trim().length > 100) {
     errors.role = "scenarios.validation.npcRoleTooLong";
   }
 
-  // 会社名のバリデーション
+  // 公司名的校验
   if (!company.trim()) {
     errors.company = "scenarios.validation.npcCompanyRequired";
   } else if (company.trim().length > 100) {
@@ -109,7 +109,7 @@ export const validateNpcInfo = (
 };
 
 export const validateGoals = (
-  objectives: string[], // 互換性のために残すが使用しない
+  objectives: string[], // 为兼容保留但不使用
   goals: Array<{
     id: string;
     description: string;
@@ -122,11 +122,11 @@ export const validateGoals = (
     goals: null as string | null,
   };
 
-  // ゴールのバリデーション
+  // 目标的校验
   if (goals.length === 0) {
     errors.goals = "scenarios.validation.goalsRequired";
   } else {
-    // 各ゴールの条件が設定されているかチェック
+    // 检查每个目标是否设置了条件
     const invalidGoals = goals.filter((goal) => goal.criteria.length === 0);
     if (invalidGoals.length > 0) {
       errors.goals = "scenarios.validation.goalsCriteriaRequired";
@@ -146,12 +146,12 @@ export const validateSharing = (
     guardrail: null as string | null,
   };
 
-  // 共有設定のバリデーション
+  // 共享设置的校验
   if (visibility === "shared" && sharedWithUsers.length === 0) {
     errors.sharedWithUsers = "scenarios.validation.sharedUsersRequired";
   }
 
-  // Guardrailのバリデーション
+  // Guardrail 的校验
   if (!guardrail.trim()) {
     errors.guardrail = "scenarios.validation.guardrailRequired";
   }
@@ -182,7 +182,7 @@ export const validateForm = (formData: ScenarioFormData) => {
     formData.guardrail,
   );
 
-  // すべてのエラーがnullかどうかをチェック
+  // 检查所有错误是否为 null
   const isBasicInfoValid = Object.values(basicInfoValidation).every(
     (error) => error === null,
   );

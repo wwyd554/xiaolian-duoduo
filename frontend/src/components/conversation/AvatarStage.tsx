@@ -6,7 +6,7 @@ import type { EmotionState } from "../../types/index";
 import type { GestureType } from "../../types/avatar";
 
 interface AvatarStageProps {
-  // アバター関連
+  // 化身相关
   avatarId?: string;
   avatarS3Key?: string;
   angerLevel: number;
@@ -21,9 +21,9 @@ interface AvatarStageProps {
 }
 
 /**
- * アバターステージコンポーネント
- * VRMAvatarContainerを中央大表示でラップし、
- * NPC名ラベルと発話中サウンドウェーブインジケーターを表示する
+ * 化身舞台组件
+ * 将 VRMAvatarContainer 以居中放大显示包裹，
+ * 显示 NPC 名称标签和发言中的声波指示器
  */
 const AvatarStage: React.FC<AvatarStageProps> = ({
   avatarId,
@@ -50,9 +50,9 @@ const AvatarStage: React.FC<AvatarStageProps> = ({
       role="region"
       aria-label={t("avatarStage.label")}
     >
-      {/* NPC名ラベル（非表示） */}
+      {/* NPC 名称标签（隐藏） */}
 
-      {/* VRMアバター */}
+      {/* VRM 化身 */}
       <Box
         sx={{
           width: "100%",
@@ -77,7 +77,7 @@ const AvatarStage: React.FC<AvatarStageProps> = ({
         />
       </Box>
 
-      {/* 発話中サウンドウェーブインジケーター */}
+      {/* 发言中的声波指示器 */}
       {isSpeaking && (
         <Box
           sx={{

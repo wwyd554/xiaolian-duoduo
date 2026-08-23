@@ -9,27 +9,27 @@ import { useTranslation } from "react-i18next";
 import type { SlideImageInfo } from "../../types/api";
 
 interface SlideTrayProps {
-  /** スライド画像一覧 */
+  /** 幻灯片图片列表 */
   slides: SlideImageInfo[];
-  /** 現在選択中のスライドインデックス（0始まり） */
+  /** 当前选中的幻灯片索引（从 0 开始） */
   currentIndex: number;
-  /** 選択済みスライドのページ番号リスト */
+  /** 已选择幻灯片的页码列表 */
   presentedPages: number[];
-  /** スライド選択変更時のコールバック（クリックでトグル） */
+  /** 幻灯片选择变化时的回调（点击切换） */
   onSlideSelect: (index: number) => void;
-  /** 選択追加コールバック */
+  /** 添加选择回调 */
   onPresent: (pageNumber: number) => void;
-  /** 選択解除コールバック */
+  /** 取消选择回调 */
   onUnpresent: (pageNumber: number) => void;
-  /** 全選択解除コールバック */
+  /** 全部取消选择回调 */
   onClearAll: () => void;
-  /** 拡大ボタン押下時のコールバック */
+  /** 点击放大按钮时的回调 */
   onZoom: () => void;
 }
 
 /**
- * スライドトレイコンポーネント
- * サムネイルクリックで選択/解除をトグル
+ * 幻灯片托盘组件
+ * 点击缩略图切换选择/取消
  */
 const SlideTray: React.FC<SlideTrayProps> = ({
   slides,
@@ -46,7 +46,7 @@ const SlideTray: React.FC<SlideTrayProps> = ({
   const handleThumbnailClick = useCallback(
     (index: number, pageNumber: number) => {
       onSlideSelect(index);
-      // クリックで選択/解除をトグル
+      // 点击切换选择/取消
       if (presentedPages.includes(pageNumber)) {
         onUnpresent(pageNumber);
       } else {
@@ -88,7 +88,7 @@ const SlideTray: React.FC<SlideTrayProps> = ({
       role="region"
       aria-label={t("conversation.slideTray.label")}
     >
-      {/* ヘッダー行 */}
+      {/* 顶部行 */}
       <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mb: 0.5 }}>
         <Typography variant="caption" fontWeight={600} color="text.secondary">
           📄 {t("conversation.slideTray.title")}
@@ -122,7 +122,7 @@ const SlideTray: React.FC<SlideTrayProps> = ({
         )}
       </Box>
 
-      {/* サムネイル一覧（クリックでトグル） */}
+      {/* 缩略图列表（点击切换） */}
       <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, overflowX: "auto" }} role="listbox" aria-multiselectable="true" aria-label={t("conversation.slideTray.label")}>
         {slides.map((slide, index) => {
           const isPresented = presentedPages.includes(slide.pageNumber);

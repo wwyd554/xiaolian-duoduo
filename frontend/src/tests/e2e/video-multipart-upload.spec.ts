@@ -1,56 +1,56 @@
 /**
- * E2Eテスト: セッション録画のマルチパートアップロード
+ * E2E 测试: 会话录制的分片上传
  *
- * GitHub Issue #68「セッション録画のS3アップロードが EntityTooLarge で失敗する」の
- * 抜本対策として導入したマルチパートアップロードのE2Eテスト。
- * dev環境（CloudFront / API Gateway）への接続を伴う統合テスト。
+ * 针对 GitHub Issue #68「会话录制的 S3 上传因 EntityTooLarge 失败」
+ * 作为根本对策引入的分片上传 E2E 测试。
+ * 涉及 dev 环境（CloudFront / API Gateway）连接的集成测试。
  *
- * 検証観点:
- * 1. /videos/multipart/create が認証付きで uploadId と partUrls を返すこと
- * 2. 返却された署名付きURLに実データをPUTでき、ETagが取得できること
- *    （S3バケットCORSの exposedHeaders に ETag が公開されていることの検証も兼ねる）
- * 3. /videos/multipart/complete でパート結合が成功すること
- * 4. 不正リクエスト（partCount欠如）が400で弾かれること
- * 5. 旧 /videos/upload-url が削除され、マルチパートに一本化されていること
- * 6. 中断（abort）後に complete を呼んでも結合が成功しないこと（異常系）
+ * 验证要点:
+ * 1. /videos/multipart/create 在带认证的情况下返回 uploadId 和 partUrls
+ * 2. 能向返回的签名 URL PUT 真实数据，并能获取 ETag
+ *    （同时验证 S3 存储桶 CORS 的 exposedHeaders 中公开了 ETag）
+ * 3. /videos/multipart/complete 能成功合并分片
+ * 4. 非法请求（缺少 partCount）被 400 拒绝
+ * 5. 旧 /videos/upload-url 已删除，统一为分片上传
+ * 6. 中断（abort）后再调用 complete 也不能成功合并（异常场景）
  *
- * 【重要】実行前提:
- * - 本テストは E2E_API_GATEWAY_ENDPOINT が指すデプロイ済み環境（dev等）に対して実行する。
- *   検証観点5（旧エンドポイント削除の確認）は、本変更を含むスタックを
- *   `npm run deploy:dev` でデプロイした後でないと正しく評価できない。
- *   デプロイ前に実行すると旧エンドポイントがまだ生きており、誤った合否になる。
- * - CIには未組み込みのため手動実行を想定。実行コマンド:
+ * 【重要】执行前提:
+ * - 本测试针对 E2E_API_GATEWAY_ENDPOINT 指向的已部署环境（dev 等）执行。
+ *   验证要点 5（确认旧端点已删除）需先通过
+ *   `npm run deploy:dev` 部署包含本变更的堆栈后才能正确评估。
+ *   部署前执行时旧端点仍存活，会导致错误判定。
+ * - 未接入 CI，因此按手动执行设计。执行命令:
  *   `cd frontend && npx playwright test video-multipart-upload.spec.ts --project=chromium`
  *
- * 設計上の注意:
- * - ブラウザは実カメラにアクセスできないため、録画動画の実生成はE2Eでは検証しない。
- *   代わりに、ログイン済みブラウザコンテキストで取得した本物のCognito IDトークンを使い、
- *   デプロイ済みのマルチパートAPIをAPIレイヤーで end-to-end に検証する。
- * - 認証トークンはAmplifyがlocalStorageに保存したものをアプリのコンテキスト内から取得する。
- *   キー構造への直接依存を避けるため、CognitoのidTokenキーをパターン検索で取得する。
+ * 设计上的注意:
+ * - 浏览器无法访问真实摄像头，因此 E2E 中不验证录制视频的实际生成。
+ *   取而代之，使用在已登录浏览器上下文中获取的真实 Cognito ID 令牌，
+ *   在 API 层面对已部署的分片 API 进行端到端验证。
+ * - 认证令牌从应用上下文中获取 Amplify 保存在 localStorage 中的内容。
+ *   为避免对键结构产生直接依赖，通过模式搜索获取 Cognito 的 idToken 键。
  */
 import { test, expect, Page } from "@playwright/test";
 import { login } from "./helpers";
 
-// APIエンドポイント（アプリのビルド時環境変数と同一のものをテスト環境変数から取得）
+// API 端点（从测试环境变量获取与应用构建时环境变量相同的值）
 const API_ENDPOINT = (process.env.E2E_API_GATEWAY_ENDPOINT || "").replace(
   /\/$/,
   "",
 );
 
-// S3マルチパートアップロードの最小パートサイズは5MB。
-// 複数パートの結合を検証するため、1パート目は5MB以上のデータを用意する。
+// S3 分片上传的最小分片大小为 5MB。
+// 为验证多个分片的合并，第 1 片准备 5MB 以上的数据。
 const PART_SIZE_BYTES = 5 * 1024 * 1024;
 
 /**
- * ログイン済みブラウザコンテキストからCognito IDトークンを取得する
+ * 从已登录浏览器上下文获取 Cognito ID 令牌
  *
- * Amplify v6はCognitoのトークンを localStorage に
- * `CognitoIdentityServiceProvider.<clientId>.<username>.idToken` 形式で保存する。
- * キー構造の細部に依存しないよう、`.idToken` で終わるキーをパターン検索で取得する。
+ * Amplify v6 将 Cognito 的令牌保存到 localStorage，
+ * 以 `CognitoIdentityServiceProvider.<clientId>.<username>.idToken` 形式保存。
+ * 为不依赖键结构的细节，通过模式搜索获取以 `.idToken` 结尾的键。
  *
- * @param page Playwrightのページオブジェクト
- * @returns Cognito IDトークン文字列
+ * @param page Playwright 的页面对象
+ * @returns Cognito ID 令牌字符串
  */
 async function getIdToken(page: Page): Promise<string> {
   const token = await page.evaluate(() => {
@@ -69,30 +69,30 @@ async function getIdToken(page: Page): Promise<string> {
 
   if (!token) {
     throw new Error(
-      "Cognito IDトークンが取得できませんでした。ログインが完了しているか確認してください。",
+      "未能获取 Cognito ID 令牌。请确认登录是否已完成。",
     );
   }
   return token;
 }
 
 test.beforeEach(async ({ page }) => {
-  // APIエンドポイントが設定されていない場合はテストを失敗させ、原因を明示する
+  // 未设置 API 端点时使测试失败，并明确原因
   expect(
     API_ENDPOINT,
-    "E2E_API_GATEWAY_ENDPOINT が .env.test に設定されている必要があります",
+    "必须在 .env.test 中设置 E2E_API_GATEWAY_ENDPOINT",
   ).not.toBe("");
 
   await login(page);
 });
 
-test.describe("セッション録画のマルチパートアップロード", () => {
-  test("マルチパートアップロードのフルフロー（create→PUT→complete）が成功すること", async ({
+test.describe("会话录制的分片上传", () => {
+  test("分片上传的完整流程（create→PUT→complete）成功", async ({
     page,
   }) => {
     const idToken = await getIdToken(page);
     const sessionId = `e2e-multipart-${Date.now()}`;
 
-    // --- ステップ1: マルチパートアップロード開始（2パート分のURLを要求） ---
+    // --- 步骤 1: 开始分片上传（请求 2 个分片的 URL） ---
     const createResponse = await page.request.post(
       `${API_ENDPOINT}/videos/multipart/create`,
       {
@@ -111,15 +111,15 @@ test.describe("セッション録画のマルチパートアップロード", ()
 
     expect(
       createResponse.ok(),
-      `create失敗: status=${createResponse.status()}`,
+      `create 失败: status=${createResponse.status()}`,
     ).toBeTruthy();
 
     const createBody = await createResponse.json();
-    expect(createBody.uploadId, "uploadIdが返却されること").toBeTruthy();
-    expect(createBody.videoKey, "videoKeyが返却されること").toBeTruthy();
+    expect(createBody.uploadId, "应返回 uploadId").toBeTruthy();
+    expect(createBody.videoKey, "应返回 videoKey").toBeTruthy();
     expect(
       Array.isArray(createBody.partUrls),
-      "partUrlsが配列であること",
+      "partUrls 应为数组",
     ).toBeTruthy();
     expect(createBody.partUrls).toHaveLength(2);
     expect(createBody.partUrls[0].partNumber).toBe(1);
@@ -127,10 +127,10 @@ test.describe("セッション録画のマルチパートアップロード", ()
 
     const { uploadId, videoKey, partUrls } = createBody;
 
-    // --- ステップ2: 各パートを署名付きURLにPUTしてETagを取得 ---
-    // S3仕様上、最後のパート以外は5MB以上必要。
-    // 1パート目: 5MBちょうど、2パート目: 1KB（最終パートは小さくてもよい）。
-    // ASCII文字列はUTF-8で1文字=1バイトになるため、文字数=バイト数として扱える。
+    // --- 步骤 2: 将各分片 PUT 到签名 URL 并获取 ETag ---
+    // 按 S3 规范，除最后一个分片外均需 5MB 以上。
+    // 第 1 片: 恰好 5MB，第 2 片: 1KB（最后一片可以较小）。
+    // ASCII 字符串在 UTF-8 中 1 个字符 = 1 字节，因此字符数可视为字节数。
     const part1Data = "a".repeat(PART_SIZE_BYTES);
     const part2Data = "a".repeat(1024);
     const partPayloads = [part1Data, part2Data];
@@ -145,18 +145,18 @@ test.describe("セッション録画のマルチパートアップロード", ()
 
       expect(
         putResponse.ok(),
-        `パート${partNumber}のPUT失敗: status=${putResponse.status()}`,
+        `分片 ${partNumber} 的 PUT 失败: status=${putResponse.status()}`,
       ).toBeTruthy();
 
-      // S3はパートアップロードのレスポンスでETagヘッダーを返す。
-      // バケットCORSの exposedHeaders に ETag が公開されていないと取得できない。
+      // S3 在分片上传的响应中返回 ETag 头。
+      // 存储桶 CORS 的 exposedHeaders 未公开 ETag 时无法获取。
       const eTag = putResponse.headers()["etag"];
-      expect(eTag, `パート${partNumber}のETagが取得できること`).toBeTruthy();
+      expect(eTag, `应能获取分片 ${partNumber} 的 ETag`).toBeTruthy();
 
       uploadedParts.push({ partNumber, eTag });
     }
 
-    // --- ステップ3: マルチパートアップロード完了（パート結合） ---
+    // --- 步骤 3: 分片上传完成（合并分片） ---
     const completeResponse = await page.request.post(
       `${API_ENDPOINT}/videos/multipart/complete`,
       {
@@ -174,16 +174,16 @@ test.describe("セッション録画のマルチパートアップロード", ()
 
     expect(
       completeResponse.ok(),
-      `complete失敗: status=${completeResponse.status()}`,
+      `complete 失败: status=${completeResponse.status()}`,
     ).toBeTruthy();
 
     const completeBody = await completeResponse.json();
-    expect(completeBody.videoKey, "完了レスポンスにvideoKeyが含まれること").toBe(
+    expect(completeBody.videoKey, "完成响应中应包含 videoKey").toBe(
       videoKey,
     );
   });
 
-  test("partCountを欠いた不正なcreateリクエストは400で弾かれること", async ({
+  test("缺少 partCount 的非法 create 请求被 400 拒绝", async ({
     page,
   }) => {
     const idToken = await getIdToken(page);
@@ -198,22 +198,22 @@ test.describe("セッション録画のマルチパートアップロード", ()
         data: {
           sessionId: `e2e-invalid-${Date.now()}`,
           contentType: "video/mp4",
-          // partCount を意図的に欠落させる
+          // 故意省略 partCount
         },
       },
     );
 
     expect(
       response.status(),
-      "partCount欠如のリクエストは400を返すこと",
+      "缺少 partCount 的请求应返回 400",
     ).toBe(400);
   });
 
-  test("中断（abort）リクエストが成功すること", async ({ page }) => {
+  test("中断（abort）请求成功", async ({ page }) => {
     const idToken = await getIdToken(page);
     const sessionId = `e2e-abort-${Date.now()}`;
 
-    // マルチパートアップロードを開始
+    // 开始分片上传
     const createResponse = await page.request.post(
       `${API_ENDPOINT}/videos/multipart/create`,
       {
@@ -232,7 +232,7 @@ test.describe("セッション録画のマルチパートアップロード", ()
     expect(createResponse.ok()).toBeTruthy();
     const { uploadId, videoKey } = await createResponse.json();
 
-    // パートをアップロードせずに中断
+    // 不上传分片直接中断
     const abortResponse = await page.request.post(
       `${API_ENDPOINT}/videos/multipart/abort`,
       {
@@ -246,19 +246,19 @@ test.describe("セッション録画のマルチパートアップロード", ()
 
     expect(
       abortResponse.ok(),
-      `abort失敗: status=${abortResponse.status()}`,
+      `abort 失败: status=${abortResponse.status()}`,
     ).toBeTruthy();
     const abortBody = await abortResponse.json();
-    expect(abortBody.aborted, "中断成功フラグが返ること").toBe(true);
+    expect(abortBody.aborted, "应返回中断成功标志").toBe(true);
   });
 
-  test("中断（abort）後に complete を呼んでも結合が成功しないこと", async ({
+  test("中断（abort）后再调用 complete 也不能成功合并", async ({
     page,
   }) => {
     const idToken = await getIdToken(page);
     const sessionId = `e2e-abort-then-complete-${Date.now()}`;
 
-    // マルチパートアップロードを開始
+    // 开始分片上传
     const createResponse = await page.request.post(
       `${API_ENDPOINT}/videos/multipart/create`,
       {
@@ -277,16 +277,16 @@ test.describe("セッション録画のマルチパートアップロード", ()
     expect(createResponse.ok()).toBeTruthy();
     const { uploadId, videoKey, partUrls } = await createResponse.json();
 
-    // 1パート目をアップロードしてETagを取得（5MBちょうど）
+    // 上传第 1 片并获取 ETag（恰好 5MB）
     const putResponse = await page.request.put(partUrls[0].url, {
       headers: { "Content-Type": "application/octet-stream" },
       data: "a".repeat(PART_SIZE_BYTES),
     });
-    expect(putResponse.ok(), "パートのPUTが成功すること").toBeTruthy();
+    expect(putResponse.ok(), "分片的 PUT 应成功").toBeTruthy();
     const eTag = putResponse.headers()["etag"];
-    expect(eTag, "ETagが取得できること").toBeTruthy();
+    expect(eTag, "应能获取 ETag").toBeTruthy();
 
-    // 中断してアップロード済みパートを破棄
+    // 中断并丢弃已上传的分片
     const abortResponse = await page.request.post(
       `${API_ENDPOINT}/videos/multipart/abort`,
       {
@@ -297,11 +297,11 @@ test.describe("セッション録画のマルチパートアップロード", ()
         data: { videoKey, uploadId },
       },
     );
-    expect(abortResponse.ok(), "abortが成功すること").toBeTruthy();
+    expect(abortResponse.ok(), "abort 应成功").toBeTruthy();
 
-    // 中断済みのuploadIdに対してcompleteを呼ぶ。
-    // S3は中断済みのマルチパートアップロードを認識しないため結合は成功しない
-    // （NoSuchUpload相当のエラーとなり、completeエンドポイントは2xxを返さない）。
+    // 对已中断的 uploadId 调用 complete。
+    // S3 不识别已中断的分片上传，因此无法成功合并
+    // （产生与 NoSuchUpload 相当的错误，complete 端点不返回 2xx）。
     const completeResponse = await page.request.post(
       `${API_ENDPOINT}/videos/multipart/complete`,
       {
@@ -319,20 +319,20 @@ test.describe("セッション録画のマルチパートアップロード", ()
 
     expect(
       completeResponse.ok(),
-      "中断済みアップロードのcompleteは成功しないこと",
+      "已中断上传的 complete 不应成功",
     ).toBeFalsy();
   });
 
-  test("旧 /videos/upload-url エンドポイントが削除され応答しないこと", async ({
+  test("旧 /videos/upload-url 端点已删除且不响应", async ({
     page,
   }) => {
     const idToken = await getIdToken(page);
 
-    // 旧エンドポイントはマルチパート統一により削除済み。
-    // API Gatewayに当該ルートが存在しないため、成功レスポンス（2xx）は返らない。
-    // 未定義ルートに対する具体的なステータスコード（403/404/500等）はAPI Gatewayの
-    // 認証・GatewayResponse設定に依存するため、ステータスコードの厳密値ではなく
-    // 「成功しないこと（録画用URLが発行されないこと）」を検証する。
+    // 旧端点已因分片统一而删除。
+    // API Gateway 不存在该路由，因此不会返回成功响应（2xx）。
+    // 未定义路由的具体状态码（403/404/500 等）取决于 API Gateway 的
+    // 认证和 GatewayResponse 配置，因此不校验状态码的精确值，
+    // 而是验证「不成功（不签发录制用 URL）」。
     const response = await page.request.get(
       `${API_ENDPOINT}/videos/upload-url?sessionId=e2e-legacy&contentType=video/mp4`,
       {
@@ -342,14 +342,14 @@ test.describe("セッション録画のマルチパートアップロード", ()
 
     expect(
       response.ok(),
-      "削除済みの旧エンドポイントは成功レスポンスを返さないこと",
+      "已删除的旧端点不应返回成功响应",
     ).toBeFalsy();
 
-    // 万一2xxでなくても、署名付きURL（uploadUrl）が含まれていないことを二重に確認する
+    // 即使不是 2xx，也双重确认不包含签名 URL（uploadUrl）
     const bodyText = await response.text();
     expect(
       bodyText.includes("uploadUrl"),
-      "旧エンドポイントが署名付きURLを発行していないこと",
+      "旧端点不应签发签名 URL",
     ).toBeFalsy();
   });
 });

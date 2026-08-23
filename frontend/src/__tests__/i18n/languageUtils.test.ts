@@ -6,33 +6,33 @@ import {
 
 describe("languageUtils", () => {
   describe("languageNameMapping", () => {
-    it("日本語の表示名を返す", () => {
+    it("返回日文的显示名", () => {
       expect(languageNameMapping["ja"]).toBe("日本語");
     });
 
-    it("英語の表示名を返す", () => {
+    it("返回英文的显示名", () => {
       expect(languageNameMapping["en"]).toBe("English");
     });
   });
 
   describe("supportedLanguages", () => {
-    it("サポートされている言語を含む", () => {
-      expect(supportedLanguages).toContain("ja");
+    it("包含支持的语言", () => {
+      expect(supportedLanguages).toContain("zh");
       expect(supportedLanguages).toContain("en");
     });
   });
 
   describe("getPollyLanguageCode", () => {
-    it("日本語の正しいPolly言語コードを返す", () => {
+    it("返回日文的正确 Polly 语言代码", () => {
       expect(getPollyLanguageCode("ja")).toBe("ja-JP");
     });
 
-    it("英語の正しいPolly言語コードを返す", () => {
+    it("返回英文的正确 Polly 语言代码", () => {
       expect(getPollyLanguageCode("en")).toBe("en-US");
     });
 
-    it("サポートされていない言語の場合デフォルトを返す", () => {
-      expect(getPollyLanguageCode("xyz")).toBe("ja-JP");
+    it("不支持的语言返回默认值", () => {
+      expect(getPollyLanguageCode("xyz")).toBe("cmn-CN");
     });
   });
 });

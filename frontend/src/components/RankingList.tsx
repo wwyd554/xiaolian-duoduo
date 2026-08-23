@@ -22,7 +22,7 @@ import { ApiService } from "../services/ApiService";
 import type { RankingEntry, ScenarioInfo } from "../types/api";
 
 interface RankingListProps {
-  currentUserId?: string; // 現在のユーザーID（オプション）
+  currentUserId?: string; // 当前用户 ID（可选）
 }
 
 const RankingList: React.FC<RankingListProps> = ({ currentUserId }) => {
@@ -39,12 +39,12 @@ const RankingList: React.FC<RankingListProps> = ({ currentUserId }) => {
 
   const apiService = ApiService.getInstance();
 
-  // シナリオ一覧の取得
+  // 获取场景列表
   const fetchScenarios = useCallback(async () => {
     try {
       const response = await apiService.getScenarios();
       setScenarios(response.scenarios || []);
-      // 初期選択のシナリオをセット
+      // 设置初始选中的场景
       if (response.scenarios && response.scenarios.length > 0) {
         setSelectedScenario(response.scenarios[0].scenarioId);
       }
@@ -54,7 +54,7 @@ const RankingList: React.FC<RankingListProps> = ({ currentUserId }) => {
     }
   }, [apiService, t]);
 
-  // ランキングデータの取得
+  // 获取排行榜数据
   const fetchRankings = useCallback(async () => {
     if (!selectedScenario) return;
 
@@ -69,7 +69,7 @@ const RankingList: React.FC<RankingListProps> = ({ currentUserId }) => {
       );
       if (response && response.rankings) {
         setRankings(response.rankings || []);
-        // totalCountフィールドを使用
+        // 使用 totalCount 字段
         setTotalParticipants(response.totalCount || 0);
       } else {
         setError(t("errors.server"));
@@ -82,35 +82,35 @@ const RankingList: React.FC<RankingListProps> = ({ currentUserId }) => {
     }
   }, [apiService, selectedScenario, selectedPeriod, t]);
 
-  // シナリオ選択の変更ハンドラ
+  // 场景选择的变更处理器
   const handleScenarioChange = (event: SelectChangeEvent) => {
     setSelectedScenario(event.target.value);
   };
 
-  // 期間選択の変更ハンドラ
+  // 期间选择的变更处理器
   const handlePeriodChange = (event: SelectChangeEvent) => {
     setSelectedPeriod(event.target.value as "daily" | "weekly" | "monthly");
   };
 
-  // コンポーネントのマウント時にシナリオ一覧を取得
+  // 组件挂载时获取场景列表
   useEffect(() => {
     fetchScenarios();
   }, [fetchScenarios]);
 
-  // シナリオまたは期間が変更されたらランキングを再取得
+  // 场景或期间变化时重新获取排行榜
   useEffect(() => {
     if (selectedScenario) {
       fetchRankings();
     }
   }, [selectedScenario, selectedPeriod, fetchRankings]);
 
-  // 選択中のシナリオ名を取得
+  // 获取当前选中的场景名称
   const getSelectedScenarioName = () => {
     const scenario = scenarios.find((s) => s.scenarioId === selectedScenario);
     return scenario ? scenario.title : "";
   };
 
-  // 期間表示用の文字列を取得
+  // 获取期间显示的字符串
   const getPeriodDisplayText = () => {
     switch (selectedPeriod) {
       case "daily":
@@ -135,7 +135,7 @@ const RankingList: React.FC<RankingListProps> = ({ currentUserId }) => {
           gap: 2,
         }}
       >
-        {/* シナリオ選択 */}
+        {/* 场景选择 */}
         <FormControl sx={{ minWidth: 200 }}>
           <InputLabel id="scenario-select-label">
             {t("ranking.scenario")}
@@ -174,7 +174,7 @@ const RankingList: React.FC<RankingListProps> = ({ currentUserId }) => {
         </FormControl>
       </Box>
 
-      {/* ランキングタイトル */}
+      {/* 排行榜标题 */}
       <Typography variant="h5" gutterBottom>
         {getSelectedScenarioName()} - {getPeriodDisplayText()}
       </Typography>
@@ -184,20 +184,20 @@ const RankingList: React.FC<RankingListProps> = ({ currentUserId }) => {
         {t("ranking.totalParticipants")}: {totalParticipants}
       </Typography>
 
-      {/* エラー表示 */}
+      {/* 错误显示 */}
       {error && (
         <Alert severity="error" sx={{ mb: 2 }}>
           {error}
         </Alert>
       )}
 
-      {/* ローディング表示 */}
+      {/* 加载显示 */}
       {loading ? (
         <Box sx={{ display: "flex", justifyContent: "center", my: 4 }}>
           <CircularProgress />
         </Box>
       ) : (
-        /* ランキングテーブル */
+        /* 排行榜表格 */
         <TableContainer component={Paper} sx={{ mt: 2 }}>
           <Table aria-label="ranking table">
             <TableHead>
@@ -214,7 +214,7 @@ const RankingList: React.FC<RankingListProps> = ({ currentUserId }) => {
                     key={entry.sessionId}
                     sx={{
                       "&:last-child td, &:last-child th": { border: 0 },
-                      // 現在のユーザーの行をハイライト
+                      // 高亮当前用户所在行
                       ...(currentUserId &&
                         entry.username === currentUserId && {
                           backgroundColor: "primary.light",

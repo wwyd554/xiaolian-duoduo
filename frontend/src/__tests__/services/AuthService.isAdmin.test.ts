@@ -1,11 +1,11 @@
 /**
- * AuthService.isAdmin() のテスト
+ * AuthService.isAdmin() 的测试
  *
- * Cognito IDトークンの cognito:groups クレームから
- * 管理者グループ所属を判定するロジックをテストする
+ * 测试根据 Cognito ID 令牌的 cognito:groups 声明
+ * 判断是否属于管理员组别的逻辑
  */
 
-// fetchAuthSessionのモック
+// mock fetchAuthSession
 const mockFetchAuthSession = jest.fn();
 
 jest.mock("aws-amplify/auth", () => ({
@@ -23,13 +23,13 @@ describe("AuthService.isAdmin", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    // シングルトンをリセット
+    // 重置单例
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (AuthService as any).instance = undefined;
     authService = AuthService.getInstance();
   });
 
-  it("adminグループに所属している場合trueを返す", async () => {
+  it("属于 admin 组时返回 true", async () => {
     mockFetchAuthSession.mockResolvedValue({
       tokens: {
         idToken: {
@@ -44,7 +44,7 @@ describe("AuthService.isAdmin", () => {
     expect(result).toBe(true);
   });
 
-  it("adminグループに所属していない場合falseを返す", async () => {
+  it("不属于 admin 组时返回 false", async () => {
     mockFetchAuthSession.mockResolvedValue({
       tokens: {
         idToken: {
@@ -59,7 +59,7 @@ describe("AuthService.isAdmin", () => {
     expect(result).toBe(false);
   });
 
-  it("複数グループにadminが含まれている場合trueを返す", async () => {
+  it("多个组中包含 admin 时返回 true", async () => {
     mockFetchAuthSession.mockResolvedValue({
       tokens: {
         idToken: {
@@ -74,7 +74,7 @@ describe("AuthService.isAdmin", () => {
     expect(result).toBe(true);
   });
 
-  it("cognito:groupsが空配列の場合falseを返す", async () => {
+  it("cognito:groups 为空数组时返回 false", async () => {
     mockFetchAuthSession.mockResolvedValue({
       tokens: {
         idToken: {
@@ -89,7 +89,7 @@ describe("AuthService.isAdmin", () => {
     expect(result).toBe(false);
   });
 
-  it("cognito:groupsクレームが存在しない場合falseを返す", async () => {
+  it("cognito:groups 声明不存在时返回 false", async () => {
     mockFetchAuthSession.mockResolvedValue({
       tokens: {
         idToken: {
@@ -102,7 +102,7 @@ describe("AuthService.isAdmin", () => {
     expect(result).toBe(false);
   });
 
-  it("IDトークンが存在しない場合falseを返す", async () => {
+  it("ID 令牌不存在时返回 false", async () => {
     mockFetchAuthSession.mockResolvedValue({
       tokens: {},
     });
@@ -111,17 +111,17 @@ describe("AuthService.isAdmin", () => {
     expect(result).toBe(false);
   });
 
-  it("tokensが存在しない場合falseを返す", async () => {
+  it("tokens 不存在时返回 false", async () => {
     mockFetchAuthSession.mockResolvedValue({});
 
     const result = await authService.isAdmin();
     expect(result).toBe(false);
   });
 
-  it("fetchAuthSessionがエラーを投げた場合falseを返す", async () => {
-    mockFetchAuthSession.mockRejectedValue(new Error("認証エラー"));
+  it("fetchAuthSession 抛出错误时返回 false", async () => {
+    mockFetchAuthSession.mockRejectedValue(new Error("认证错误"));
 
-    // console.errorをスパイしてエラーログ出力を抑制
+    // spy console.error 以抑制错误日志输出
     const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => { });
 
     const result = await authService.isAdmin();
@@ -130,12 +130,12 @@ describe("AuthService.isAdmin", () => {
     consoleSpy.mockRestore();
   });
 
-  it("cognito:groupsが配列でない場合falseを返す", async () => {
+  it("cognito:groups 不是数组时返回 false", async () => {
     mockFetchAuthSession.mockResolvedValue({
       tokens: {
         idToken: {
           payload: {
-            "cognito:groups": "admin", // 文字列（配列ではない）
+            "cognito:groups": "admin", // 字符串（非数组）
           },
         },
       },
@@ -145,7 +145,7 @@ describe("AuthService.isAdmin", () => {
     expect(result).toBe(false);
   });
 
-  it("2回目の呼び出しではキャッシュが使われfetchAuthSessionが再呼び出しされない", async () => {
+  it("第二次调用使用缓存，不再次调用 fetchAuthSession", async () => {
     mockFetchAuthSession.mockResolvedValue({
       tokens: {
         idToken: {
@@ -156,18 +156,18 @@ describe("AuthService.isAdmin", () => {
       },
     });
 
-    // 1回目
+    // 第 1 次
     const result1 = await authService.isAdmin();
     expect(result1).toBe(true);
     expect(mockFetchAuthSession).toHaveBeenCalledTimes(1);
 
-    // 2回目（キャッシュから返される）
+    // 第 2 次（从缓存返回）
     const result2 = await authService.isAdmin();
     expect(result2).toBe(true);
-    expect(mockFetchAuthSession).toHaveBeenCalledTimes(1); // 呼び出し回数が増えない
+    expect(mockFetchAuthSession).toHaveBeenCalledTimes(1); // 调用次数不增加
   });
 
-  it("キャッシュTTL期限切れ後はfetchAuthSessionが再呼び出しされる", async () => {
+  it("缓存 TTL 过期后重新调用 fetchAuthSession", async () => {
     mockFetchAuthSession.mockResolvedValue({
       tokens: {
         idToken: {
@@ -178,22 +178,22 @@ describe("AuthService.isAdmin", () => {
       },
     });
 
-    // 1回目
+    // 第 1 次
     const result1 = await authService.isAdmin();
     expect(result1).toBe(true);
     expect(mockFetchAuthSession).toHaveBeenCalledTimes(1);
 
-    // キャッシュのタイムスタンプを5分以上前に巻き戻す
+    // 将缓存的时间戳回拨到 5 分钟之前
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (authService as any).cachedIsAdminAt = Date.now() - 6 * 60 * 1000;
 
-    // TTL期限切れ後の呼び出し（再取得される）
+    // TTL 过期后的调用（重新获取）
     const result2 = await authService.isAdmin();
     expect(result2).toBe(true);
-    expect(mockFetchAuthSession).toHaveBeenCalledTimes(2); // 再呼び出しされる
+    expect(mockFetchAuthSession).toHaveBeenCalledTimes(2); // 重新调用
   });
 
-  it("ログアウト後はキャッシュがクリアされ再取得される", async () => {
+  it("登出后缓存被清除并重新获取", async () => {
     mockFetchAuthSession.mockResolvedValue({
       tokens: {
         idToken: {
@@ -204,15 +204,15 @@ describe("AuthService.isAdmin", () => {
       },
     });
 
-    // 1回目: admin
+    // 第 1 次: admin
     const result1 = await authService.isAdmin();
     expect(result1).toBe(true);
     expect(mockFetchAuthSession).toHaveBeenCalledTimes(1);
 
-    // ログアウト
+    // 登出
     await authService.logout();
 
-    // ログアウト後: グループが変わった想定
+    // 登出后: 假定组别已变化
     mockFetchAuthSession.mockResolvedValue({
       tokens: {
         idToken: {
@@ -223,8 +223,8 @@ describe("AuthService.isAdmin", () => {
       },
     });
 
-    // ログアウト後の呼び出し（キャッシュクリア済みなので再取得）
-    // シングルトンをリセットして再取得（ログアウトでcachedIsAdminがnullになる）
+    // 登出后的调用（缓存已清除，重新获取）
+    // 重置单例后重新获取（登出后 cachedIsAdmin 变为 null）
     const result2 = await authService.isAdmin();
     expect(result2).toBe(false);
   });

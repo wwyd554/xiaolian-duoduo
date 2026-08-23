@@ -1,5 +1,5 @@
 /**
- * 言語コードとAmazon Polly用のlanguageCodeのマッピング
+ * 语言代码与 Amazon Polly 用 languageCode 的映射
  */
 const languageToPollyCodeMapping: Record<string, string> = {
   zh: "cmn-CN",
@@ -8,7 +8,7 @@ const languageToPollyCodeMapping: Record<string, string> = {
 };
 
 /**
- * 言語コードと表示名のマッピング
+ * 语言代码与显示名的映射
  */
 export const languageNameMapping: Record<string, string> = {
   zh: "中文",
@@ -17,12 +17,12 @@ export const languageNameMapping: Record<string, string> = {
 };
 
 /**
- * サポートされている言語コードのリスト
+ * 支持的语言代码列表
  */
 export const supportedLanguages = ["zh", "en"];
 
 /**
- * 言語コードからAmazon Polly用のlanguageCodeを取得
+ * 从语言代码获取 Amazon Polly 用 languageCode
  */
 export const getPollyLanguageCode = (languageCode: string): string => {
   return languageToPollyCodeMapping[languageCode] || "cmn-CN";

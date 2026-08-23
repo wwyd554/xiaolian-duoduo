@@ -1,17 +1,17 @@
 import type { Theme } from "@mui/material/styles";
 
-// レスポンシブデザインのためのヘルパー関数
+// 响应式设计的辅助函数
 export const getResponsiveStyles = (theme: Theme) => {
   return {
-    // ページヘッダー用レスポンシブスタイル
+    // 页面头部用的响应式样式
     pageHeader: {
       [theme.breakpoints.down("sm")]: {
-        fontSize: "2rem", // モバイルでは小さめに
+        fontSize: "2rem", // 移动端使用较小字号
         marginBottom: theme.spacing(2),
       },
     },
 
-    // カードグリッド用レスポンシブスタイル
+    // 卡片网格用的响应式样式
     cardGrid: {
       [theme.breakpoints.down("md")]: {
         flexDirection: "column",
@@ -21,14 +21,14 @@ export const getResponsiveStyles = (theme: Theme) => {
       },
     },
 
-    // 対話画面用レスポンシブスタイル
+    // 对话界面用的响应式样式
     conversationLayout: {
       [theme.breakpoints.down("md")]: {
         flexDirection: "column",
       },
     },
 
-    // 対話画面のNPCカード用レスポンシブスタイル
+    // 对话界面的 NPC 卡片用的响应式样式
     npcCard: {
       [theme.breakpoints.down("md")]: {
         maxWidth: "100%",
@@ -36,7 +36,7 @@ export const getResponsiveStyles = (theme: Theme) => {
       },
     },
 
-    // 対話画面のチャットエリア用レスポンシブスタイル
+    // 对话界面的聊天区域用的响应式样式
     chatArea: {
       [theme.breakpoints.down("md")]: {
         maxWidth: "100%",
@@ -44,7 +44,7 @@ export const getResponsiveStyles = (theme: Theme) => {
       },
     },
 
-    // 対話入力エリア用レスポンシブスタイル
+    // 对话输入区域用的响应式样式
     inputArea: {
       [theme.breakpoints.down("sm")]: {
         flexDirection: "column",
@@ -52,7 +52,7 @@ export const getResponsiveStyles = (theme: Theme) => {
       },
     },
 
-    // ボタングループ用レスポンシブスタイル
+    // 按钮组用的响应式样式
     buttonGroup: {
       [theme.breakpoints.down("sm")]: {
         flexDirection: "column",
@@ -61,7 +61,7 @@ export const getResponsiveStyles = (theme: Theme) => {
       },
     },
 
-    // 結果画面用レスポンシブスタイル
+    // 结果界面用的响应式样式
     resultLayout: {
       [theme.breakpoints.down("md")]: {
         flexDirection: "column",
@@ -70,16 +70,16 @@ export const getResponsiveStyles = (theme: Theme) => {
   };
 };
 
-// デバイスごとのパディング調整用ヘルパー関数
+// 按设备调整内边距的辅助函数
 export const getDevicePadding = (theme: Theme) => {
   return {
-    desktop: theme.spacing(4), // デスクトップは余裕を持たせる
-    tablet: theme.spacing(3), // タブレットは少し余裕を減らす
-    mobile: theme.spacing(2), // モバイルは最小限のパディング
+    desktop: theme.spacing(4), // 桌面端留出充足空间
+    tablet: theme.spacing(3), // 平板端稍微减少空间
+    mobile: theme.spacing(2), // 移动端使用最小内边距
   };
 };
 
-// スクリーンサイズに応じたフォントサイズ調整用ヘルパー関数
+// 根据屏幕尺寸调整字体大小的辅助函数
 export const getResponsiveFontSizes = (theme: Theme) => {
   return {
     h1: {

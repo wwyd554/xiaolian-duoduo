@@ -1,7 +1,7 @@
 import { LanguageService } from "../../services/LanguageService";
 import i18next from "i18next";
 
-// モック
+// mock
 jest.mock("i18next", () => ({
   language: "ja",
   changeLanguage: jest.fn().mockResolvedValue("ja"),
@@ -10,7 +10,7 @@ describe("LanguageService", () => {
   let languageService: LanguageService;
 
   beforeEach(() => {
-    // localStorage のモック
+    // mock localStorage
     Object.defineProperty(window, "localStorage", {
       value: {
         getItem: jest.fn(),
@@ -20,10 +20,10 @@ describe("LanguageService", () => {
       writable: true,
     });
 
-    // シングルトンインスタンスを取得
+    // 获取单例实例
     languageService = LanguageService.getInstance();
 
-    // モックのリセット
+    // 重置 mock
     jest.clearAllMocks();
   });
 

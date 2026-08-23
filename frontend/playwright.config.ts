@@ -1,10 +1,10 @@
 import { defineConfig, devices } from "@playwright/test";
 import * as dotenv from "dotenv";
 
-// .env.testファイルを読み込む
+// 读取 .env.test 文件
 dotenv.config({ path: ".env.test" });
 
-// ステージング環境URLを環境変数から取得（デフォルトはローカル開発環境）
+// 从环境变量获取 staging 环境 URL（默认是本地开发环境）
 const baseURL = process.env.E2E_BASE_URL || "http://localhost:5173";
 const isStaging = baseURL !== "http://localhost:5173";
 
@@ -15,7 +15,7 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : isStaging ? 3 : undefined,
   reporter: "html",
-  // テストタイムアウト設定（ステージング環境では長めに設定）
+  // 测试超时设置（staging 环境下设置更长）
   timeout: isStaging ? 120000 : 30000,
   expect: {
     timeout: isStaging ? 15000 : 5000,
@@ -23,9 +23,9 @@ export default defineConfig({
   use: {
     baseURL,
     trace: "on-first-retry",
-    // スクリーンショット設定
+    // 截图设置
     screenshot: "only-on-failure",
-    // ビデオ録画設定（失敗時のみ）
+    // 视频录制设置（仅失败时）
     video: "on-first-retry",
   },
 
@@ -52,7 +52,7 @@ export default defineConfig({
     },
   ],
 
-  // ローカル開発環境の場合のみwebServerを起動
+  // 仅在本地开发环境下启动 webServer
   ...(isStaging
     ? {}
     : {

@@ -18,17 +18,17 @@ import {
 } from "@mui/icons-material";
 import { useTranslation } from "react-i18next";
 
-/** アップロード済みファイル情報 */
+/** 已上传文件信息 */
 export interface UploadedFileInfo {
   key: string;
   fileName: string;
   contentType: string;
   size?: number;
-  /** 追加ステータス（提案資料の変換状態など） */
+  /** 附加状态（如提案资料转换状态） */
   status?: string;
 }
 
-/** アップロード処理の結果 */
+/** 上传处理的结果 */
 export interface UploadResult {
   key: string;
   fileName: string;
@@ -37,33 +37,33 @@ export interface UploadResult {
 }
 
 interface PdfUploaderProps {
-  /** タイトル */
+  /** 标题 */
   title: string;
   /** 説明文 */
   description: string;
-  /** 注釈テキスト */
+  /** 注释文本 */
   note?: string;
-  /** アップロード済みファイル一覧 */
+  /** 已上传文件列表 */
   files: UploadedFileInfo[];
-  /** 最大ファイル数（デフォルト: 1） */
+  /** 最大文件数（默认：1） */
   maxFiles?: number;
-  /** 複数ファイル選択を許可するか */
+  /** 是否允许多文件选择 */
   multiple?: boolean;
-  /** アップロード処理（呼び出し元が実装） */
+  /** 上传处理（由调用方实现） */
   onUpload: (file: File) => Promise<UploadResult>;
-  /** 削除処理（呼び出し元が実装） */
+  /** 删除处理（由调用方实现） */
   onDelete: (index: number) => Promise<void>;
-  /** ファイルリスト更新コールバック */
+  /** 文件列表更新回调 */
   onFilesChange: (files: UploadedFileInfo[]) => void;
-  /** ステータス表示用のレンダラー（提案資料の変換状態など） */
+  /** 状态显示用的渲染器（如提案资料转换状态） */
   renderStatus?: (file: UploadedFileInfo) => React.ReactNode;
 }
 
 /**
- * 再利用可能なPDFアップロードコンポーネント
+ * 可复用的 PDF 上传组件
  *
- * 営業資料（Knowledge Base連携用）と提案資料（スライド連動用）の
- * 両方で使用される共通UIコンポーネント。
+ * 销售资料（用于 Knowledge Base 联动）和提案资料（用于幻灯片联动）的
+ * 两处共用的通用 UI 组件。
  */
 const PdfUploader: React.FC<PdfUploaderProps> = ({
   title,
@@ -105,7 +105,7 @@ const PdfUploader: React.FC<PdfUploaderProps> = ({
 
     const toUpload = Array.from(selectedFiles).slice(0, remaining);
 
-    // PDFのみ許可
+    // 仅允许 PDF
     const nonPdf = toUpload.filter(f => f.type !== "application/pdf");
     if (nonPdf.length > 0) {
       setError(t("common.pdfUploader.onlyPdfError"));
@@ -184,7 +184,7 @@ const PdfUploader: React.FC<PdfUploaderProps> = ({
         </Alert>
       )}
 
-      {/* アップロード済みファイル一覧 */}
+      {/* 已上传文件列表 */}
       {files.length > 0 ? (
         <Paper variant="outlined" sx={{ mb: 2, maxHeight: 300, overflow: "auto" }}>
           <List disablePadding>
@@ -223,7 +223,7 @@ const PdfUploader: React.FC<PdfUploaderProps> = ({
           </List>
         </Paper>
       ) : canUpload ? (
-        /* アップロードエリア（ドロップゾーン風） */
+        /* 上传区域（拖放区风格） */
         <Paper
           variant="outlined"
           sx={{
@@ -260,7 +260,7 @@ const PdfUploader: React.FC<PdfUploaderProps> = ({
         </Typography>
       )}
 
-      {/* アップロード進捗 */}
+      {/* 上传进度 */}
       {isUploading && (
         <Box sx={{ mb: 2 }}>
           <LinearProgress
@@ -274,7 +274,7 @@ const PdfUploader: React.FC<PdfUploaderProps> = ({
         </Box>
       )}
 
-      {/* 隠しファイル入力 */}
+      {/* 隐藏文件输入 */}
       <input
         ref={fileInputRef}
         type="file"

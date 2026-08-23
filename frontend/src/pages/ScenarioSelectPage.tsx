@@ -58,19 +58,19 @@ const ScenarioSelectPage: React.FC = () => {
 
   const apiService = ApiService.getInstance();
 
-  // 業界一覧を取得（APIから取得したシナリオに基づいて）
+  // 获取行业列表（基于 API 获取的场景）
   const categories = Array.from(
     new Set(scenarios.map((s) => s.category)),
   ).sort();
 
-  // 難易度マッピング定義
+  // 难度映射定义
   const DIFFICULTY_MAPPING: Record<string, DifficultyLevel[]> = {
     easy: ["easy"],
     normal: ["normal"],
     hard: ["hard", "expert"],
   };
 
-  // 難易度フィルター用の選択肢
+  // 难度筛选选项
   const DIFFICULTY_FILTER_OPTIONS = [
     { value: "all", label: t("scenarios.filters.allLevels") },
     { value: "easy", label: t("scenarios.beginner") },
@@ -78,7 +78,7 @@ const ScenarioSelectPage: React.FC = () => {
     { value: "hard", label: t("scenarios.advanced") },
   ];
 
-  // 難易度表示用のマッピング
+  // 难度显示映射
   const DIFFICULTY_DISPLAY_MAPPING: Record<DifficultyLevel, string> = {
     easy: t("scenarios.beginner"),
     normal: t("scenarios.intermediate"),
@@ -86,7 +86,7 @@ const ScenarioSelectPage: React.FC = () => {
     expert: t("scenarios.advanced"),
   };
 
-  // 難易度色マッピング
+  // 难度颜色映射
   const DIFFICULTY_COLOR_MAPPING: Record<
     DifficultyLevel,
     "success" | "warning" | "error" | "default"
@@ -97,7 +97,7 @@ const ScenarioSelectPage: React.FC = () => {
     expert: "error",
   };
 
-  // シナリオデータをAPIから取得する関数
+  // 从 API 获取场景数据的函数
   const fetchScenarios = React.useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -118,60 +118,60 @@ const ScenarioSelectPage: React.FC = () => {
     }
   }, [apiService, t]);
 
-  // 難易度表示用の変換関数
+  // 难度显示转换函数
   const getDifficultyLabel = (difficulty: DifficultyLevel): string => {
     return DIFFICULTY_DISPLAY_MAPPING[difficulty] || difficulty;
   };
 
-  // 現在のユーザーIDを取得する関数
+  // 获取当前用户 ID 的函数
   const fetchCurrentUser = React.useCallback(async () => {
     try {
-      // AWS Cognitoから現在のユーザー情報を取得
+      // 从 AWS Cognito 获取当前用户信息
       const { getCurrentUser } = await import("aws-amplify/auth");
       const user = await getCurrentUser();
 
-      // ユーザーIDを設定（Cognitoのsub属性を使用）
+      // 设置用户 ID（使用 Cognito 的 sub 属性）
       setCurrentUserId(user.userId);
     } catch (err) {
       console.error("用户信息获取错误:", err);
-      // 認証されていない場合はnullを設定
+      // 未认证时设置为 null
       setCurrentUserId(null);
     }
   }, []);
 
-  // シナリオのオーナーかどうかを判定する関数
+  // 判断是否为场景所有者的函数
   const isScenarioOwner = (scenario: ScenarioInfo): boolean => {
-    // 現在のユーザーIDが取得できていない場合はfalse
+    // 未获取到当前用户 ID 时返回 false
     if (!currentUserId) {
       return false;
     }
 
-    // シナリオにcreatedByフィールドがある場合はそれを使用
+    // 如果场景有 createdBy 字段则使用它
     if (scenario.createdBy) {
       const isOwner = scenario.createdBy === currentUserId;
       return isOwner;
     }
 
-    // カスタムシナリオフラグがある場合はそれを使用
+    // 如果有自定义场景标志则使用它
     if (scenario.isCustom !== undefined) {
       return scenario.isCustom;
     }
 
-    // フォールバック: シナリオIDにcustomが含まれている場合
-    // （既存のカスタムシナリオとの互換性のため）
+    // 回退：场景 ID 中包含 custom 时
+    // （为了与现有自定义场景兼容）
     const isCustomScenario = scenario.scenarioId.includes("custom");
     return isCustomScenario;
   };
 
-  // 初期化
+  // 初始化
   useEffect(() => {
-    // ローカルストレージからお気に入りを読み込む
+    // 从本地存储读取收藏
     const storedFavorites = localStorage.getItem("favoriteScenarios");
     if (storedFavorites) {
       setFavoriteScenarios(JSON.parse(storedFavorites));
     }
 
-    // 現在のユーザー情報を取得してからシナリオデータを取得
+    // 先获取当前用户信息，再获取场景数据
     const initializeData = async () => {
       await fetchCurrentUser();
       await fetchScenarios();
@@ -180,7 +180,7 @@ const ScenarioSelectPage: React.FC = () => {
     initializeData();
   }, [fetchScenarios, fetchCurrentUser]);
 
-  // フィルター変更ハンドラー
+  // 筛选变更处理器
   const handleDifficultyFilterChange = (event: SelectChangeEvent) => {
     setDifficultyFilter(event.target.value);
   };
@@ -189,12 +189,12 @@ const ScenarioSelectPage: React.FC = () => {
     setCategoryFilter(event.target.value);
   };
 
-  // ソート順変更ハンドラー
+  // 排序方式变更处理器
   const handleSortOrderChange = (event: SelectChangeEvent) => {
     setSortOrder(event.target.value);
   };
 
-  // お気に入り切り替えハンドラー
+  // 收藏切换处理器
   const toggleFavorite = (scenarioId: string) => {
     const newFavorites = favoriteScenarios.includes(scenarioId)
       ? favoriteScenarios.filter((id) => id !== scenarioId)
@@ -204,9 +204,9 @@ const ScenarioSelectPage: React.FC = () => {
     localStorage.setItem("favoriteScenarios", JSON.stringify(newFavorites));
   };
 
-  // シナリオをフィルター
+  // 筛选场景
   const filteredScenarios = scenarios.filter((scenario) => {
-    // 検索クエリでフィルタリング
+    // 按搜索关键词筛选
     const matchesSearch =
       searchQuery === "" ||
       scenario.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -214,7 +214,7 @@ const ScenarioSelectPage: React.FC = () => {
       (scenario.category &&
         scenario.category.toLowerCase().includes(searchQuery.toLowerCase()));
 
-    // 難易度でフィルタリング
+    // 按难度筛选
     const matchesDifficulty =
       difficultyFilter === "all" ||
       (DIFFICULTY_MAPPING[
@@ -224,11 +224,11 @@ const ScenarioSelectPage: React.FC = () => {
           difficultyFilter as keyof typeof DIFFICULTY_MAPPING
         ].includes(scenario.difficulty));
 
-    // 業界でフィルタリング
+    // 按行业筛选
     const matchesCategory =
       categoryFilter === "all" || scenario.category === categoryFilter;
 
-    // お気に入りフィルタリング
+    // 按收藏筛选
     const matchesFavorites =
       !showFavoritesOnly || favoriteScenarios.includes(scenario.scenarioId);
 
@@ -237,9 +237,9 @@ const ScenarioSelectPage: React.FC = () => {
     );
   });
 
-  // シナリオをソート
+  // 对场景排序
   const sortedScenarios = [...filteredScenarios].sort((a, b) => {
-    // お気に入りを先頭に
+    // 将收藏置顶
     if (
       favoriteScenarios.includes(a.scenarioId) &&
       !favoriteScenarios.includes(b.scenarioId)
@@ -251,7 +251,7 @@ const ScenarioSelectPage: React.FC = () => {
     )
       return 1;
 
-    // 選択されたソート順でさらにソート
+    // 按所选排序方式进一步排序
     switch (sortOrder) {
       case "difficulty": {
         const difficultyOrder: Record<DifficultyLevel, number> = {
@@ -301,9 +301,9 @@ const ScenarioSelectPage: React.FC = () => {
               {t("scenarios.subtitle")}
             </Typography>
           </Box>
-          {/* ボタングループ */}
+          {/* 按钮组 */}
           <Box sx={{ display: "flex", gap: 1 }}>
-            {/* リロードボタン */}
+            {/* 刷新按钮 */}
             <Tooltip title={t("common.refresh")}>
               <IconButton
                 onClick={() => fetchScenarios()}
@@ -331,7 +331,7 @@ const ScenarioSelectPage: React.FC = () => {
               </IconButton>
             </Tooltip>
 
-            {/* シナリオ作成ボタン */}
+            {/* 创建场景按钮 */}
             <Tooltip title={t("scenarios.create.button")}>
               <IconButton
                 onClick={() => navigate("/scenarios/create")}
@@ -354,7 +354,7 @@ const ScenarioSelectPage: React.FC = () => {
               </IconButton>
             </Tooltip>
 
-            {/* シナリオ管理ボタン */}
+            {/* 场景管理按钮 */}
             <Tooltip title={t("scenarios.management.button")}>
               <IconButton
                 onClick={() => navigate("/scenarios/manage")}
@@ -378,14 +378,14 @@ const ScenarioSelectPage: React.FC = () => {
             </Tooltip>
           </Box>
         </Box>
-        {/* ローディング表示 */}
+        {/* 加载提示 */}
         {loading && (
           <Box display="flex" justifyContent="center" my={4}>
             <CircularProgress />
           </Box>
         )}
 
-        {/* エラー表示 */}
+        {/* 错误提示 */}
         {error && (
           <Alert
             severity="error"
@@ -404,7 +404,7 @@ const ScenarioSelectPage: React.FC = () => {
           </Alert>
         )}
 
-        {/* 検索・フィルター */}
+        {/* 搜索与筛选 */}
         <Box
           sx={{
             mb: 4,
@@ -513,7 +513,7 @@ const ScenarioSelectPage: React.FC = () => {
           </Box>
         </Box>
 
-        {/* シナリオが見つからない場合 */}
+        {/* 未找到场景时 */}
         {!loading && !error && filteredScenarios.length === 0 && (
           <Box sx={{ textAlign: "center", py: 5 }}>
             <Typography variant="h6" color="text.secondary">
@@ -542,7 +542,7 @@ const ScenarioSelectPage: React.FC = () => {
           </Box>
         )}
 
-        {/* シナリオ一覧 - ローディング中とエラー時は表示しない */}
+        {/* 场景列表 - 加载中和出错时不显示 */}
         {!loading && !error && (
           <Box
             sx={{
@@ -571,7 +571,7 @@ const ScenarioSelectPage: React.FC = () => {
                 }}
               >
                 <CardContent sx={{ flexGrow: 1 }}>
-                  {/* シナリオヘッダー */}
+                  {/* 场景头部 */}
                   <Box
                     display="flex"
                     justifyContent="space-between"
@@ -611,21 +611,21 @@ const ScenarioSelectPage: React.FC = () => {
                         color={getDifficultyColor(scenario.difficulty)}
                         size="small"
                       />
-                      {/* 管理画面へのリンク（オーナーのみ表示） */}
+                      {/* 管理页面的链接（仅所有者可见） */}
                       {isScenarioOwner(scenario) && (
                         <>
-                          {/* シナリオ管理ページで編集・削除するように変更 */}
+                          {/* 改为在场景管理页面进行编辑、删除 */}
                         </>
                       )}
                     </Box>
                   </Box>
 
-                  {/* シナリオ説明 */}
+                  {/* 场景说明 */}
                   <Typography variant="body2" color="text.secondary" mb={2}>
                     {scenario.description}
                   </Typography>
 
-                  {/* 業界・目標 */}
+                  {/* 行业与目标 */}
                   <Box mb={2}>
                     <Box display="flex" alignItems="center" gap={1} mb={1}>
                       <BusinessIcon fontSize="small" color="action" />
@@ -645,7 +645,7 @@ const ScenarioSelectPage: React.FC = () => {
 
                   <Divider sx={{ my: 2 }} />
 
-                  {/* NPC情報 */}
+                  {/* NPC 信息 */}
                   {scenario.npcInfo && (
                     <Box>
                       <Typography variant="subtitle2" gutterBottom>
@@ -669,7 +669,7 @@ const ScenarioSelectPage: React.FC = () => {
                         </Box>
                       </Box>
 
-                      {/* NPC性格 */}
+                      {/* NPC 性格 */}
                       <Box display="flex" flexWrap="wrap" gap={0.5} mt={1}>
                         {scenario.npcInfo?.personality
                           ?.slice(0, 3)
@@ -715,7 +715,7 @@ const ScenarioSelectPage: React.FC = () => {
           </Box>
         )}
 
-        {/* フッター情報 */}
+        {/* 页脚信息 */}
         <Box textAlign="center" mt={6} pt={3} borderTop="1px solid #eee">
           <Typography variant="body2" color="text.secondary" mb={1}>
             {t("scenarios.hints.title")}

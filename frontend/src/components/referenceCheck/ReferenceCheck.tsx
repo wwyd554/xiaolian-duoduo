@@ -8,12 +8,12 @@ interface ReferenceCheckProps {
   sessionId: string;
   language?: string;
   isVisible?: boolean;
-  /** Step Functionsで取得済みのリファレンスチェック結果（渡された場合はAPIを呼び出さない） */
+  /** 经 Step Functions 获取的引用检查结果（已传入时则不调用 API） */
   initialData?: ReferenceCheckResult | null;
 }
 
 /**
- * リファレンスチェック結果表示コンポーネント
+ * 引用检查结果展示组件
  */
 const ReferenceCheck: React.FC<ReferenceCheckProps> = ({
   sessionId: _sessionId,
@@ -21,18 +21,18 @@ const ReferenceCheck: React.FC<ReferenceCheckProps> = ({
   isVisible = true,
   initialData = null,
 }) => {
-  // sessionIdとlanguageは将来の拡張用に保持（現在はinitialDataを使用）
+  // sessionId 和 language 保留供将来扩展使用（当前使用 initialData）
   void _sessionId;
   void _language;
   const { data, isLoading, isAnalyzing, error, issuesCount } =
     useReferenceCheck(isVisible, initialData);
 
-  // コンポーネントが非表示の場合は何も表示しない
+  // 组件处于隐藏状态时不显示任何内容
   if (!isVisible) {
     return null;
   }
 
-  // ローディング、分析中、エラー、データなしの場合はステータスを表示
+  // 加载、分析中、出错、无数据时显示状态
   if (isLoading || isAnalyzing || error || !data) {
     return (
       <ReferenceCheckStatus
@@ -44,7 +44,7 @@ const ReferenceCheck: React.FC<ReferenceCheckProps> = ({
     );
   }
 
-  // データがある場合は結果を表示
+  // 有数据时显示结果
   return <ReferenceCheckResults data={data} issuesCount={issuesCount} />;
 };
 

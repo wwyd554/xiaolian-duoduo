@@ -6,14 +6,14 @@ import userEvent from "@testing-library/user-event";
 import SessionHistoryPage from "../../pages/history/SessionHistoryPage";
 import { ApiService } from "../../services/ApiService";
 
-// APIサービスのモック
+// ApiService 的 mock
 jest.mock("../../services/ApiService", () => ({
   ApiService: {
     getInstance: jest.fn(),
   },
 }));
 
-// AuthServiceのモック
+// AuthService 的 mock
 jest.mock("../../services/AuthService", () => ({
   AuthService: {
     getInstance: jest.fn(() => ({
@@ -26,19 +26,19 @@ jest.mock("../../services/AuthService", () => ({
   },
 }));
 
-// i18nのモック
+// i18n 的 mock
 jest.mock("react-i18next", () => ({
   useTranslation: () => {
     return {
       t: (key: string) => {
         const translations: { [key: string]: string } = {
-          "history.title": "会話履歴",
-          "history.search": "検索",
-          "history.searchPlaceholder": "タイトルかNPC名で検索",
-          "history.scenarioFilter": "シナリオ",
-          "history.allScenarios": "すべてのシナリオ",
-          "history.completed": "完了",
-          "history.active": "進行中",
+          "history.title": "会话记录",
+          "history.search": "搜索",
+          "history.searchPlaceholder": "按标题或NPC名称搜索",
+          "history.scenarioFilter": "场景",
+          "history.allScenarios": "全部场景",
+          "history.completed": "已完成",
+          "history.active": "进行中",
         };
         return translations[key] || key;
       },
@@ -46,54 +46,54 @@ jest.mock("react-i18next", () => ({
   },
 }));
 
-// useNavigateのモック
+// useNavigate 的 mock
 jest.mock("react-router-dom", () => ({
   ...jest.requireActual("react-router-dom"),
   useNavigate: () => jest.fn(),
 }));
 
-// テストデータ
+// 测试数据
 const mockSessions = [
   {
     sessionId: "session-1",
     userId: "user-1",
-    title: "つみたてNISA提案",
+    title: "定投NISA提案",
     status: "completed" as const,
     createdAt: "2025-06-28T10:00:00Z",
     updatedAt: "2025-06-28T10:30:00Z",
     scenarioId: "scenario-1",
     npcInfo: {
-      name: "佐藤課長",
-      role: "資産運用アドバイザー",
-      company: "ABC証券",
+      name: "佐藤课长",
+      role: "资产运用顾问",
+      company: "ABC证券",
     },
   },
   {
     sessionId: "session-2",
     userId: "user-1",
-    title: "終身保険の提案",
+    title: "终身保险提案",
     status: "completed" as const,
     createdAt: "2025-06-27T09:00:00Z",
     updatedAt: "2025-06-27T09:45:00Z",
     scenarioId: "scenario-2",
     npcInfo: {
-      name: "鈴木部長",
-      role: "保険営業マネージャー",
-      company: "DEF保険",
+      name: "铃木部长",
+      role: "保险营业经理",
+      company: "DEF保险",
     },
   },
   {
     sessionId: "session-3",
     userId: "user-1",
-    title: "住宅ローン相談",
+    title: "房贷咨询",
     status: "active" as const,
     createdAt: "2025-06-29T11:00:00Z",
     updatedAt: "2025-06-29T11:20:00Z",
     scenarioId: "scenario-3",
     npcInfo: {
-      name: "田中支店長",
-      role: "住宅ローン担当",
-      company: "GHI銀行",
+      name: "田中支行长",
+      role: "房贷负责人",
+      company: "GHI银行",
     },
   },
 ];
@@ -101,32 +101,32 @@ const mockSessions = [
 const mockScenarios = [
   {
     scenarioId: "scenario-1",
-    title: "つみたてNISA提案シナリオ",
-    description: "初心者向け資産運用提案",
+    title: "定投NISA提案场景",
+    description: "面向初学者的资产运用提案",
     difficulty: "beginner",
     category: "finance",
   },
   {
     scenarioId: "scenario-2",
-    title: "保険商品提案シナリオ",
-    description: "家族向け保険提案",
+    title: "保险商品提案场景",
+    description: "面向家庭的保险提案",
     difficulty: "intermediate",
     category: "insurance",
   },
   {
     scenarioId: "scenario-3",
-    title: "住宅ローン相談シナリオ",
-    description: "住宅購入者向け",
+    title: "房贷咨询场景",
+    description: "面向购房者",
     difficulty: "advanced",
     category: "loan",
   },
 ];
 
-describe("セッション検索とフィルタリング機能", () => {
+describe("会话搜索与过滤功能", () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
-    // デフォルトのモックレスポンス
+    // 默认的 mock 响应
     const mockApiService = {
       getSessions: jest.fn().mockResolvedValue({
         sessions: mockSessions,
@@ -139,116 +139,116 @@ describe("セッション検索とフィルタリング機能", () => {
     (ApiService.getInstance as jest.Mock).mockReturnValue(mockApiService);
   });
 
-  test("テキスト検索がタイトルで正しく動作する", async () => {
+  test("文本搜索按标题正确运作", async () => {
     render(
       <MemoryRouter>
         <SessionHistoryPage />
       </MemoryRouter>,
     );
 
-    // データが読み込まれるのを待機
+    // 等待数据加载
     await waitFor(() => {
-      expect(screen.getByText("つみたてNISA提案")).toBeInTheDocument();
-      expect(screen.getByText("終身保険の提案")).toBeInTheDocument();
-      expect(screen.getByText("住宅ローン相談")).toBeInTheDocument();
+      expect(screen.getByText("定投NISA提案")).toBeInTheDocument();
+      expect(screen.getByText("终身保险提案")).toBeInTheDocument();
+      expect(screen.getByText("房贷咨询")).toBeInTheDocument();
     });
 
-    // 検索ボックスを取得
-    const searchInput = screen.getByPlaceholderText("タイトルかNPC名で検索");
+    // 获取搜索框
+    const searchInput = screen.getByPlaceholderText("按标题或NPC名称搜索");
 
-    // 「NISA」で検索
+    // 用「NISA」搜索
     await userEvent.type(searchInput, "NISA");
 
-    // 検索結果を確認
+    // 确认搜索结果
     await waitFor(() => {
-      expect(screen.getByText("つみたてNISA提案")).toBeInTheDocument();
-      expect(screen.queryByText("終身保険の提案")).not.toBeInTheDocument();
-      expect(screen.queryByText("住宅ローン相談")).not.toBeInTheDocument();
+      expect(screen.getByText("定投NISA提案")).toBeInTheDocument();
+      expect(screen.queryByText("终身保险提案")).not.toBeInTheDocument();
+      expect(screen.queryByText("房贷咨询")).not.toBeInTheDocument();
     });
   });
 
-  test("テキスト検索がNPC名で正しく動作する", async () => {
+  test("文本搜索按NPC名称正确运作", async () => {
     render(
       <MemoryRouter>
         <SessionHistoryPage />
       </MemoryRouter>,
     );
 
-    // データが読み込まれるのを待機
+    // 等待数据加载
     await waitFor(() => {
-      expect(screen.getByText("つみたてNISA提案")).toBeInTheDocument();
-      expect(screen.getByText("終身保険の提案")).toBeInTheDocument();
-      expect(screen.getByText("住宅ローン相談")).toBeInTheDocument();
+      expect(screen.getByText("定投NISA提案")).toBeInTheDocument();
+      expect(screen.getByText("终身保险提案")).toBeInTheDocument();
+      expect(screen.getByText("房贷咨询")).toBeInTheDocument();
     });
 
-    // 検索ボックスを取得
-    const searchInput = screen.getByPlaceholderText("タイトルかNPC名で検索");
+    // 获取搜索框
+    const searchInput = screen.getByPlaceholderText("按标题或NPC名称搜索");
 
-    // 「鈴木」で検索
-    await userEvent.type(searchInput, "鈴木");
+    // 用「铃木」搜索
+    await userEvent.type(searchInput, "铃木");
 
-    // 検索結果を確認
+    // 确认搜索结果
     await waitFor(() => {
-      expect(screen.queryByText("佐藤課長")).not.toBeInTheDocument();
-      expect(screen.getByText("終身保険の提案")).toBeInTheDocument(); // 鈴木部長のセッションが表示されていることを確認
-      expect(screen.queryByText("田中支店長")).not.toBeInTheDocument();
+      expect(screen.queryByText("佐藤课长")).not.toBeInTheDocument();
+      expect(screen.getByText("终身保险提案")).toBeInTheDocument(); // 确认铃木部长的会话显示
+      expect(screen.queryByText("田中支行长")).not.toBeInTheDocument();
     });
   });
 
-  test("空の検索文字列ですべての結果が表示される", async () => {
+  test("空搜索字符串时显示全部结果", async () => {
     render(
       <MemoryRouter>
         <SessionHistoryPage />
       </MemoryRouter>,
     );
 
-    // データが読み込まれるのを待機
+    // 等待数据加载
     await waitFor(() => {
-      expect(screen.getByText("つみたてNISA提案")).toBeInTheDocument();
+      expect(screen.getByText("定投NISA提案")).toBeInTheDocument();
     });
 
-    // 検索ボックスを取得
-    const searchInput = screen.getByPlaceholderText("タイトルかNPC名で検索");
+    // 获取搜索框
+    const searchInput = screen.getByPlaceholderText("按标题或NPC名称搜索");
 
-    // まず「保険」で検索して結果を絞り込む
-    await userEvent.type(searchInput, "保険");
+    // 先用「保险」搜索以缩小结果范围
+    await userEvent.type(searchInput, "保险");
 
-    // 検索結果を確認
+    // 确认搜索结果
     await waitFor(() => {
-      expect(screen.queryByText("つみたてNISA提案")).not.toBeInTheDocument();
-      expect(screen.getByText("終身保険の提案")).toBeInTheDocument();
-      expect(screen.queryByText("住宅ローン相談")).not.toBeInTheDocument();
+      expect(screen.queryByText("定投NISA提案")).not.toBeInTheDocument();
+      expect(screen.getByText("终身保险提案")).toBeInTheDocument();
+      expect(screen.queryByText("房贷咨询")).not.toBeInTheDocument();
     });
 
-    // 検索をクリア
+    // 清除搜索
     await userEvent.clear(searchInput);
 
-    // すべての結果が再表示されるか確認
+    // 确认全部结果重新显示
     await waitFor(() => {
-      expect(screen.getByText("つみたてNISA提案")).toBeInTheDocument();
-      expect(screen.getByText("終身保険の提案")).toBeInTheDocument();
-      expect(screen.getByText("住宅ローン相談")).toBeInTheDocument();
+      expect(screen.getByText("定投NISA提案")).toBeInTheDocument();
+      expect(screen.getByText("终身保险提案")).toBeInTheDocument();
+      expect(screen.getByText("房贷咨询")).toBeInTheDocument();
     });
   });
 
-  test("シナリオフィルタが正しく動作する", async () => {
-    // APIの挙動をモック
+  test("场景过滤器正确运作", async () => {
+    // mock API 行为
     const mockApiService = ApiService.getInstance() as jest.Mocked<ApiService>;
 
-    // シナリオフィルタ適用時のモック
+    // 场景过滤生效时的 mock
     mockApiService.getSessions.mockImplementation(
       (limit, nextToken, scenarioId) => {
         if (scenarioId === "scenario-1") {
           return Promise.resolve({
-            sessions: [mockSessions[0]], // つみたてNISA提案のみ
+            sessions: [mockSessions[0]], // 仅定投NISA提案
           });
         } else if (scenarioId === "scenario-2") {
           return Promise.resolve({
-            sessions: [mockSessions[1]], // 終身保険の提案のみ
+            sessions: [mockSessions[1]], // 仅终身保险提案
           });
         } else {
           return Promise.resolve({
-            sessions: mockSessions, // すべてのセッション
+            sessions: mockSessions, // 全部会话
           });
         }
       },
@@ -260,25 +260,25 @@ describe("セッション検索とフィルタリング機能", () => {
       </MemoryRouter>,
     );
 
-    // データが読み込まれるのを待機
+    // 等待数据加载
     await waitFor(() => {
-      expect(screen.getByText("つみたてNISA提案")).toBeInTheDocument();
+      expect(screen.getByText("定投NISA提案")).toBeInTheDocument();
     });
 
-    // シナリオフィルタを開く
-    const scenarioFilter = screen.getByRole("combobox", { name: /シナリオ/ });
+    // 打开场景过滤器
+    const scenarioFilter = screen.getByRole("combobox", { name: /场景/ });
     fireEvent.mouseDown(scenarioFilter);
 
-    // ドロップダウンメニューが表示されるまで待機
+    // 等待下拉菜单显示
     await waitFor(() => {
       expect(screen.getAllByRole("option").length).toBeGreaterThan(0);
     });
 
-    // つみたてNISAシナリオを選択
-    const nisaOption = screen.getByText("つみたてNISA提案シナリオ");
+    // 选择定投NISA场景
+    const nisaOption = screen.getByText("定投NISA提案场景");
     fireEvent.click(nisaOption);
 
-    // APIが正しく呼ばれることを確認
+    // 确认 API 被正确调用
     await waitFor(() => {
       expect(mockApiService.getSessions).toHaveBeenCalledWith(
         expect.any(Number),
@@ -287,28 +287,28 @@ describe("セッション検索とフィルタリング機能", () => {
       );
     });
 
-    // フィルタリング結果を確認
+    // 确认过滤结果
     await waitFor(() => {
-      expect(screen.getByText("つみたてNISA提案")).toBeInTheDocument();
-      expect(screen.queryByText("終身保険の提案")).not.toBeInTheDocument();
-      expect(screen.queryByText("住宅ローン相談")).not.toBeInTheDocument();
+      expect(screen.getByText("定投NISA提案")).toBeInTheDocument();
+      expect(screen.queryByText("终身保险提案")).not.toBeInTheDocument();
+      expect(screen.queryByText("房贷咨询")).not.toBeInTheDocument();
     });
   });
 
-  test("「すべてのシナリオ」選択で全結果が表示される", async () => {
-    // APIの挙動をモック
+  test("选择「全部场景」时显示全部结果", async () => {
+    // mock API 行为
     const mockApiService = ApiService.getInstance() as jest.Mocked<ApiService>;
 
-    // シナリオフィルタ適用時のモック
+    // 场景过滤生效时的 mock
     mockApiService.getSessions.mockImplementation(
       (limit, nextToken, scenarioId) => {
         if (scenarioId === "scenario-2") {
           return Promise.resolve({
-            sessions: [mockSessions[1]], // 終身保険の提案のみ
+            sessions: [mockSessions[1]], // 仅终身保险提案
           });
         } else {
           return Promise.resolve({
-            sessions: mockSessions, // すべてのセッション
+            sessions: mockSessions, // 全部会话
           });
         }
       },
@@ -320,42 +320,42 @@ describe("セッション検索とフィルタリング機能", () => {
       </MemoryRouter>,
     );
 
-    // データが読み込まれるのを待機
+    // 等待数据加载
     await waitFor(() => {
-      expect(screen.getByText("つみたてNISA提案")).toBeInTheDocument();
+      expect(screen.getByText("定投NISA提案")).toBeInTheDocument();
     });
 
-    // シナリオフィルタを開く
-    const scenarioFilter = screen.getByRole("combobox", { name: /シナリオ/ });
+    // 打开场景过滤器
+    const scenarioFilter = screen.getByRole("combobox", { name: /场景/ });
     fireEvent.mouseDown(scenarioFilter);
     await waitFor(() =>
       expect(screen.getAllByRole("option").length).toBeGreaterThan(0),
     );
 
-    // 保険シナリオを選択してフィルタリング
-    const insuranceOption = screen.getByText("保険商品提案シナリオ");
+    // 选择保险场景进行过滤
+    const insuranceOption = screen.getByText("保险商品提案场景");
     fireEvent.click(insuranceOption);
 
-    // フィルタリングが適用されたことを確認
+    // 确认过滤已生效
     await waitFor(() => {
-      expect(screen.queryByText("つみたてNISA提案")).not.toBeInTheDocument();
-      expect(screen.getByText("終身保険の提案")).toBeInTheDocument();
-      expect(screen.queryByText("住宅ローン相談")).not.toBeInTheDocument();
+      expect(screen.queryByText("定投NISA提案")).not.toBeInTheDocument();
+      expect(screen.getByText("终身保险提案")).toBeInTheDocument();
+      expect(screen.queryByText("房贷咨询")).not.toBeInTheDocument();
     });
 
-    // 再度フィルタを開く
+    // 再次打开过滤器
     fireEvent.mouseDown(scenarioFilter);
     await waitFor(() =>
       expect(screen.getAllByRole("option").length).toBeGreaterThan(0),
     );
 
-    // すべてのシナリオを選択
-    const allOption = screen.getByText("すべてのシナリオ");
+    // 选择全部场景
+    const allOption = screen.getByText("全部场景");
     fireEvent.click(allOption);
 
-    // APIが正しく呼ばれることを確認
+    // 确认 API 被正确调用
     await waitFor(() => {
-      // 空文字列または未定義のシナリオIDで呼ばれる
+      // 以空字符串或未定义的场景 ID 调用
       expect(mockApiService.getSessions).toHaveBeenCalledWith(
         expect.any(Number),
         undefined,
@@ -363,33 +363,33 @@ describe("セッション検索とフィルタリング機能", () => {
       );
     });
 
-    // 全結果が表示されることを確認
+    // 确认全部结果显示
     await waitFor(() => {
-      expect(screen.getByText("つみたてNISA提案")).toBeInTheDocument();
-      expect(screen.getByText("終身保険の提案")).toBeInTheDocument();
-      expect(screen.getByText("住宅ローン相談")).toBeInTheDocument();
+      expect(screen.getByText("定投NISA提案")).toBeInTheDocument();
+      expect(screen.getByText("终身保险提案")).toBeInTheDocument();
+      expect(screen.getByText("房贷咨询")).toBeInTheDocument();
     });
   });
 
-  test("検索とフィルタを組み合わせて使用できる", async () => {
+  test("可以组合使用搜索和过滤", async () => {
     render(
       <MemoryRouter>
         <SessionHistoryPage />
       </MemoryRouter>,
     );
 
-    // データが読み込まれるのを待機
+    // 等待数据加载
     await waitFor(() => {
-      expect(screen.getByText("つみたてNISA提案")).toBeInTheDocument();
+      expect(screen.getByText("定投NISA提案")).toBeInTheDocument();
     });
 
-    // API挙動のモック更新（シナリオフィルタ適用後）
+    // 更新 API 行为 mock（场景过滤生效后）
     const mockApiService = ApiService.getInstance() as jest.Mocked<ApiService>;
     mockApiService.getSessions.mockImplementation(
       (limit, nextToken, scenarioId) => {
         if (scenarioId === "scenario-1") {
           return Promise.resolve({
-            sessions: [mockSessions[0]], // つみたてNISA提案のみ
+            sessions: [mockSessions[0]], // 仅定投NISA提案
           });
         } else {
           return Promise.resolve({
@@ -399,41 +399,41 @@ describe("セッション検索とフィルタリング機能", () => {
       },
     );
 
-    // シナリオフィルタを適用（NISAシナリオ）
-    const scenarioFilter = screen.getByRole("combobox", { name: /シナリオ/ });
+    // 应用场景过滤（NISA 场景）
+    const scenarioFilter = screen.getByRole("combobox", { name: /场景/ });
     fireEvent.mouseDown(scenarioFilter);
     await waitFor(() =>
       expect(screen.getAllByRole("option").length).toBeGreaterThan(0),
     );
 
-    const nisaOption = screen.getByText("つみたてNISA提案シナリオ");
+    const nisaOption = screen.getByText("定投NISA提案场景");
     fireEvent.click(nisaOption);
 
-    // フィルタリング結果を確認
+    // 确认过滤结果
     await waitFor(() => {
-      expect(screen.getByText("つみたてNISA提案")).toBeInTheDocument();
-      expect(screen.queryByText("終身保険の提案")).not.toBeInTheDocument();
+      expect(screen.getByText("定投NISA提案")).toBeInTheDocument();
+      expect(screen.queryByText("终身保险提案")).not.toBeInTheDocument();
     });
 
-    // 検索を追加（「支店」で検索）- フィルタリング済みの結果からさらに絞り込む
-    const searchInput = screen.getByPlaceholderText("タイトルかNPC名で検索");
-    await userEvent.type(searchInput, "課長");
+    // 追加搜索（用「课长」搜索）- 在已过滤的结果上进一步缩小
+    const searchInput = screen.getByPlaceholderText("按标题或NPC名称搜索");
+    await userEvent.type(searchInput, "课长");
 
-    // 検索結果を確認
+    // 确认搜索结果
     await waitFor(() => {
-      expect(screen.getByText("つみたてNISA提案")).toBeInTheDocument(); // 佐藤課長を含むためマッチ
-      // 他の結果は既にフィルタリングで除外されている
+      expect(screen.getByText("定投NISA提案")).toBeInTheDocument(); // 因包含佐藤课长而匹配
+      // 其他结果已被过滤排除
     });
 
-    // 「部長」で検索（マッチしない）
+    // 用「部长」搜索（不匹配）
     await userEvent.clear(searchInput);
-    await userEvent.type(searchInput, "部長");
+    await userEvent.type(searchInput, "部长");
 
-    // 結果が0件になることを確認
+    // 确认结果变为 0 条
     await waitFor(() => {
-      expect(screen.queryByText("つみたてNISA提案")).not.toBeInTheDocument();
-      expect(screen.queryByText("終身保険の提案")).not.toBeInTheDocument();
-      expect(screen.queryByText("住宅ローン相談")).not.toBeInTheDocument();
+      expect(screen.queryByText("定投NISA提案")).not.toBeInTheDocument();
+      expect(screen.queryByText("终身保险提案")).not.toBeInTheDocument();
+      expect(screen.queryByText("房贷咨询")).not.toBeInTheDocument();
     });
   });
 });

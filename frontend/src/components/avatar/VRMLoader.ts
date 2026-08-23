@@ -1,6 +1,6 @@
 /**
- * VRMファイルローダー
- * GLTFLoader + VRMLoaderPluginを使用してVRMファイルを非同期ロード
+ * VRM 文件加载器
+ * 使用 GLTFLoader + VRMLoaderPlugin 异步加载 VRM 文件
  */
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
@@ -18,7 +18,7 @@ export class VRMLoader {
   }
 
   /**
-   * VRMファイルを非同期ロード
+   * 异步加载 VRM 文件
    */
   async load(url: string, onProgress?: LoadProgressCallback): Promise<VRM> {
     console.log('VRMLoader: Loading VRM from URL:', url);
@@ -28,20 +28,20 @@ export class VRMLoader {
         (gltf) => {
           const vrm = gltf.userData.vrm as VRM;
           if (!vrm) {
-            reject(new Error('VRMデータが見つかりません'));
+            reject(new Error('未找到 VRM 数据'));
             return;
           }
 
-          // @pixiv/three-vrm v3.xでは VRMUtils.rotateVRM0 を使用
-          // VRM 0.x形式の場合のみ回転処理が必要
-          // VRM 1.0形式の場合は回転処理不要
+          // 在 @pixiv/three-vrm v3.x 中使用 VRMUtils.rotateVRM0
+          // 仅 VRM 0.x 格式需要旋转处理
+          // VRM 1.0 格式无需旋转处理
           try {
-            // VRMUtilsが存在し、rotateVRM0メソッドがある場合のみ実行
+            // 仅当 VRMUtils 存在且有 rotateVRM0 方法时执行
             if (typeof VRMUtils?.rotateVRM0 === 'function') {
               VRMUtils.rotateVRM0(vrm);
             }
           } catch {
-            // 回転処理に失敗しても続行（VRM 1.0の場合は不要なため）
+            // 旋转处理失败也继续（因 VRM 1.0 无需此处理）
           }
 
           this.currentVRM = vrm;
@@ -55,25 +55,25 @@ export class VRMLoader {
         },
         (error) => {
           console.error('VRM加载错误:', error);
-          reject(error instanceof Error ? error : new Error('VRMロードに失敗しました'));
+          reject(error instanceof Error ? error : new Error('VRM 加载失败'));
         }
       );
     });
   }
 
   /**
-   * 現在のVRMを取得
+   * 获取当前 VRM
    */
   getCurrentVRM(): VRM | null {
     return this.currentVRM;
   }
 
   /**
-   * リソース解放
+   * 资源释放
    */
   dispose(): void {
     if (this.currentVRM) {
-      // VRMのシーンからすべてのオブジェクトを削除
+      // 从 VRM 场景中删除所有对象
       this.currentVRM.scene.traverse((object) => {
         if (object instanceof THREE.Mesh) {
           object.geometry?.dispose();

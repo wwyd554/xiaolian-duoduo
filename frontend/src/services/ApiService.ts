@@ -22,7 +22,7 @@ import {
 } from "../utils/apiTransformers";
 
 /**
- * API通信サービス - Amazon Bedrockとの通信を処理
+ * API 通信服务 - 处理与 Amazon Bedrock 的通信
  */
 export class ApiService {
   private static instance: ApiService;
@@ -51,7 +51,7 @@ export class ApiService {
   private constructor() { }
 
   /**
-   * シングルトンインスタンスを取得
+   * 获取单例实例
    */
   public static getInstance(): ApiService {
     if (!ApiService.instance) {
@@ -61,9 +61,9 @@ export class ApiService {
   }
 
   /**
-   * 認証トークンを取得する（本地邀请码制 JWT）
-   * @returns 認証ヘッダーを含むオブジェクト
-   * @throws Error - 認証エラー時
+   * 获取认证令牌（本地邀请码制 JWT）
+   * @returns 包含认证头部的对象
+   * @throws Error - 认证错误时
    */
   private async getAuthHeaders(): Promise<Record<string, string>> {
     const auth = loadAuth();
@@ -114,17 +114,17 @@ export class ApiService {
   }
 
   /**
-   * API GETリクエストを実行
-   * @param path APIパス
-   * @param queryParams クエリパラメータ
-   * @returns レスポンス
+   * 执行 API GET 请求
+   * @param path API 路径
+   * @param queryParams 查询参数
+   * @returns 响应
    */
   private async apiGet<T>(
     path: string,
     queryParams?: Record<string, string | number>,
   ): Promise<T> {
     try {
-      // クエリパラメータ文字列を構築
+      // 构建查询参数字符串
       let queryString = "";
       if (queryParams) {
         const params = new URLSearchParams();
@@ -145,10 +145,10 @@ export class ApiService {
   }
 
   /**
-   * API POSTリクエストを実行
-   * @param path APIパス
-   * @param requestBody リクエストボディ
-   * @returns レスポンス
+   * 执行 API POST 请求
+   * @param path API 路径
+   * @param requestBody 请求体
+   * @returns 响应
    */
   private async apiPost<T, R = unknown>(
     path: string,
@@ -163,10 +163,10 @@ export class ApiService {
   }
 
   /**
-   * API PUTリクエストを実行
-   * @param path APIパス
-   * @param requestBody リクエストボディ
-   * @returns レスポンス
+   * 执行 API PUT 请求
+   * @param path API 路径
+   * @param requestBody 请求体
+   * @returns 响应
    */
   private async apiPut<T, R = unknown>(
     path: string,
@@ -181,9 +181,9 @@ export class ApiService {
   }
 
   /**
-   * API DELETEリクエストを実行
-   * @param path APIパス
-   * @returns レスポンス
+   * 执行 API DELETE 请求
+   * @param path API 路径
+   * @returns 响应
    */
   private async apiDelete<T>(path: string): Promise<T> {
     try {
@@ -195,15 +195,15 @@ export class ApiService {
   }
 
   /**
-   * セッションを作成または更新する
+   * 创建或更新会话
    * 
-   * AgentCore Runtime経由で会話する場合、セッションをDynamoDBに保存するために使用
+   * 通过 AgentCore Runtime 对话时，用于将会话保存到 DynamoDB
    * 
-   * @param sessionId セッションID
-   * @param scenarioId シナリオID
-   * @param title セッションタイトル（オプション）
-   * @param npcInfo NPC情報（オプション）
-   * @returns 作成結果
+   * @param sessionId 会话 ID
+   * @param scenarioId 场景 ID
+   * @param title 会话标题（可选）
+   * @param npcInfo NPC 信息（可选）
+   * @returns 创建结果
    */
   public async createOrUpdateSession(
     sessionId: string,
@@ -245,7 +245,7 @@ export class ApiService {
       };
     } catch (error) {
       console.error("会话创建/更新错误:", error);
-      // エラーが発生しても会話は続行できるようにする
+      // 即使发生错误也要保证对话可继续
       return {
         success: false,
         sessionId,
@@ -255,17 +255,17 @@ export class ApiService {
   }
 
   /**
-   * NPCと会話する（本地 FastAPI 单次调用，回复+评分一次返回）
+   * 与 NPC 对话（本地 FastAPI 单次调用，回复+评分一次返回）
    *
-   * @param message ユーザーメッセージ
-   * @param npc NPCの情報
-   * @param previousMessages 過去のメッセージ履歴（后端从 SQLite 读取，未使用）
-   * @param sessionId セッションID
-   * @param messageId メッセージID
-   * @param emotionParams 感情パラメータ
-   * @param scenarioId シナリオID
-   * @param language 言語設定
-   * @returns NPCの応答
+   * @param message 用户消息
+   * @param npc NPC 信息
+   * @param previousMessages 过去的消息历史（后端从 SQLite 读取，未使用）
+   * @param sessionId 会话 ID
+   * @param messageId 消息 ID
+   * @param emotionParams 情感参数
+   * @param scenarioId 场景 ID
+   * @param language 语言设置
+   * @returns NPC 的响应
    */
   public async chatWithNPC(
     message: string,
@@ -338,7 +338,7 @@ export class ApiService {
       };
     } catch (error: unknown) {
       console.error("与NPC对话时发生错误:", error);
-      // エラー時のフォールバック応答
+      // 出错时的兜底响应
       return {
         response:
           "抱歉，回复生成时出现错误，请稍后重试。",
@@ -349,21 +349,21 @@ export class ApiService {
   }
 
   /**
-   * リアルタイム評価を取得する（本地版：chatWithNPC 缓存的结果中直接取评分）
+   * 获取实时评估（本地版：直接从 chatWithNPC 缓存的结果中取评分）
    *
    * 后端已在单次 /sessions/{id}/messages 调用中完成评分，
    * 此处仅消费缓存并转换为前端 goalStatuses 格式，不发起新的后端请求。
    *
-   * @param message ユーザーメッセージ
-   * @param previousMessages 過去のメッセージ履歴（未使用）
-   * @param sessionId セッションID
-   * @param goalStatuses 現在のゴール達成状況（オプション）
-   * @param goals シナリオのゴール定義（オプション）
-   * @param scenarioId シナリオID（未使用）
-   * @param language 言語設定（オプション）
-   * @param currentScores 現在のスコア（オプション）
-   * @param scenarioDescription シナリオ説明（未使用）
-   * @returns メトリクスとゴール状態を含むオブジェクト
+   * @param message 用户消息
+   * @param previousMessages 过去的消息历史（未使用）
+   * @param sessionId 会话 ID
+   * @param goalStatuses 当前目标达成情况（可选）
+   * @param goals 场景的目标定义（可选）
+   * @param scenarioId 场景 ID（未使用）
+   * @param language 语言设置（可选）
+   * @param currentScores 当前得分（可选）
+   * @param scenarioDescription 场景说明（未使用）
+   * @returns 包含指标与目标状态的对象
    */
   public async getRealtimeEvaluation(
     message: string,
@@ -457,11 +457,11 @@ export class ApiService {
   }
 
   /**
-   * セッション一覧を取得する
-   * @param limit 取得する最大件数
-   * @param nextToken 次ページのトークン
-   * @param scenarioId シナリオIDによるフィルタリング
-   * @returns セッション一覧レスポンス
+   * 获取会话列表
+   * @param limit 获取的最大数量
+   * @param nextToken 下一页的令牌
+   * @param scenarioId 按场景 ID 过滤
+   * @returns 会话列表响应
    */
   public async getSessions(
     limit?: number,
@@ -469,7 +469,7 @@ export class ApiService {
     scenarioId?: string,
   ): Promise<SessionListResponse> {
     try {
-      // クエリパラメータの作成
+      // 创建查询参数
       const queryParams: Record<string, string | number> = {};
 
       if (limit !== undefined) {
@@ -482,7 +482,7 @@ export class ApiService {
         queryParams.scenarioId = scenarioId;
       }
 
-      // API呼び出し
+      // API 调用
       return await this.apiGet<SessionListResponse>("/sessions", queryParams);
     } catch (error) {
       console.error("获取会话列表失败:", error);
@@ -496,13 +496,13 @@ export class ApiService {
   }
 
   /**
-   * セッション詳細を取得する
-   * @param sessionId セッションID
-   * @returns セッション詳細情報
+   * 获取会话详情
+   * @param sessionId 会话 ID
+   * @returns 会话详细信息
    */
   public async getSessionDetail(sessionId: string): Promise<SessionInfo> {
     try {
-      // API呼び出し
+      // API 调用
       return await this.apiGet<SessionInfo>(`/sessions/${sessionId}`);
     } catch (error) {
       console.error(
@@ -519,11 +519,11 @@ export class ApiService {
   }
 
   /**
-   * セッションメッセージ履歴を取得する
-   * @param sessionId セッションID
-   * @param limit 取得する最大件数
-   * @param nextToken 次ページのトークン
-   * @returns メッセージ履歴レスポンス
+   * 获取会话消息历史
+   * @param sessionId 会话 ID
+   * @param limit 获取的最大数量
+   * @param nextToken 下一页的令牌
+   * @returns 消息历史响应
    */
   public async getSessionMessages(
     sessionId: string,
@@ -531,7 +531,7 @@ export class ApiService {
     nextToken?: string,
   ): Promise<MessageListResponse> {
     try {
-      // クエリパラメータの作成
+      // 创建查询参数
       const queryParams: Record<string, string | number> = {};
 
       if (limit !== undefined) {
@@ -541,7 +541,7 @@ export class ApiService {
         queryParams.nextToken = nextToken;
       }
 
-      // API呼び出し
+      // API 调用
       return await this.apiGet<MessageListResponse>(
         `/sessions/${sessionId}/messages`,
         queryParams,
@@ -561,12 +561,12 @@ export class ApiService {
   }
 
   /**
-   * シナリオ一覧を取得する
-   * @param category カテゴリでフィルタ
-   * @param difficulty 難易度でフィルタ
-   * @param limit 取得する最大件数
-   * @param nextToken 次ページのトークン
-   * @returns シナリオ一覧レスポンス
+   * 获取场景列表
+   * @param category 按分类过滤
+   * @param difficulty 按难度过滤
+   * @param limit 获取的最大数量
+   * @param nextToken 下一页的令牌
+   * @returns 场景列表响应
    */
   public async getScenarios(
     category?: string,
@@ -575,7 +575,7 @@ export class ApiService {
     nextToken?: string,
   ): Promise<ScenarioListResponse> {
     try {
-      // クエリパラメータの作成
+      // 创建查询参数
       const queryParams: Record<string, string | number> = {};
 
       if (category !== undefined) {
@@ -591,7 +591,7 @@ export class ApiService {
         queryParams.nextToken = nextToken;
       }
 
-      // API呼び出し
+      // API 调用
       return await this.apiGet<ScenarioListResponse>("/scenarios", queryParams);
     } catch (error) {
       console.error("获取场景列表失败:", error);
@@ -605,13 +605,13 @@ export class ApiService {
   }
 
   /**
-   * シナリオ詳細を取得する
-   * @param scenarioId シナリオID
-   * @returns シナリオ詳細情報
+   * 获取场景详情
+   * @param scenarioId 场景 ID
+   * @returns 场景详细信息
    */
   public async getScenarioDetail(scenarioId: string): Promise<ScenarioInfo> {
     try {
-      // API呼び出し
+      // API 调用
       return await this.apiGet<ScenarioInfo>(`/scenarios/${scenarioId}`);
     } catch (error) {
       console.error(`获取场景详情失败 (${scenarioId}):`, error);
@@ -625,12 +625,12 @@ export class ApiService {
   }
 
   /**
-   * ファイルアップロード用の署名付きURLを取得（汎用）
+   * 获取文件上传用的签名 URL（通用）
    *
-   * @param scenarioId シナリオID
-   * @param fileName ファイル名
-   * @param contentType MIMEタイプ
-   * @returns 署名付きURL情報
+   * @param scenarioId 场景 ID
+   * @param fileName 文件名
+   * @param contentType MIME 类型
+   * @returns 签名 URL 信息
    */
   private async getFileUploadUrl(
     scenarioId: string,
@@ -670,13 +670,13 @@ export class ApiService {
   }
 
   /**
-   * ファイルをアップロード（汎用）
+   * 上传文件（通用）
    *
-   * @param uploadUrl S3エンドポイントURL
-   * @param formData POSTリクエスト用のフォームデータ
-   * @param content アップロードするコンテンツ（FileまたはBlob）
-   * @param contentType ファイルのMIMEタイプ
-   * @returns アップロード結果
+   * @param uploadUrl S3 端点 URL
+   * @param formData POST 请求用的表单数据
+   * @param content 要上传的内容（File 或 Blob）
+   * @param contentType 文件的 MIME 类型
+   * @returns 上传结果
    */
   private async uploadFile(
     uploadUrl: string,
@@ -685,37 +685,37 @@ export class ApiService {
     contentType: string,
   ): Promise<void> {
     try {
-      // FormDataオブジェクトを作成
+      // 创建 FormData 对象
       const formDataObj = new FormData();
 
-      // 署名付きフォームデータのフィールドを追加
+      // 添加签名表单数据的字段
       Object.entries(formData).forEach(([key, value]) => {
         formDataObj.append(key, value);
       });
 
-      // ファイルを最後に追加（S3の要求に従い、fileフィールドは最後）
+      // 最后添加文件（按 S3 的要求，file 字段放在最后）
       if (typeof content === "string") {
-        // 文字列の場合はBlobに変換してからアップロード
+        // 字符串则先转换为 Blob 再上传
         const blob = new Blob([content], { type: contentType });
         formDataObj.append("file", blob);
       } else {
-        // File/Blobオブジェクトをそのまま追加
+        // 直接添加 File/Blob 对象
         formDataObj.append("file", content);
       }
 
-      // POSTメソッドでフォームデータを送信（プリフライトリクエスト回避）
+      // 使用 POST 方法发送表单数据（避免预检请求）
       const response = await fetch(uploadUrl, {
         method: "POST",
         body: formDataObj,
-        // Content-Typeヘッダーは設定しない（FormDataが自動的に適切な値を設定）
-        // これによりプリフライトリクエストを完全に回避
+        // 不设置 Content-Type 头（FormData 会自动设置合适的值）
+        // 这样可完全避免预检请求
       });
 
-      // レスポンスのステータスをチェック
+      // 检查响应的状态
       if (!response.ok) {
         const errorText = await response
           .text()
-          .catch(() => "レスポンス読み取りエラー");
+          .catch(() => "响应读取错误");
         throw new Error(
           `HTTP ${response.status}: ${response.statusText}. ${errorText}`,
         );
@@ -724,13 +724,13 @@ export class ApiService {
       console.error("文件上传失败:", error);
 
       if (error instanceof Error) {
-        // CORSエラーの場合は、より分かりやすいエラーメッセージを提供
+        // 若为 CORS 错误，提供更易懂的错误信息
         if (
           error.message.includes("CORS") ||
           error.message.includes("Access-Control")
         ) {
           throw new Error(
-            "ファイルのアップロードでCORSエラーが発生しました。S3フォームアップロード処理でエラーが発生している可能性があります。",
+            "文件上传时发生 CORS 错误。可能是 S3 表单上传处理出错。",
           );
         }
         throw new Error(
@@ -743,12 +743,12 @@ export class ApiService {
   }
 
   /**
-   * PDF資料アップロード用の署名付きURLを取得
+   * 获取 PDF 资料上传用的签名 URL
    *
-   * @param scenarioId シナリオID
-   * @param fileName ファイル名
-   * @param contentType MIMEタイプ
-   * @returns 署名付きURL情報
+   * @param scenarioId 场景 ID
+   * @param fileName 文件名
+   * @param contentType MIME 类型
+   * @returns 签名 URL 信息
    */
   public async getPdfUploadUrl(
     scenarioId: string,
@@ -765,12 +765,12 @@ export class ApiService {
   }
 
   /**
-   * PDFファイルをアップロード
+   * 上传 PDF 文件
    *
-   * @param uploadUrl 署名付きアップロードURL
-   * @param file アップロードするファイル
-   * @param contentType ファイルのMIMEタイプ
-   * @returns アップロード結果
+   * @param uploadUrl 签名上传 URL
+   * @param file 要上传的文件
+   * @param contentType 文件的 MIME 类型
+   * @returns 上传结果
    */
   public async uploadPdfFile(
     uploadUrl: string,
@@ -782,11 +782,11 @@ export class ApiService {
   }
 
   /**
-   * PDFメタデータファイル用の署名付きURLを取得
+   * 获取 PDF 元数据文件用的签名 URL
    *
-   * @param scenarioId シナリオID
-   * @param fileName メタデータファイル名（例: filename.metadata.json）
-   * @returns 署名付きURL情報
+   * @param scenarioId 场景 ID
+   * @param fileName 元数据文件名（例：filename.metadata.json）
+   * @returns 签名 URL 信息
    */
   public async getPdfMetadataUploadUrl(
     scenarioId: string,
@@ -802,11 +802,11 @@ export class ApiService {
   }
 
   /**
-   * PDFメタデータファイルをアップロード
+   * 上传 PDF 元数据文件
    *
-   * @param uploadUrl 署名付きアップロードURL
-   * @param metadataContent メタデータのJSONコンテンツ
-   * @returns アップロード結果
+   * @param uploadUrl 签名上传 URL
+   * @param metadataContent 元数据的 JSON 内容
+   * @returns 上传结果
    */
   public async uploadPdfMetadata(
     uploadUrl: string,
@@ -822,11 +822,11 @@ export class ApiService {
   }
 
   /**
-   * PDFファイルとメタデータファイルを削除
+   * 删除 PDF 文件与元数据文件
    *
-   * @param scenarioId シナリオID
-   * @param fileName PDFファイル名
-   * @returns 削除結果
+   * @param scenarioId 场景 ID
+   * @param fileName PDF 文件名
+   * @returns 删除结果
    */
   public async deletePdfWithMetadata(
     scenarioId: string,
@@ -837,16 +837,16 @@ export class ApiService {
     errors?: string[];
   }> {
     try {
-      // 削除するファイルのリスト
+      // 待删除文件的列表
       const filesToDelete = [
-        fileName, // PDFファイル
-        `${fileName}.metadata.json`, // メタデータファイル
+        fileName, // PDF 文件
+        `${fileName}.metadata.json`, // 元数据文件
       ];
 
       const deletedFiles: string[] = [];
       const errors: string[] = [];
 
-      // 各ファイルを削除
+      // 逐个删除文件
       for (const fileToDelete of filesToDelete) {
         try {
           await this.apiDelete<{ message: string }>(
@@ -883,11 +883,11 @@ export class ApiService {
   }
 
   // ========================================
-  // 提案資料（プレゼンテーション）関連メソッド
+  // 提案资料（演示文稿）相关方法
   // ========================================
 
   /**
-   * 提案資料PDFアップロード用の署名付きURLを取得
+   * 获取提案资料 PDF 上传用的签名 URL
    */
   public async getPresentationUploadUrl(
     scenarioId: string,
@@ -921,7 +921,7 @@ export class ApiService {
   }
 
   /**
-   * 提案資料PDFをアップロード
+   * 上传提案资料 PDF
    */
   public async uploadPresentationFile(
     uploadUrl: string,
@@ -932,7 +932,7 @@ export class ApiService {
   }
 
   /**
-   * 提案資料を削除
+   * 删除提案资料
    */
   public async deletePresentationFile(
     scenarioId: string,
@@ -948,7 +948,7 @@ export class ApiService {
   }
 
   /**
-   * スライド画像一覧を取得（署名付きURL付き）
+   * 获取幻灯片图片列表（带签名 URL）
    */
   public async getSlideImages(
     scenarioId: string,
@@ -973,7 +973,7 @@ export class ApiService {
   }
 
   /**
-   * PDF→スライド画像変換をトリガー
+   * 触发 PDF→幻灯片图片转换
    */
   public async triggerSlideConversion(
     scenarioId: string,
@@ -992,13 +992,13 @@ export class ApiService {
   }
 
   /**
-   * 単一シナリオをエクスポートする
-   * @param scenarioId エクスポートするシナリオID
-   * @returns シナリオデータのJSONオブジェクト
+   * 导出单个场景
+   * @param scenarioId 要导出的场景 ID
+   * @returns 场景数据的 JSON 对象
    */
   public async exportScenario(scenarioId: string): Promise<ScenarioExportData> {
     try {
-      // API呼び出し
+      // API 调用
       return await this.apiGet<ScenarioExportData>(
         `/scenarios/${scenarioId}/export`,
       );
@@ -1016,20 +1016,20 @@ export class ApiService {
   }
 
   /**
-   * シナリオをインポートする
-   * @param scenarioData インポートするシナリオデータ (npcsとscenariosを含むオブジェクト)
-   * @returns インポート結果のレスポンス
+   * 导入场景
+   * @param scenarioData 要导入的场景数据（包含 npcs 和 scenarios 的对象）
+   * @returns 导入结果的响应
    */
   public async importScenarios(
     scenarioData: ScenarioExportData,
   ): Promise<ImportResponse> {
     try {
-      // API呼び出し
+      // API 调用
       const rawResponse = await this.apiPost<ImportResponse>(
         "/scenarios/import",
         scenarioData,
       );
-      // バックエンドのsnake_caseレスポンスをcamelCaseに変換
+      // 将后端的 snake_case 响应转换为 camelCase
       return transformImportResponse(rawResponse);
     } catch (error) {
       console.error("场景导入失败:", error);
@@ -1043,15 +1043,15 @@ export class ApiService {
   }
 
   /**
-   * シナリオを作成する
-   * @param scenarioData 作成するシナリオデータ
-   * @returns 作成されたシナリオ情報
+   * 创建场景
+   * @param scenarioData 要创建的场景数据
+   * @returns 已创建的场景信息
    */
   public async createScenario(
     scenarioData: Partial<ScenarioInfo>,
   ): Promise<{ scenarioId: string; scenario: ScenarioInfo }> {
     try {
-      // API呼び出し
+      // API 调用
       const response = await this.apiPost<{
         message: string;
         scenarioId: string;
@@ -1102,17 +1102,17 @@ export class ApiService {
   }
 
   /**
-   * シナリオを更新する
-   * @param scenarioId 更新対象のシナリオID
-   * @param scenarioData 更新するシナリオデータ
-   * @returns 更新されたシナリオ情報
+   * 更新场景
+   * @param scenarioId 待更新的场景 ID
+   * @param scenarioData 要更新的场景数据
+   * @returns 已更新的场景信息
    */
   public async updateScenario(
     scenarioId: string,
     scenarioData: Partial<ScenarioInfo>,
   ): Promise<{ scenario: ScenarioInfo }> {
     try {
-      // API呼び出し
+      // API 调用
       const response = await this.apiPut<{
         message: string;
         scenario: ScenarioInfo;
@@ -1133,15 +1133,15 @@ export class ApiService {
   }
 
   /**
-   * シナリオを削除する
-   * @param scenarioId 削除するシナリオID
-   * @returns 削除結果
+   * 删除场景
+   * @param scenarioId 要删除的场景 ID
+   * @returns 删除结果
    */
   public async deleteScenario(
     scenarioId: string,
   ): Promise<{ message: string; scenarioId: string }> {
     try {
-      // API呼び出し
+      // API 调用
       return await this.apiDelete<{ message: string; scenarioId: string }>(
         `/scenarios/${scenarioId}`,
       );
@@ -1157,11 +1157,11 @@ export class ApiService {
   }
 
   /**
-   * シナリオの共有設定を更新する
-   * @param scenarioId 対象のシナリオID
-   * @param visibility 公開範囲設定
-   * @param sharedWithUsers 共有先ユーザーIDリスト
-   * @returns 更新結果
+   * 更新场景的共享设置
+   * @param scenarioId 目标场景 ID
+   * @param visibility 公开范围设置
+   * @param sharedWithUsers 共享对象的用户 ID 列表
+   * @returns 更新结果
    */
   public async updateScenarioSharing(
     scenarioId: string,
@@ -1173,13 +1173,13 @@ export class ApiService {
     sharedWithUsers: string[];
   }> {
     try {
-      // リクエストデータ作成
+      // 创建请求数据
       const requestData: {
         visibility: "public" | "private" | "shared";
         sharedWithUsers?: string[];
       } = { visibility };
 
-      // 共有設定の場合は共有先ユーザーリストを追加
+      // 共享设置时添加共享用户列表
       if (
         visibility === "shared" &&
         sharedWithUsers &&
@@ -1188,7 +1188,7 @@ export class ApiService {
         requestData.sharedWithUsers = sharedWithUsers;
       }
 
-      // API呼び出し
+      // API 调用
       return await this.apiPost<{
         message: string;
         visibility: "public" | "private" | "shared";
@@ -1211,8 +1211,8 @@ export class ApiService {
   }
 
   /**
-   * 利用可能なGuardrailsの一覧を取得する
-   * @returns Guardrailsリスト
+   * 获取可用的 Guardrails 列表
+   * @returns Guardrails 列表
    */
   public async getGuardrails(): Promise<
     Array<{
@@ -1223,7 +1223,7 @@ export class ApiService {
     }>
   > {
     try {
-      // API呼び出し
+      // API 调用
       const response = await this.apiGet<{
         guardrails: Array<{
           arn: string;
@@ -1246,14 +1246,14 @@ export class ApiService {
   }
 
   /**
-   * セッションフィードバックを取得する
+   * 获取会话反馈
    *
-   * 保存済みのフィードバック分析データを取得します。
-   * セッション結果画面で使用されるフィードバックデータをDynamoDBから取得します。
+   * 获取已保存的反馈分析数据。
+   * 从 DynamoDB 获取会话结果页面使用的反馈数据。
    *
-   * @param sessionId セッションID
-   * @returns フィードバック分析結果
-   * @throws Error - API呼び出し失敗時やフィードバックが見つからない時
+   * @param sessionId 会话 ID
+   * @returns 反馈分析结果
+   * @throws Error - API 调用失败或未找到反馈时
    */
   public async getSessionFeedback(sessionId: string): Promise<{
     feedback: FeedbackAnalysisResult;
@@ -1267,7 +1267,7 @@ export class ApiService {
     };
   }> {
     try {
-      // API呼び出し
+      // API 调用
       const response = await this.apiGet<{
         success: boolean;
         sessionId: string;
@@ -1314,26 +1314,26 @@ export class ApiService {
   }
 
   /**
-   * セッション分析結果を取得する
+   * 获取会话分析结果
    *
-   * ResultPageで使用するセッションの全データを一括取得します。
-   * 通常セッションと音声分析セッション両方に対応。
+   * 一次性获取 ResultPage 使用的会话全部数据。
+   * 同时支持普通会话与语音分析会话。
    *
-   * @param sessionId セッションID
-   * @returns セッション分析結果データ
-   * @throws Error - API呼び出し失敗時やセッションが見つからない時
+   * @param sessionId 会话 ID
+   * @returns 会话分析结果数据
+   * @throws Error - API 调用失败或未找到会话时
    */
   public async getSessionCompleteData(
     sessionId: string,
   ): Promise<SessionCompleteDataResponse> {
     try {
-      // API呼び出し（音声分析セッション対応）
+      // API 调用（支持语音分析会话）
       const response = await this.apiGet<SessionCompleteDataResponse>(
         `/sessions/${sessionId}/analysis-results`,
       );
 
       if (response.success) {
-        // バックエンドのsnake_caseレスポンスをcamelCaseに変換
+        // 将后端的 snake_case 响应转换为 camelCase
         return {
           ...response,
           complianceViolations: Array.isArray(response.complianceViolations)
@@ -1365,17 +1365,17 @@ export class ApiService {
   }
 
   /**
-   * マルチパートアップロードを開始し、各パートの署名付きURLを取得する
+   * 启动分片上传，并获取各分片的签名 URL
    *
-   * セッション録画の動画ファイルは、長時間セッション（20分超など）でも
-   * S3のサイズ制限に達しないよう、ファイルサイズに関わらずマルチパート方式で
-   * アップロードする。
+   * 会话录制的视频文件，即使在长时间会话（超过 20 分钟等）中
+   * 也不会达到 S3 的大小限制，因此无论文件大小如何，均采用分片方式
+   * 上传。
    *
-   * @param sessionId セッションID
-   * @param contentType 動画のコンテントタイプ（video/mp4）
-   * @param partCount 分割するパート数
-   * @param fileName ファイル名（オプション）
-   * @returns マルチパートアップロードID、動画キー、各パートの署名付きURL
+   * @param sessionId 会话 ID
+   * @param contentType 视频的内容类型（video/mp4）
+   * @param partCount 分割的分片数
+   * @param fileName 文件名（可选）
+   * @returns 分片上传 ID、视频键、各分片的签名 URL
    */
   public async createMultipartUpload(
     sessionId: string,
@@ -1422,14 +1422,14 @@ export class ApiService {
   }
 
   /**
-   * マルチパートアップロードを完了する
+   * 完成分片上传
    *
-   * 全パートのアップロード完了後、S3に対してパートの結合を指示する。
+   * 所有分片上传完成后，指示 S3 合并各分片。
    *
-   * @param videoKey 動画キー
-   * @param uploadId マルチパートアップロードID
-   * @param parts 各パートの情報（パート番号とETag）
-   * @returns 動画キーとアップロード完了オブジェクトのURL
+   * @param videoKey 视频键
+   * @param uploadId 分片上传 ID
+   * @param parts 各分片的信息（分片编号与 ETag）
+   * @returns 视频键与上传完成对象的 URL
    */
   public async completeMultipartUpload(
     videoKey: string,
@@ -1463,13 +1463,13 @@ export class ApiService {
   }
 
   /**
-   * マルチパートアップロードを中断する
+   * 中断分片上传
    *
-   * 上传失败時に呼び出し、アップロード済みパートを破棄する。
+   * 上传失败时调用，丢弃已上传的分片。
    *
-   * @param videoKey 動画キー
-   * @param uploadId マルチパートアップロードID
-   * @returns 中断成功フラグ
+   * @param videoKey 视频键
+   * @param uploadId 分片上传 ID
+   * @returns 中断成功标志
    */
   public async abortMultipartUpload(
     videoKey: string,
@@ -1484,17 +1484,17 @@ export class ApiService {
         uploadId,
       });
     } catch (error) {
-      // 中断処理の失敗は致命的ではないため、警告ログのみ出力して握りつぶす
+      // 中断失败不致命，因此仅输出警告日志并吞掉异常
       console.warn("分段上传中断失败:", error);
       return { aborted: false };
     }
   }
 
   /**
-   * HTTPレスポンスのステータスコードを判定する共通メソッド
-   * @param error エラーオブジェクト
-   * @param statusCode 判定するHTTPステータスコード
-   * @returns 指定したステータスコードの場合true
+   * 判断 HTTP 响应状态码的通用方法
+   * @param error 错误对象
+   * @param statusCode 要判断的 HTTP 状态码
+   * @returns 为指定状态码时返回 true
    */
   private hasResponseStatus(error: unknown, statusCode: number): boolean {
     if (error && typeof error === "object" && "response" in error) {
@@ -1506,17 +1506,17 @@ export class ApiService {
     return false;
   }
 
-  /** 504 Gateway Timeoutエラーかどうかを判定する */
+  /** 判断是否为 504 Gateway Timeout 错误 */
   private isGatewayTimeoutError(error: unknown): boolean {
     return this.hasResponseStatus(error, 504);
   }
 
-  /** 404 Not Foundエラーかどうかを判定する */
+  /** 判断是否为 404 Not Found 错误 */
   private is404Error(error: unknown): boolean {
     return this.hasResponseStatus(error, 404);
   }
 
-  /** 409 Conflictエラーかどうかを判定する */
+  /** 判断是否为 409 Conflict 错误 */
   private is409Error(error: unknown): boolean {
     return this.hasResponseStatus(error, 409);
   }
@@ -1527,27 +1527,27 @@ export class ApiService {
     limit: number = 10,
   ): Promise<RankingResponse> {
     try {
-      // クエリパラメータの作成
+      // 创建查询参数
       const queryParams: Record<string, string | number> = {
         scenarioId: scenarioId,
         period: period,
         limit: limit,
       };
 
-      // API呼び出し
+      // API 调用
       const response = await this.apiGet<RankingResponse>(
         "/rankings",
         queryParams,
       );
 
-      // レスポンスの検証
+      // 校验响应
       if (!response.rankings) {
         throw new Error(
-          "ランキングデータの取得に失敗しました: データ形式が無効です",
+          "获取排行榜数据失败：数据格式无效",
         );
       }
 
-      // RankingResponseの型に合わせてtotalCountフィールドをtotalParticipantsとして扱う
+      // 按 RankingResponse 类型将 totalCount 字段作为 totalParticipants 处理
       const formattedResponse: RankingResponse = {
         ...response,
         totalCount: response.totalCount || 0,
@@ -1568,9 +1568,9 @@ export class ApiService {
   }
 
   /**
-   * Polly音声合成API呼び出し
-   * @param requestBody リクエストボディ
-   * @returns 音声URL
+   * Polly 语音合成 API 调用
+   * @param requestBody 请求体
+   * @returns 语音 URL
    */
   public async callPollyAPI(requestBody: {
     text: string;
@@ -1623,11 +1623,11 @@ export class ApiService {
   }
 
   /**
-   * 音声ファイルアップロード用の署名付きURLを生成
-   * @param fileName ファイル名
-   * @param contentType 音声ファイルの形式
-   * @param language 言語設定
-   * @returns 署名付きURLとセッション情報
+   * 生成音频文件上传用的签名 URL
+   * @param fileName 文件名
+   * @param contentType 音频文件的格式
+   * @param language 语言设置
+   * @returns 签名 URL 与会话信息
    */
   public async generateAudioUploadUrl(
     fileName: string,
@@ -1674,12 +1674,12 @@ export class ApiService {
   }
 
   /**
-   * 音声分析を開始
-   * @param sessionId セッションID
-   * @param audioKey 音声ファイルのS3キー
-   * @param scenarioId シナリオID
-   * @param language 言語設定
-   * @returns 分析開始結果
+   * 开始语音分析
+   * @param sessionId 会话 ID
+   * @param audioKey 音频文件的 S3 键
+   * @param scenarioId 场景 ID
+   * @param language 语言设置
+   * @returns 分析开始结果
    */
   public async startAudioAnalysis(
     sessionId: string,
@@ -1721,9 +1721,9 @@ export class ApiService {
   }
 
   /**
-   * 音声分析の状況を確認
-   * @param sessionId セッションID
-   * @returns 分析状況
+   * 确认语音分析状态
+   * @param sessionId 会话 ID
+   * @returns 分析状态
    */
   public async getAudioAnalysisStatus(sessionId: string): Promise<{
     success: boolean;
@@ -1756,9 +1756,9 @@ export class ApiService {
   }
 
   /**
-   * 音声分析結果を取得
-   * @param sessionId セッションID
-   * @returns 分析結果
+   * 获取语音分析结果
+   * @param sessionId 会话 ID
+   * @returns 分析结果
    */
   public async getAudioAnalysisResults(sessionId: string): Promise<{
     success: boolean;
@@ -1791,10 +1791,10 @@ export class ApiService {
   }
 
   /**
-   * セッション分析を開始（Step Functions統合）
-   * @param sessionId セッションID
-   * @param language 言語設定
-   * @returns 分析開始結果
+   * 开始会话分析（Step Functions 集成）
+   * @param sessionId 会话 ID
+   * @param language 语言设置
+   * @returns 分析开始结果
    */
   public async startSessionAnalysis(
     sessionId: string,
@@ -1810,7 +1810,7 @@ export class ApiService {
     try {
       const requestBody: Record<string, unknown> = { language };
 
-      // セッション中のゴール進捗を渡す
+      // 传递会话中的目标进度
       if (goalStatuses && goalStatuses.length > 0) {
         requestBody.goalStatuses = goalStatuses.map(status => serializeGoalStatus(status));
       }
@@ -1836,9 +1836,9 @@ export class ApiService {
   }
 
   /**
-   * セッション分析のステータスを取得（ポーリング用）
-   * @param sessionId セッションID
-   * @returns 分析ステータス
+   * 获取会话分析状态（用于轮询）
+   * @param sessionId 会话 ID
+   * @returns 分析状态
    */
   public async getSessionAnalysisStatus(sessionId: string): Promise<{
     success: boolean;

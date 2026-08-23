@@ -19,9 +19,9 @@ interface GoalResultsSectionProps {
 }
 
 /**
- * ゴール達成状況表示セクションコンポーネント
- * 結果画面でゴールの達成状況を表示する
- * i18n対応済み
+ * 目标达成情况展示区域组件
+ * 在结果页面显示目标的达成情况
+ * 已支持 i18n
  */
 const GoalResultsSection: React.FC<GoalResultsSectionProps> = ({
   goals,
@@ -32,12 +32,12 @@ const GoalResultsSection: React.FC<GoalResultsSectionProps> = ({
     return null;
   }
 
-  // 達成したゴールの数
+  // 已达成目标的数量
   const achievedGoalsCount = goalStatuses.filter(
     (status) => status.achieved,
   ).length;
 
-  // 必須ゴールの達成状況
+  // 必需目标的达成情况
   const requiredGoals = goals.filter((goal) => goal.isRequired);
   const achievedRequiredGoalsCount = requiredGoals.filter((goal) => {
     const status = goalStatuses.find((s) => s.goalId === goal.id);
@@ -53,7 +53,7 @@ const GoalResultsSection: React.FC<GoalResultsSectionProps> = ({
         mb={2}
       >
         <Typography variant="h6" fontWeight="bold">
-          {t("results.goalAchievementStatus", "ゴール達成状況")}
+          {t("results.goalAchievementStatus", "目标达成情况")}
         </Typography>
       </Box>
 
@@ -61,7 +61,7 @@ const GoalResultsSection: React.FC<GoalResultsSectionProps> = ({
         <Grid container spacing={2}>
           <Grid size={6}>
             <Typography variant="body2" color="text.secondary">
-              {t("results.achievedGoalsCount", "達成ゴール数")}
+              {t("results.achievedGoalsCount", "达成目标数")}
             </Typography>
             <Typography variant="h6">
               {achievedGoalsCount} / {goals.length}
@@ -69,7 +69,7 @@ const GoalResultsSection: React.FC<GoalResultsSectionProps> = ({
           </Grid>
           <Grid size={6}>
             <Typography variant="body2" color="text.secondary">
-              {t("results.requiredGoalsAchievement", "必須ゴール達成")}
+              {t("results.requiredGoalsAchievement", "必需目标达成")}
             </Typography>
             <Typography variant="h6">
               {achievedRequiredGoalsCount} / {requiredGoals.length}

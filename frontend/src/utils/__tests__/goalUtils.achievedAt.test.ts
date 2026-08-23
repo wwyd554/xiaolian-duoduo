@@ -1,21 +1,21 @@
 /**
- * mergeGoalStatus の achievedAt スプレッド除外に関するテスト
+ * 关于 mergeGoalStatus 的 achievedAt 展开排除的测试
  *
- * 修正内容: update オブジェクトの achievedAt をスプレッドから除外し、
- * prevStatus.achievedAt が意図せず上書きされることを防ぐ
+ * 修正内容：将 update 对象的 achievedAt 从展开中排除，
+ * 防止 prevStatus.achievedAt 被意外覆盖
  */
 import { mergeGoalStatus } from "../goalUtils";
 import type { GoalStatus } from "../../types/index";
 
-describe("mergeGoalStatus - achievedAt スプレッド除外", () => {
-  it("updateにachievedAt=undefinedが含まれていてもprevStatusのachievedAtが保持される", () => {
+describe("mergeGoalStatus - achievedAt 展开排除", () => {
+  it("即使 update 包含 achievedAt=undefined，prevStatus 的 achievedAt 也会被保留", () => {
     const prev: GoalStatus = {
       goalId: "goal-1",
       progress: 100,
       achieved: true,
       achievedAt: new Date("2025-06-01T00:00:00Z"),
     };
-    // updateにachievedAt: undefinedが明示的に含まれるケース
+    // update 中显式包含 achievedAt: undefined 的情况
     const update: Partial<GoalStatus> = {
       goalId: "goal-1",
       progress: 100,
@@ -24,11 +24,11 @@ describe("mergeGoalStatus - achievedAt スプレッド除外", () => {
     };
     const result = mergeGoalStatus(prev, update);
 
-    // prevStatusのachievedAtが保持されること（undefinedで上書きされない）
+    // prevStatus 的 achievedAt 应被保留（不被 undefined 覆盖）
     expect(result.achievedAt).toEqual(new Date("2025-06-01T00:00:00Z"));
   });
 
-  it("updateにachievedAt=nullが含まれていてもprevStatusのachievedAtが保持される", () => {
+  it("即使 update 包含 achievedAt=null，prevStatus 的 achievedAt 也会被保留", () => {
     const prev: GoalStatus = {
       goalId: "goal-1",
       progress: 100,
@@ -42,11 +42,11 @@ describe("mergeGoalStatus - achievedAt スプレッド除外", () => {
     };
     const result = mergeGoalStatus(prev, update);
 
-    // prevStatusのachievedAtが保持されること
+    // prevStatus 的 achievedAt 应被保留
     expect(result.achievedAt).toEqual(new Date("2025-06-01T00:00:00Z"));
   });
 
-  it("updateに異なるachievedAtが含まれていてもprevStatusのachievedAtが優先される", () => {
+  it("即使 update 包含不同的 achievedAt，prevStatus 的 achievedAt 也优先", () => {
     const originalDate = new Date("2025-06-01T00:00:00Z");
     const prev: GoalStatus = {
       goalId: "goal-1",
@@ -54,7 +54,7 @@ describe("mergeGoalStatus - achievedAt スプレッド除外", () => {
       achieved: true,
       achievedAt: originalDate,
     };
-    // 異なる日時のachievedAtを含むupdate
+    // 包含不同日期时间的 achievedAt 的 update
     const update: Partial<GoalStatus> = {
       goalId: "goal-1",
       achieved: true,
@@ -62,11 +62,11 @@ describe("mergeGoalStatus - achievedAt スプレッド除外", () => {
     };
     const result = mergeGoalStatus(prev, update);
 
-    // 最初の達成時刻が保持されること（後から来た日時で上書きされない）
+    // 首次达成时刻应被保留（不被后来的日期时间覆盖）
     expect(result.achievedAt).toEqual(originalDate);
   });
 
-  it("prevStatusにachievedAtがなく、updateで達成された場合は新しいDateが設定される", () => {
+  it("prevStatus 没有 achievedAt 且 update 中达成时，会设置新的 Date", () => {
     const prev: GoalStatus = {
       goalId: "goal-1",
       progress: 50,
@@ -76,51 +76,51 @@ describe("mergeGoalStatus - achievedAt スプレッド除外", () => {
       goalId: "goal-1",
       progress: 100,
       achieved: true,
-      // updateにachievedAtが含まれていても、prevStatusにないので新規生成される
+      // 即使 update 包含 achievedAt，因 prevStatus 中没有，所以会新建
       achievedAt: new Date("2025-07-01T00:00:00Z"),
     };
     const result = mergeGoalStatus(prev, update);
 
-    // 新しいDateが設定されること（updateのachievedAtではなく、new Date()）
+    // 应设置新的 Date（不是 update 的 achievedAt，而是 new Date()）
     expect(result.achievedAt).toBeInstanceOf(Date);
-    // updateの日時ではなく、テスト実行時の現在時刻に近い値であること
+    // 应为测试执行时接近当前时刻的值，而非 update 的日期时间
     const now = new Date();
     const diff = Math.abs(now.getTime() - (result.achievedAt as Date).getTime());
     expect(diff).toBeLessThan(1000); // 1秒以内
   });
 
-  it("updateのachievedAt以外のフィールド（reason等）は正常にマージされる", () => {
+  it("update 中 achievedAt 之外的字段（如 reason 等）会正常合并", () => {
     const prev: GoalStatus = {
       goalId: "goal-1",
       progress: 50,
       achieved: false,
-      reason: "初期理由",
+      reason: "初始理由",
     };
     const update: Partial<GoalStatus> = {
       goalId: "goal-1",
       progress: 80,
       achieved: true,
-      reason: "更新された理由",
-      achievedAt: new Date("2025-07-01T00:00:00Z"), // これは無視される
+      reason: "更新后的理由",
+      achievedAt: new Date("2025-07-01T00:00:00Z"), // 这会被忽略
     };
     const result = mergeGoalStatus(prev, update);
 
-    // achievedAt以外のフィールドは正常にマージされる
-    expect(result.reason).toBe("更新された理由");
+    // achievedAt 之外的字段会正常合并
+    expect(result.reason).toBe("更新后的理由");
     expect(result.progress).toBe(80);
     expect(result.achieved).toBe(true);
     expect(result.goalId).toBe("goal-1");
   });
 
-  it("連続マージでachievedAtが一貫して保持される", () => {
-    // 初期状態
+  it("连续合并时 achievedAt 保持一致", () => {
+    // 初始状态
     const initial: GoalStatus = {
       goalId: "goal-1",
       progress: 0,
       achieved: false,
     };
 
-    // 1回目: 達成
+    // 第 1 次：达成
     const result1 = mergeGoalStatus(initial, {
       progress: 100,
       achieved: true,
@@ -128,21 +128,21 @@ describe("mergeGoalStatus - achievedAt スプレッド除外", () => {
     const firstAchievedAt = result1.achievedAt;
     expect(firstAchievedAt).toBeInstanceOf(Date);
 
-    // 2回目: 未達成に戻そうとする（achievedAt: undefinedを含む）
+    // 第 2 次：试图退回未达成（包含 achievedAt: undefined）
     const result2 = mergeGoalStatus(result1, {
       progress: 30,
       achieved: false,
       achievedAt: undefined,
     });
     expect(result2.achievedAt).toEqual(firstAchievedAt);
-    expect(result2.achieved).toBe(true); // 達成状態も維持
+    expect(result2.achieved).toBe(true); // 达成状态也保持
 
-    // 3回目: 別のachievedAtで上書きしようとする
+    // 第 3 次：尝试用另一个 achievedAt 覆盖
     const result3 = mergeGoalStatus(result2, {
       progress: 100,
       achieved: true,
       achievedAt: new Date("2099-01-01T00:00:00Z"),
     });
-    expect(result3.achievedAt).toEqual(firstAchievedAt); // 最初の値を維持
+    expect(result3.achievedAt).toEqual(firstAchievedAt); // 保持最初的值
   });
 });

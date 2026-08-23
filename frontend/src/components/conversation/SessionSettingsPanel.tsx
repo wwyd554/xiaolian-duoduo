@@ -25,20 +25,20 @@ interface SessionSettingsPanelProps {
   setAudioVolume: (volume: number) => void;
   speechRate: number;
   setSpeechRate: (rate: number) => void;
-  // アバター表示トグル（セッション中のランタイム切替）
+  // 化身显示开关（会话中的运行时切换）
   avatarVisible?: boolean;
   setAvatarVisible?: (visible: boolean) => void;
   avatarEnabled?: boolean;
-  // ビデオ録画トグル（商談開始前のみ変更可能）
+  // 视频录像开关（仅商谈开始前可修改）
   videoRecordingEnabled?: boolean;
   setVideoRecordingEnabled?: (enabled: boolean) => void;
-  // 録画設定の変更可否（商談開始後はロック）
+  // 录像设置是否可修改（商谈开始后锁定）
   recordingSettingLocked?: boolean;
 }
 
 /**
- * セッション設定パネルコンポーネント
- * 音声設定とアバター表示切替を統合
+ * 会话设置面板组件
+ * 整合音频设置与化身显示切换
  */
 const SessionSettingsPanel: React.FC<SessionSettingsPanelProps> = ({
   audioEnabled,
@@ -54,15 +54,15 @@ const SessionSettingsPanel: React.FC<SessionSettingsPanelProps> = ({
   setVideoRecordingEnabled,
   recordingSettingLocked = false,
 }) => {
-  // i18nリソースは静的にバンドルされ initImmediate:false で同期初期化されるため、
-  // 初回レンダリング時点で t() は正しい翻訳を返す。フォールバック機構は不要であり、
-  // 翻訳テキストは ja.json / en.json を単一の真実の源とする（二重管理を排除）。
+  // 由于 i18n 资源已静态打包并在 initImmediate:false 下同步初始化，
+  // 首次渲染时 t() 即返回正确的翻译，无需回退机制，
+  // 翻译文本以 ja.json / en.json 为单一事实来源（排除双重管理）。
   const { t } = useTranslation();
 
   return (
     <Card sx={{ mb: 2 }}>
       <CardContent>
-        {/* ビデオ録画トグル（商談開始前のみ変更可能） */}
+        {/* 视频录像开关（仅商谈开始前可修改） */}
         {setVideoRecordingEnabled && (
           <Box sx={{ mb: 2 }} data-testid="video-recording-setting">
             <FormControlLabel
@@ -73,7 +73,7 @@ const SessionSettingsPanel: React.FC<SessionSettingsPanelProps> = ({
                   color="primary"
                   disabled={recordingSettingLocked}
                   inputProps={{
-                    // アクセシブル名（ON/OFF・日英対応）。テストもこの名前で要素を特定する
+                    // 无障碍名称（开/关、日英双语）。测试也通过该名称定位元素
                     "aria-label": videoRecordingEnabled ?? true
                       ? t("conversation.settings.recordingOn")
                       : t("conversation.settings.recordingOff"),
@@ -107,7 +107,7 @@ const SessionSettingsPanel: React.FC<SessionSettingsPanelProps> = ({
           </Box>
         )}
 
-        {/* アバター表示トグル（シナリオでアバターが有効な場合のみ表示） */}
+        {/* 化身显示开关（仅在场景中化身启用时显示） */}
         {avatarEnabled && setAvatarVisible && (
           <Box sx={{ mb: 2 }}>
             <FormControlLabel
@@ -136,7 +136,7 @@ const SessionSettingsPanel: React.FC<SessionSettingsPanelProps> = ({
           </Box>
         )}
 
-        {/* 音声出力トグル */}
+        {/* 音频输出开关 */}
         <FormControlLabel
           control={
             <Switch

@@ -1,6 +1,6 @@
 import "@testing-library/jest-dom";
 
-// モック
+// mock
 jest.mock("react-i18next", () => ({
   useTranslation: () => ({
     t: (key: string) => key,
@@ -42,8 +42,8 @@ describe("ScenarioEditPage - avatarId persistence in updateScenario", () => {
 
   it("includes avatarId in updateScenario request when avatar exists", async () => {
     const scenarioData = {
-      title: "テスト",
-      npc: { name: "NPC", role: "役職", company: "会社", voiceId: "Takumi" },
+      title: "测试",
+      npc: { name: "NPC", role: "职务", company: "公司", voiceId: "Takumi" },
       avatarId: "existing-avatar-id-456",
     };
 
@@ -57,8 +57,8 @@ describe("ScenarioEditPage - avatarId persistence in updateScenario", () => {
 
   it("includes new avatarId in updateScenario request when avatar is replaced", async () => {
     const scenarioData = {
-      title: "テスト",
-      npc: { name: "NPC", role: "役職", company: "会社", voiceId: "Takumi" },
+      title: "测试",
+      npc: { name: "NPC", role: "职务", company: "公司", voiceId: "Takumi" },
       avatarId: "new-avatar-id-789",
     };
 
@@ -72,8 +72,8 @@ describe("ScenarioEditPage - avatarId persistence in updateScenario", () => {
 
   it("does not include avatarId when scenario has no avatar", async () => {
     const scenarioData = {
-      title: "テスト",
-      npc: { name: "NPC", role: "役職", company: "会社", voiceId: "Takumi" },
+      title: "测试",
+      npc: { name: "NPC", role: "职务", company: "公司", voiceId: "Takumi" },
     };
 
     await mockApiService.updateScenario("test-scenario-1", scenarioData);

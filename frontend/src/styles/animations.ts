@@ -1,6 +1,6 @@
 import { keyframes } from "@mui/system";
 
-// フェードイン
+// 淡入
 export const fadeIn = keyframes`
   from {
     opacity: 0;
@@ -10,7 +10,7 @@ export const fadeIn = keyframes`
   }
 `;
 
-// フェードアウト
+// 淡出
 export const fadeOut = keyframes`
   from {
     opacity: 1;
@@ -20,7 +20,7 @@ export const fadeOut = keyframes`
   }
 `;
 
-// スライドイン（上から）
+// 滑入（从上方）
 export const slideInFromTop = keyframes`
   from {
     transform: translateY(-20px);
@@ -32,7 +32,7 @@ export const slideInFromTop = keyframes`
   }
 `;
 
-// スライドイン（下から）
+// 滑入（从下方）
 export const slideInFromBottom = keyframes`
   from {
     transform: translateY(20px);
@@ -44,7 +44,7 @@ export const slideInFromBottom = keyframes`
   }
 `;
 
-// スライドイン（左から）
+// 滑入（从左侧）
 export const slideInFromLeft = keyframes`
   from {
     transform: translateX(-20px);
@@ -56,7 +56,7 @@ export const slideInFromLeft = keyframes`
   }
 `;
 
-// スライドイン（右から）
+// 滑入（从右侧）
 export const slideInFromRight = keyframes`
   from {
     transform: translateX(20px);
@@ -68,7 +68,7 @@ export const slideInFromRight = keyframes`
   }
 `;
 
-// パルス（点滅）
+// 脉冲（闪烁）
 export const pulse = keyframes`
   0% {
     transform: scale(1);
@@ -81,7 +81,7 @@ export const pulse = keyframes`
   }
 `;
 
-// スケールイン（拡大表示）
+// 缩放进入（放大显示）
 export const scaleIn = keyframes`
   from {
     transform: scale(0.9);
@@ -93,7 +93,7 @@ export const scaleIn = keyframes`
   }
 `;
 
-// バウンス（弾む）
+// 弹跳（弹动）
 export const bounce = keyframes`
   0%, 20%, 50%, 80%, 100% {
     transform: translateY(0);
@@ -106,7 +106,7 @@ export const bounce = keyframes`
   }
 `;
 
-// テキストタイピング
+// 打字效果
 export const typewriter = keyframes`
   from {
     width: 0;
@@ -116,7 +116,7 @@ export const typewriter = keyframes`
   }
 `;
 
-// スピン（回転）
+// 旋转
 export const spin = keyframes`
   from {
     transform: rotate(0deg);
@@ -126,7 +126,7 @@ export const spin = keyframes`
   }
 `;
 
-// アニメーションミキシン
+// 动画混合器
 export const animationMixin = {
   fadeIn: {
     animation: `${fadeIn} 0.5s ease-in-out`,
@@ -166,7 +166,7 @@ export const animationMixin = {
   },
 };
 
-// スタガード（段階的）アニメーション用のディレイ
+// 用于交错（分阶段）动画的延迟
 export const createStaggeredTransition = (
   baseDelay: number = 100,
   count: number = 10,

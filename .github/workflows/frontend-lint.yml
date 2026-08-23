@@ -33,7 +33,7 @@ jobs:
         run: npm ci
       
       - name: Run ESLint
-        # ESLINT_FAIL_ON_WARNING=true を設定することでwarningもエラーとして処理されます
+        # 设置 ESLINT_FAIL_ON_WARNING=true 可将 warning 也作为错误处理
         run: |
           echo "Running ESLint with warnings treated as errors..."
           ESLINT_FAIL_ON_WARNING=true npm run lint

@@ -19,8 +19,8 @@ interface ComplianceAlertProps {
 }
 
 /**
- * コンプライアンス違反を通知するアラートコンポーネント
- * ヘッダー下にスライドインするバナー形式
+ * 用于通知合规违规的提示组件
+ * 在顶部栏下方滑入的横幅形式
  */
 const ComplianceAlert: React.FC<ComplianceAlertProps> = ({
   violation,
@@ -30,7 +30,7 @@ const ComplianceAlert: React.FC<ComplianceAlertProps> = ({
 }) => {
   const { t } = useTranslation();
 
-  // 自動非表示タイマー
+  // 自动隐藏定时器
   React.useEffect(() => {
     if (open && autoHideDuration > 0) {
       const timer = setTimeout(onClose, autoHideDuration);
@@ -38,7 +38,7 @@ const ComplianceAlert: React.FC<ComplianceAlertProps> = ({
     }
   }, [open, autoHideDuration, onClose]);
 
-  // 重大度に応じたスタイル
+  // 按严重程度区分的样式
   const getSeverityStyles = (severity: string) => {
     switch (severity) {
       case "high":
@@ -91,7 +91,7 @@ const ComplianceAlert: React.FC<ComplianceAlertProps> = ({
         }}
         role="alert"
       >
-        {/* アイコン */}
+        {/* 图标 */}
         <Typography
           sx={{ fontSize: "1.25rem", flexShrink: 0 }}
           aria-hidden="true"
@@ -99,7 +99,7 @@ const ComplianceAlert: React.FC<ComplianceAlertProps> = ({
           {styles.icon}
         </Typography>
 
-        {/* メッセージ本文 */}
+        {/* 消息正文 */}
         <Box sx={{ flex: 1, minWidth: 0 }}>
           <Typography
             sx={{
@@ -121,7 +121,7 @@ const ComplianceAlert: React.FC<ComplianceAlertProps> = ({
           </Typography>
         </Box>
 
-        {/* 閉じるボタン */}
+        {/* 关闭按钮 */}
         <IconButton
           size="small"
           onClick={onClose}

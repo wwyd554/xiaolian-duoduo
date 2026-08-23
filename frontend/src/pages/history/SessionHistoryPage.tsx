@@ -37,8 +37,8 @@ import { SessionInfo, ScenarioInfo } from "../../types/api";
 import { AuthService } from "../../services/AuthService";
 
 /**
- * セッション履歴一覧ページ（リデザイン版）
- * ユーザーの過去の会話セッション一覧を表示します
+ * 会话历史列表页面（重新设计版）
+ * 显示用户的过往对话会话列表
  */
 const SessionHistoryPage: React.FC = () => {
   const { t } = useTranslation();
@@ -47,7 +47,7 @@ const SessionHistoryPage: React.FC = () => {
   const apiService = ApiService.getInstance();
   const authService = AuthService.getInstance();
 
-  // 状態管理
+  // 状态管理
   const [sessions, setSessions] = useState<SessionInfo[]>([]);
   const [scenarios, setScenarios] = useState<ScenarioInfo[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -63,10 +63,10 @@ const SessionHistoryPage: React.FC = () => {
   const [sortBy, setSortBy] = useState<"date-desc" | "date-asc" | "score">("date-desc");
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
 
-  // 1ページあたりの表示数
+  // 每页显示数量
   const ITEMS_PER_PAGE = 10;
 
-  // 初期データ読み込み
+  // 初始数据加载
   useEffect(() => {
     const initializeData = async () => {
       try {
@@ -85,7 +85,7 @@ const SessionHistoryPage: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // シナリオフィルターが変更されたとき
+  // 场景筛选器变更时
   useEffect(() => {
     setPage(1);
     setNextToken(undefined);
@@ -94,7 +94,7 @@ const SessionHistoryPage: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scenarioFilter]);
 
-  // セッション一覧を読み込む
+  // 加载会话列表
   const loadSessions = async (token?: string) => {
     setLoading(true);
     try {
@@ -121,7 +121,7 @@ const SessionHistoryPage: React.FC = () => {
     }
   };
 
-  // シナリオ一覧を読み込む
+  // 加载场景列表
   const loadScenarios = async () => {
     try {
       const response = await apiService.getScenarios();
@@ -131,7 +131,7 @@ const SessionHistoryPage: React.FC = () => {
     }
   };
 
-  // ページ変更ハンドラー
+  // 页码变更处理器
   const handlePageChange = (
     _event: React.ChangeEvent<unknown>,
     newPage: number,
@@ -149,22 +149,22 @@ const SessionHistoryPage: React.FC = () => {
     }
   };
 
-  // セッション詳細ページへ遷移
+  // 跳转到会话详情页
   const handleSessionClick = (sessionId: string) => {
     navigate(`/history/session/${sessionId}`);
   };
 
-  // フィルターハンドラー
+  // 筛选器处理器
   const handleScenarioFilterChange = (event: SelectChangeEvent<string>) => {
     setScenarioFilter(event.target.value);
   };
 
-  // 検索ハンドラー
+  // 搜索处理器
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(event.target.value);
   };
 
-  // 日付フォーマット用関数
+  // 日期格式化函数
   const formatDate = (dateString: string) => {
     if (!dateString) return "-";
     try {
@@ -182,7 +182,7 @@ const SessionHistoryPage: React.FC = () => {
     }
   };
 
-  // 相対時間フォーマット
+  // 相对时间格式化
   const formatRelativeTime = (dateString: string) => {
     if (!dateString) return "";
     try {
@@ -194,35 +194,35 @@ const SessionHistoryPage: React.FC = () => {
       const diffHour = Math.floor(diffMin / 60);
       const diffDay = Math.floor(diffHour / 24);
 
-      if (diffMin < 1) return "たった今";
-      if (diffMin < 60) return `${diffMin}分前`;
-      if (diffHour < 24) return `${diffHour}時間前`;
-      if (diffDay < 7) return `${diffDay}日前`;
+      if (diffMin < 1) return "刚刚";
+      if (diffMin < 60) return `${diffMin}分钟前`;
+      if (diffHour < 24) return `${diffHour}小时前`;
+      if (diffDay < 7) return `${diffDay}天前`;
       return "";
     } catch {
       return "";
     }
   };
 
-  // 所要時間フォーマット
+  // 时长格式化
   const formatDuration = (seconds?: number) => {
     if (!seconds) return null;
     const min = Math.floor(seconds / 60);
-    if (min < 1) return "1分未満";
-    if (min < 60) return `${min}分`;
+    if (min < 1) return "不足 1 分钟";
+    if (min < 60) return `${min}分钟`;
     const hour = Math.floor(min / 60);
     const remainMin = min % 60;
-    return `${hour}時間${remainMin > 0 ? `${remainMin}分` : ""}`;
+    return `${hour}小时${remainMin > 0 ? `${remainMin}分钟` : ""}`;
   };
 
-  // スコアの色
+  // 分数的颜色
   const getScoreColor = (score: number): string => {
     if (score >= 80) return theme.palette.success.main;
     if (score >= 60) return theme.palette.warning.main;
     return theme.palette.error.main;
   };
 
-  // 表示用にフィルタリング・ソートされたセッションリスト
+  // 用于显示的经过筛选和排序的会话列表
   const filteredSessions = useMemo(() => {
     let result = sessions.filter(
       (session) =>
@@ -256,7 +256,7 @@ const SessionHistoryPage: React.FC = () => {
     return result;
   }, [sessions, searchQuery, sortBy]);
 
-  // リストアイテムレンダリング
+  // 列表项渲染
   const renderListItem = (session: SessionInfo) => {
     const score = session.scores?.overall;
     const relTime = formatRelativeTime(session.createdAt || "");
@@ -289,7 +289,7 @@ const SessionHistoryPage: React.FC = () => {
             gap: 2,
           }}
         >
-          {/* ステータスアイコン */}
+          {/* 状态图标 */}
           <Box sx={{ flexShrink: 0 }}>
             {isCompleted ? (
               <CheckCircleIcon color="success" sx={{ fontSize: 28 }} />
@@ -298,7 +298,7 @@ const SessionHistoryPage: React.FC = () => {
             )}
           </Box>
 
-          {/* メインコンテンツ */}
+          {/* 主内容 */}
           <Box sx={{ flexGrow: 1, minWidth: 0 }}>
             <Box
               sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}
@@ -320,7 +320,7 @@ const SessionHistoryPage: React.FC = () => {
               />
             </Box>
 
-            {/* メタ情報行 */}
+            {/* 元信息行 */}
             <Box
               sx={{
                 display: "flex",
@@ -377,7 +377,7 @@ const SessionHistoryPage: React.FC = () => {
             </Box>
           </Box>
 
-          {/* スコア表示 */}
+          {/* 分数显示 */}
           {score != null && score > 0 && (
             <Box
               sx={{
@@ -398,22 +398,22 @@ const SessionHistoryPage: React.FC = () => {
                 color="text.secondary"
                 sx={{ fontSize: "0.65rem" }}
               >
-                スコア
+                分数
               </Typography>
             </Box>
           )}
 
-          {/* メトリクスミニバー */}
+          {/* 指标迷你条 */}
           {session.metrics && (
             <Box sx={{ flexShrink: 0, width: 80 }}>
-              <Tooltip title={`信頼度: ${session.metrics.trustLevel}/10`}>
+              <Tooltip title={`信任度: ${session.metrics.trustLevel}/10`}>
                 <Box sx={{ mb: 0.5 }}>
                   <Typography
                     variant="caption"
                     color="text.secondary"
                     sx={{ fontSize: "0.6rem" }}
                   >
-                    信頼
+                    信任
                   </Typography>
                   <LinearProgress
                     variant="determinate"
@@ -423,14 +423,14 @@ const SessionHistoryPage: React.FC = () => {
                   />
                 </Box>
               </Tooltip>
-              <Tooltip title={`進捗: ${session.metrics.progressLevel}/10`}>
+              <Tooltip title={`进度: ${session.metrics.progressLevel}/10`}>
                 <Box>
                   <Typography
                     variant="caption"
                     color="text.secondary"
                     sx={{ fontSize: "0.6rem" }}
                   >
-                    進捗
+                    进度
                   </Typography>
                   <LinearProgress
                     variant="determinate"
@@ -447,7 +447,7 @@ const SessionHistoryPage: React.FC = () => {
     );
   };
 
-  // グリッドアイテムレンダリング
+  // 网格项渲染
   const renderGridItem = (session: SessionInfo) => {
     const score = session.scores?.overall;
     const isCompleted = session.status === "completed";
@@ -473,7 +473,7 @@ const SessionHistoryPage: React.FC = () => {
           },
         }}
       >
-        {/* ヘッダー */}
+        {/* 页头 */}
         <Box
           sx={{
             display: "flex",
@@ -494,7 +494,7 @@ const SessionHistoryPage: React.FC = () => {
           />
         </Box>
 
-        {/* NPC情報 */}
+        {/* NPC 信息 */}
         <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mb: 1, color: "text.secondary" }}>
           <PersonIcon sx={{ fontSize: 16 }} />
           <Typography variant="body2" noWrap>
@@ -502,7 +502,7 @@ const SessionHistoryPage: React.FC = () => {
           </Typography>
         </Box>
 
-        {/* 日時 */}
+        {/* 日期时间 */}
         <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mb: 1.5, color: "text.secondary" }}>
           <CalendarTodayIcon sx={{ fontSize: 14 }} />
           <Typography variant="body2">
@@ -510,13 +510,13 @@ const SessionHistoryPage: React.FC = () => {
           </Typography>
         </Box>
 
-        {/* スコア＆メトリクス */}
+        {/* 分数与指标 */}
         <Box sx={{ mt: "auto" }}>
           {score != null && score > 0 && (
             <Box sx={{ mb: 1 }}>
               <Box sx={{ display: "flex", justifyContent: "space-between", mb: 0.5 }}>
                 <Typography variant="caption" color="text.secondary">
-                  スコア
+                  分数
                 </Typography>
                 <Typography
                   variant="caption"
@@ -542,7 +542,7 @@ const SessionHistoryPage: React.FC = () => {
             </Box>
           )}
 
-          {/* フッターメタ */}
+          {/* 底部元信息 */}
           <Box sx={{ display: "flex", gap: 1.5, color: "text.disabled", mt: 1 }}>
             {session.messageCount != null && session.messageCount > 0 && (
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.3 }}>
@@ -564,7 +564,7 @@ const SessionHistoryPage: React.FC = () => {
 
   return (
     <Container maxWidth="lg" sx={{ mt: 3, mb: 4 }}>
-      {/* フィルター＆コントロール */}
+      {/* 筛选与控制 */}
       <Box
         sx={{
           display: "flex",
@@ -605,8 +605,8 @@ const SessionHistoryPage: React.FC = () => {
 
         <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, ml: "auto" }}>
           <Tooltip title={
-            sortBy === "date-desc" ? "新しい順" :
-              sortBy === "date-asc" ? "古い順" : "スコア順"
+            sortBy === "date-desc" ? "最新优先" :
+              sortBy === "date-asc" ? "最旧优先" : "按分数排序"
           }>
             <IconButton
               size="small"
@@ -626,31 +626,31 @@ const SessionHistoryPage: React.FC = () => {
             onChange={(_e, val) => val && setViewMode(val)}
             size="small"
           >
-            <ToggleButton value="list" aria-label="リスト表示">
+            <ToggleButton value="list" aria-label="列表显示">
               <ViewListIcon fontSize="small" />
             </ToggleButton>
-            <ToggleButton value="grid" aria-label="グリッド表示">
+            <ToggleButton value="grid" aria-label="网格显示">
               <ViewModuleIcon fontSize="small" />
             </ToggleButton>
           </ToggleButtonGroup>
         </Box>
       </Box>
 
-      {/* ソート表示 */}
+      {/* 排序显示 */}
       {sortBy !== "date-desc" && (
         <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: "block" }}>
-          {sortBy === "date-asc" ? "古い順で表示中" : "スコア順で表示中"}
+          {sortBy === "date-asc" ? "正在按最旧优先显示" : "正在按分数排序显示"}
         </Typography>
       )}
 
-      {/* エラー表示 */}
+      {/* 错误提示 */}
       {error && (
         <Box sx={{ mt: 2, mb: 2 }}>
           <Typography color="error">{error}</Typography>
         </Box>
       )}
 
-      {/* ローディング表示 */}
+      {/* 加载提示 */}
       {loading ? (
         <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
           <CircularProgress />
@@ -664,7 +664,7 @@ const SessionHistoryPage: React.FC = () => {
         </Box>
       ) : (
         <>
-          {/* セッション一覧 */}
+          {/* 会话列表 */}
           {viewMode === "list" ? (
             <Box>{filteredSessions.map(renderListItem)}</Box>
           ) : (
@@ -683,7 +683,7 @@ const SessionHistoryPage: React.FC = () => {
             </Box>
           )}
 
-          {/* ページネーション */}
+          {/* 分页 */}
           {totalPages > 1 && (
             <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
               <Pagination

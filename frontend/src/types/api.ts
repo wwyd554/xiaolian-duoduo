@@ -1,40 +1,40 @@
 /**
- * API関連の型定義
+ * API 相关的类型定义
  *
- * 設計方針:
- * - フロントエンドの型は常にパース済みの値を表現する（number型に統一）
- * - DynamoDB由来の生データ（string型メトリクス等）はSessionCompleteDataResponseで表現し、
- *   APIサービス層でフロントエンド用の型（number型等）に変換する
- * - 共通の概念（ステータス、sender等）はtype aliasとして抽出し、重複を排除する
- * - MetricsInfoを基本型として全メトリクス関連フィールドで再利用する
+ * 设计方针：
+ * - 前端类型始终表示已解析的值（统一为 number 类型）
+ * - DynamoDB 来源的原始数据（string 型指标等）用 SessionCompleteDataResponse 表示，
+ *   在 API 服务层转换为前端用的类型（number 型等）
+ * - 将共通概念（状态、sender 等）抽取为 type alias，消除重复
+ * - 以 MetricsInfo 为基本类型，在所有指标相关字段中复用
  */
 
 // ============================================================
-// 共通type alias
+// 通用 type alias
 // ============================================================
 
-/** 難易度レベル */
+/** 难度等级 */
 export type DifficultyLevel = "easy" | "normal" | "hard" | "expert";
 
-/** 公開設定 */
+/** 公开设置 */
 export type VisibilityType = "public" | "private" | "shared";
 
-/** セッションステータス */
+/** 会话状态 */
 export type SessionStatus = "active" | "completed" | "archived" | "abandoned";
 
-/** メッセージ送信者 */
+/** 消息发送者 */
 export type SenderType = "user" | "npc" | "system";
 
-/** コンプライアンス重大度 */
+/** 合规严重程度 */
 export type ComplianceSeverity = "high" | "medium" | "low";
 
-/** ランキング期間 */
+/** 排行榜周期 */
 export type RankingPeriod = "daily" | "weekly" | "monthly";
 
-/** 提案資料変換ステータス */
+/** 提案资料转换状态 */
 export type PresentationStatus = "uploading" | "converting" | "ready" | "error";
 
-/** 許可されたファイルMIMEタイプ */
+/** 允许的文件 MIME 类型 */
 export type AllowedContentType =
   | "application/pdf"
   | "image/png"
@@ -42,11 +42,11 @@ export type AllowedContentType =
   | "image/webp";
 
 // ============================================================
-// 基本型
+// 基本类型
 // ============================================================
 
 /**
- * NPC情報の基本型
+ * NPC 信息的基本类型
  */
 export interface NPCInfo {
   id?: string;
@@ -60,12 +60,12 @@ export interface NPCInfo {
 }
 
 /**
- * ゴール情報の基本型
+ * 目标信息的基本类型
  */
 export interface GoalInfo {
   id: string;
   description: string;
-  /** ゴール達成のためのヒント（複数） */
+  /** 达成目标的提示（多个） */
   hints?: string[];
   isRequired: boolean;
   priority: number;
@@ -73,27 +73,27 @@ export interface GoalInfo {
 }
 
 /**
- * メトリクス情報の基本型
- * 全メトリクス関連フィールドの基底型として使用する
+ * 指标信息的基本类型
+ * 用作所有指标相关字段的基类型
  */
 export interface MetricsInfo {
-  /** 怒りレベル（0-10の範囲） */
+  /** 怒气水平（0-10 范围） */
   angerLevel: number;
-  /** 信頼度（0-10の範囲） */
+  /** 信任度（0-10 范围） */
   trustLevel: number;
-  /** 進捗度（0-10の範囲） */
+  /** 进度（0-10 范围） */
   progressLevel: number;
 }
 
 /**
- * 分析テキスト付きメトリクス
+ * 带分析文本的指标
  */
 export interface MetricsWithAnalysis extends MetricsInfo {
   analysis?: string;
 }
 
 /**
- * Guardrail情報の基本型
+ * Guardrail 信息的基本类型
  */
 export interface GuardrailInfo {
   id: string;
@@ -102,23 +102,23 @@ export interface GuardrailInfo {
 }
 
 // ============================================================
-// コンプライアンス関連
+// 合规相关
 // ============================================================
 
 /**
- * コンプライアンス違反の型
- * フロントエンド型はcamelCaseに統一。
- * APIクライアント層でバックエンド（Python snake_case）からの変換を実施する。
+ * 合规违规的类型
+ * 前端类型统一为 camelCase。
+ * 在 API 客户端层完成后端（Python snake_case）数据的转换。
  */
 export interface ComplianceViolation {
   ruleId: string;
   ruleName: string;
   severity: ComplianceSeverity;
   message: string;
-  /** @security ユーザー入力を含む。表示時はテキストノードとしてレンダリングし、innerHTML/href等への直接挿入を禁止 */
+  /** @security 包含用户输入。显示时应以文本节点渲染，禁止直接插入 innerHTML/href 等 */
   context: string;
   confidence: number;
-  // i18n翻訳キーサポート
+  // i18n 翻译键支持
   ruleNameKey?: string;
   ruleNameParams?: Record<string, string | number>;
   messageKey?: string;
@@ -126,7 +126,7 @@ export interface ComplianceViolation {
 }
 
 /**
- * コンプライアンスチェック結果の型
+ * 合规检查结果的类型
  */
 export interface ComplianceCheck {
   score: number;
@@ -139,12 +139,12 @@ export interface ComplianceCheck {
 }
 
 // ============================================================
-// ゴール達成状況
+// 目标达成情况
 // ============================================================
 
 /**
- * APIレスポンス用ゴール達成状況
- * RealtimeMetric、SessionCompleteDataResponse等で共通使用
+ * API 响应用的目标达成情况
+ * 在 RealtimeMetric、SessionCompleteDataResponse 等中通用
  */
 export interface ApiGoalStatus {
   goalId: string;
@@ -154,12 +154,12 @@ export interface ApiGoalStatus {
 }
 
 // ============================================================
-// リアルタイムメトリクス
+// 实时指标
 // ============================================================
 
 /**
- * リアルタイムメトリクス型
- * フロントエンドでは常にnumber型として扱う
+ * 实时指标类型
+ * 前端始终按 number 类型处理
  */
 export interface RealtimeMetric extends MetricsWithAnalysis {
   goalStatuses?: ApiGoalStatus[];
@@ -171,11 +171,11 @@ export interface RealtimeMetric extends MetricsWithAnalysis {
 }
 
 // ============================================================
-// フィードバック分析
+// 反馈分析
 // ============================================================
 
 /**
- * フィードバックスコア
+ * 反馈得分
  */
 export interface FeedbackScores {
   overall: number;
@@ -193,7 +193,7 @@ export interface FeedbackScores {
 }
 
 /**
- * ゴールフィードバック
+ * 目标反馈
  */
 export interface GoalFeedback {
   achievedGoals: string[];
@@ -203,7 +203,7 @@ export interface GoalFeedback {
 }
 
 /**
- * 詳細分析
+ * 详细分析
  */
 export interface DetailedAnalysis {
   communicationPatterns: {
@@ -224,7 +224,7 @@ export interface DetailedAnalysis {
 }
 
 /**
- * フィードバック分析のレスポンス型
+ * 反馈分析的响应类型
  */
 export interface FeedbackAnalysisResult {
   scores: FeedbackScores;
@@ -239,11 +239,11 @@ export interface FeedbackAnalysisResult {
 }
 
 // ============================================================
-// セッション関連
+// 会话相关
 // ============================================================
 
 /**
- * セッション情報の型
+ * 会话信息的类型
  */
 export interface SessionInfo {
   sessionId: string;
@@ -276,11 +276,11 @@ export interface SessionInfo {
 }
 
 // ============================================================
-// メッセージ関連
+// 消息相关
 // ============================================================
 
 /**
- * メッセージ情報の型
+ * 消息信息的类型
  */
 export interface MessageInfo {
   messageId: string;
@@ -296,11 +296,11 @@ export interface MessageInfo {
 }
 
 // ============================================================
-// ファイル関連
+// 文件相关
 // ============================================================
 
 /**
- * ファイル情報の基底型
+ * 文件信息的基础类型
  */
 export interface FileInfo {
   key: string;
@@ -310,12 +310,12 @@ export interface FileInfo {
 }
 
 /**
- * PDFファイル情報
+ * PDF 文件信息
  */
 export type PdfFileInfo = FileInfo;
 
 /**
- * スライド画像情報（PDF→画像変換後の各ページ）
+ * 幻灯片图片信息（PDF→图片转换后的各页）
  */
 export interface SlideImageInfo {
   pageNumber: number;
@@ -325,7 +325,7 @@ export interface SlideImageInfo {
 }
 
 /**
- * 提案資料情報
+ * 提案资料信息
  */
 export interface PresentationFileInfo extends FileInfo {
   totalPages?: number;
@@ -334,11 +334,11 @@ export interface PresentationFileInfo extends FileInfo {
 }
 
 // ============================================================
-// シナリオ関連
+// 场景相关
 // ============================================================
 
 /**
- * シナリオ情報の型
+ * 场景信息的类型
  */
 export interface ScenarioInfo {
   scenarioId: string;
@@ -352,7 +352,7 @@ export interface ScenarioInfo {
   estimatedDuration?: number;
   maxTurns?: number;
   goals?: GoalInfo[];
-  /** NPC情報（作成・更新時に使用） */
+  /** NPC 信息（创建、更新时使用） */
   npc?: {
     name: string;
     role: string;
@@ -378,18 +378,18 @@ export interface ScenarioInfo {
   presentationFile?: PresentationFileInfo;
   avatarId?: string;
   enableAvatar?: boolean;
-  /** サジェスト返答ボタンの有効/無効（未設定時はfalse） */
+  /** 建议回复按钮的启用/禁用（未设置时为 false） */
   suggestionEnabled?: boolean;
-  /** 商談開始時に表示する初回サジェスト返答候補（ユーザー初回入力前用） */
+  /** 商谈开始时显示的初次建议回复候选（用于用户首次输入前） */
   initialSuggestions?: string[];
 }
 
 // ============================================================
-// リストレスポンス
+// 列表响应
 // ============================================================
 
 /**
- * セッション一覧のレスポンス型
+ * 会话列表的响应类型
  */
 export interface SessionListResponse {
   sessions: SessionInfo[];
@@ -397,7 +397,7 @@ export interface SessionListResponse {
 }
 
 /**
- * メッセージ一覧のレスポンス型
+ * 消息列表的响应类型
  */
 export interface MessageListResponse {
   messages: MessageInfo[];
@@ -405,7 +405,7 @@ export interface MessageListResponse {
 }
 
 /**
- * シナリオ一覧のレスポンス型
+ * 场景列表的响应类型
  */
 export interface ScenarioListResponse {
   scenarios: ScenarioInfo[];
@@ -413,12 +413,12 @@ export interface ScenarioListResponse {
 }
 
 // ============================================================
-// API共通レスポンス
+// API 通用响应
 // ============================================================
 
 /**
- * API共通レスポンス型
- * ※ feedbackフィールドは後方互換性のため残存。新規APIではdataを使用すること
+ * API 通用响应类型
+ * ※ feedback 字段为向后兼容而保留。新 API 请使用 data
  */
 export interface ApiResponse<T> {
   success: boolean;
@@ -428,11 +428,11 @@ export interface ApiResponse<T> {
 }
 
 // ============================================================
-// ランキング関連
+// 排行榜相关
 // ============================================================
 
 /**
- * ランキング項目の型
+ * 排行榜条目的类型
  */
 export interface RankingEntry {
   rank: number;
@@ -445,7 +445,7 @@ export interface RankingEntry {
 }
 
 /**
- * ランキングAPIレスポンスの型
+ * 排行榜 API 响应的类型
  */
 export interface RankingResponse {
   scenarioId: string;
@@ -455,11 +455,11 @@ export interface RankingResponse {
 }
 
 // ============================================================
-// 動画分析
+// 视频分析
 // ============================================================
 
 /**
- * 分析フィードバック項目（強み・改善点）
+ * 分析反馈条目（优点、改进点）
  */
 export interface AnalysisFeedbackItem {
   title: string;
@@ -467,9 +467,9 @@ export interface AnalysisFeedbackItem {
 }
 
 /**
- * ビデオ分析結果の型定義
- * strengths/improvementsは構造化された型に統一。
- * 旧形式（string[]）からの変換はAPIクライアント層で実施する。
+ * 视频分析结果的类型定义
+ * strengths/improvements 统一为结构化类型。
+ * 旧格式（string[]）的转换在 API 客户端层完成。
  */
 export interface VideoAnalysisResult {
   eyeContact: number;
@@ -484,14 +484,14 @@ export interface VideoAnalysisResult {
 }
 
 // ============================================================
-// リファレンスチェック
+// 参考资料核查
 // ============================================================
 
 /**
- * リファレンスチェックの評価区分
- * - "appropriate"    : 発言が参照資料の内容に沿っており、正確な情報提供ができている
- * - "issue"          : 発言が参照資料の内容と矛盾している、または誤った情報を含んでいる
- * - "not_applicable" : 挨拶・一般的な進行・意思表示など、参照資料の正誤を問えない発言
+ * 参考资料核查的评估分类
+ * - "appropriate"    : 发言符合参考资料内容，提供了准确信息
+ * - "issue"          : 发言与参考资料内容矛盾，或包含错误信息
+ * - "not_applicable" : 问候、一般进程、表态等无法判断参考资料正误的发言
  */
 export type ReferenceCheckEvaluation =
   | "appropriate"
@@ -499,32 +499,32 @@ export type ReferenceCheckEvaluation =
   | "not_applicable";
 
 /**
- * リファレンスチェックのメッセージ情報
+ * 参考资料核查的消息信息
  */
 export interface ReferenceCheckMessage {
   message: string;
   relatedDocument?: string;
   reviewComment?: string;
-  /** 評価区分（3分類） */
+  /** 评估分类（3 类） */
   evaluation: ReferenceCheckEvaluation;
 }
 
 /**
- * リファレンスチェックのサマリー情報
+ * 参考资料核查的汇总信息
  */
 export interface ReferenceCheckSummary {
   totalMessages: number;
   checkedMessages: number;
-  /** 適切な発言数 */
+  /** 恰当发言数 */
   appropriateCount?: number;
-  /** 評価対象外の発言数 */
+  /** 评估范围外的发言数 */
   notApplicableCount?: number;
-  /** 問題ありの発言数 */
+  /** 有问题的发言数 */
   issueCount?: number;
 }
 
 /**
- * リファレンスチェック結果の型
+ * 参考资料核查结果的类型
  */
 export interface ReferenceCheckResult {
   messages: ReferenceCheckMessage[];
@@ -532,11 +532,11 @@ export interface ReferenceCheckResult {
 }
 
 // ============================================================
-// エクスポート/インポート
+// 导出/导入
 // ============================================================
 
 /**
- * シナリオエクスポート/インポート用の型定義
+ * 场景导出/导入用的类型定义
  */
 export interface ScenarioExportData {
   npcs: NPCInfo[];
@@ -547,9 +547,9 @@ export interface ScenarioExportData {
 }
 
 /**
- * インポート統計情報の型
- * フロントエンド型はcamelCaseに統一。
- * APIクライアント層でバックエンド（Python snake_case）からの変換を実施する。
+ * 导入统计信息的类型
+ * 前端类型统一为 camelCase。
+ * 在 API 客户端层完成后端（Python snake_case）数据的转换。
  */
 export interface ImportStats {
   importedScenarios: number;
@@ -560,7 +560,7 @@ export interface ImportStats {
 }
 
 /**
- * インポートレスポンスの型
+ * 导入响应的类型
  */
 export interface ImportResponse {
   success: boolean;
@@ -584,12 +584,12 @@ export interface ImportResponse {
 }
 
 // ============================================================
-// セッション完全データ（DynamoDB生データ対応）
+// 会话完整数据（DynamoDB 原始数据支持）
 // ============================================================
 
 /**
- * DynamoDB生データ用メトリクス型（string版）
- * DynamoDBのNumber型がDecimal→JSON変換時にstringになる場合があるため定義
+ * DynamoDB 原始数据用的指标类型（string 版）
+ * 因 DynamoDB 的 Number 类型在 Decimal→JSON 转换时可能变为 string，故定义
  */
 export interface RawMetricsInfo {
   angerLevel: string;
@@ -598,14 +598,14 @@ export interface RawMetricsInfo {
 }
 
 /**
- * DynamoDB生データ用メトリクス型（分析テキスト付き）
+ * DynamoDB 原始数据用的指标类型（带分析文本）
  */
 export interface RawMetricsWithAnalysis extends RawMetricsInfo {
   analysis: string;
 }
 
 /**
- * DynamoDB生データ用ゴール達成状況
+ * DynamoDB 原始数据用的目标达成情况
  */
 export interface RawGoalStatus {
   goalId: string;
@@ -615,11 +615,11 @@ export interface RawGoalStatus {
 }
 
 /**
- * セッション完全データのAPIレスポンス型定義
+ * 会话完整数据的 API 响应类型定义
  *
- * DynamoDBから返される生データを表現する型。
- * メトリクス値はstring型で定義している。
- * フロントエンドで使用する際はsafeParseMetric()で安全に変換すること。
+ * 表示从 DynamoDB 返回的原始数据的类型。
+ * 指标值定义为 string 类型。
+ * 前端使用时请用 safeParseMetric() 安全转换。
  */
 export interface SessionCompleteDataResponse {
   success: boolean;

@@ -9,16 +9,16 @@ import "@fontsource/roboto/400.css";
 import "@fontsource/roboto/500.css";
 import "@fontsource/roboto/700.css";
 
-// コンポーネントのインポート
+// 组件导入
 import AppContent from "./components/AppContent";
 import InviteLogin from "./components/InviteLogin";
 import { DEV_BYPASS_ENABLED, devLogin, loadAuth } from "./services/LocalAuth";
 
-// i18n関連のインポート
+// i18n 相关导入
 import { useTranslation } from "react-i18next";
 import { LanguageService } from "./services/LanguageService";
 
-// Material UI テーマ設定
+// Material UI 主题设置
 let theme = createTheme({
   palette: {
     primary: {
@@ -39,13 +39,13 @@ let theme = createTheme({
     h5: {
       fontWeight: 500,
     },
-    // 言語切り替えコンポーネントなどのフォントを統一
+    // 统一语言切换组件等处的字体
     allVariants: {
       fontFamily: "Roboto, Arial, sans-serif",
     },
   },
   components: {
-    // グローバルスタイルでレイアウト問題を修正
+    // 通过全局样式修复布局问题
     MuiCssBaseline: {
       styleOverrides: {
         body: {
@@ -63,7 +63,7 @@ let theme = createTheme({
         },
       },
     },
-    // 言語切り替えコンポーネントのフォント統一
+    // 统一语言切换组件的字体
     MuiSelect: {
       styleOverrides: {
         select: {
@@ -94,7 +94,7 @@ let theme = createTheme({
         },
       },
     },
-    // レスポンシブデザイン対応の追加スタイル
+    // 响应式设计对应的补充样式
     MuiContainer: {
       styleOverrides: {
         root: {
@@ -119,7 +119,7 @@ let theme = createTheme({
   },
 });
 
-// レスポンシブなフォントサイズに変換
+// 转换为响应式字体大小
 theme = responsiveFontSizes(theme);
 
 function App() {
@@ -141,22 +141,22 @@ function App() {
     }
   }, [authed, devLoginFailed]);
 
-  // 言語設定の初期化
+  // 语言设置的初始化
   useEffect(() => {
-    // RTL言語（アラビア語、ヘブライ語等）の文字方向を設定
+    // 设置 RTL 语言（阿拉伯语、希伯来语等）的文字方向
     const isRTL = ["ar", "he"].includes(i18n.language);
     document.dir = isRTL ? "rtl" : "ltr";
   }, [i18n.language]);
 
   useEffect(() => {
-    // ローカルストレージから保存済み言語設定を読み込み
+    // 从本地存储读取已保存的语言设置
     languageService
       .loadLanguageSettingFromUserProfile()
       .catch((error) =>
         console.error("语言设置加载失败:", error),
       );
 
-    // 開発環境でのi18n状態のデバッグログ
+    // 开发环境下 i18n 状态的调试日志
     if (process.env.NODE_ENV === "development") {
       console.log(
         "🔤 i18n initialized status:",

@@ -4,21 +4,21 @@ import react from "@vitejs/plugin-react";
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
-  // 環境変数のプレフィックスを設定
+  // 设置环境变量的前缀
   envPrefix: "VITE_",
   build: {
-    // 本番ビルドの設定
+    // 生产构建的设置
     sourcemap: true,
-    // チャンクサイズの最適化
+    // 代码块大小优化
     chunkSizeWarningLimit: 1600,
   },
-  // 開発サーバー設定
+  // 开发服务器设置
   server: {
     port: 5173,
     host: true,
-    // CORS設定
+    // CORS 设置
     cors: true,
-    // APIプロキシ設定
+    // API 代理设置
     proxy: {
       "/api": {
         target: process.env.VITE_API_ENDPOINT || "http://localhost:3000",

@@ -4,7 +4,7 @@ import reactHooks from "eslint-plugin-react-hooks";
 import reactRefresh from "eslint-plugin-react-refresh";
 import tseslint from "typescript-eslint";
 
-// CI環境でwarningをエラーとして扱うかどうかを決定する
+// 决定在 CI 环境中是否将 warning 视为错误
 const failOnWarning = process.env.ESLINT_FAIL_ON_WARNING === "true";
 
 export default tseslint.config(
@@ -22,7 +22,7 @@ export default tseslint.config(
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
-      // CI環境でwarningをエラーとして扱う場合
+      // 在 CI 环境中将 warning 视为错误时
       "react-hooks/exhaustive-deps": failOnWarning ? "error" : "warn",
       "react-refresh/only-export-components": [
         "warn",

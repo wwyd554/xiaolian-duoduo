@@ -18,9 +18,9 @@ import {
 import { LanguageService } from "../services/LanguageService";
 
 /**
- * 言語設定コンポーネント
+ * 语言设置组件
  *
- * 設定画面やプロフィール画面で言語設定を変更するためのコンポーネント
+ * 用于在设置页面或个人资料页面修改语言设置的组件
  */
 const LanguageSettings: React.FC = () => {
   const { t, i18n } = useTranslation();
@@ -30,7 +30,7 @@ const LanguageSettings: React.FC = () => {
     i18n.language.split("-")[0]
   );
 
-  // 言語変更ハンドラ
+  // 语言变更处理器
   const handleLanguageChange = async (
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
@@ -38,12 +38,12 @@ const LanguageSettings: React.FC = () => {
     setSelectedLanguage(newLang);
 
     try {
-      // 言語サービスを使用して言語を変更（永続化も行う）
+      // 使用语言服务更改语言（同时进行持久化）
       await languageService.changeLanguage(newLang);
       console.log("已切换语言:", newLang);
     } catch (error) {
       console.error("语言切换错误:", error);
-      // エラー時は選択を元に戻す
+      // 出错时恢复原选择
       setSelectedLanguage(i18n.language.split("-")[0]);
     }
   };

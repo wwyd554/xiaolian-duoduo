@@ -1,30 +1,30 @@
 /**
- * E2Eテスト用ナビゲーションヘルパー
+ * E2E 测试用导航辅助函数
  *
- * ページ遷移と要素待機のユーティリティ関数
+ * 页面跳转和元素等待的实用函数
  */
 import { Page, expect } from "@playwright/test";
 
 /**
- * シナリオ選択ページに遷移
+ * 跳转到场景选择页面
  *
- * @param page Playwrightのページオブジェクト
+ * @param page Playwright 的页面对象
  */
 export async function navigateToScenarioSelect(page: Page): Promise<void> {
   await page.goto("/scenarios");
 
-  // シナリオ一覧が表示されるまで待機
-  const scenarioListIndicator = page.locator('h1:has-text("シナリオ一覧")')
-    .or(page.locator('h1:has-text("シナリオを選択")'))
-    .or(page.locator('text=シナリオ一覧'));
+  // 等待场景列表显示
+  const scenarioListIndicator = page.locator('h1:has-text("场景列表")')
+    .or(page.locator('h1:has-text("选择场景")'))
+    .or(page.locator('text=场景列表'));
   await expect(scenarioListIndicator.first()).toBeVisible({ timeout: 15000 });
 }
 
 /**
- * 特定のシナリオの会話ページに遷移
+ * 跳转到指定场景的会话页面
  *
- * @param page Playwrightのページオブジェクト
- * @param scenarioId シナリオID
+ * @param page Playwright 的页面对象
+ * @param scenarioId 场景 ID
  */
 export async function navigateToConversation(
   page: Page,
@@ -32,37 +32,37 @@ export async function navigateToConversation(
 ): Promise<void> {
   await page.goto(`/conversation/${scenarioId}`);
 
-  // 会話ページが表示されるまで待機（i18nテキストに対応）
+  // 等待会话页面显示（兼容 i18n 文本）
   const startButton = page.locator('[data-testid="start-conversation-button"]')
-    .or(page.locator('button:has-text("商談開始")'))
+    .or(page.locator('button:has-text("开始商谈")'))
     .or(page.locator('button:has-text("Start Conversation")'))
-    .or(page.locator('button:has-text("カメラ初期化中")'));
+    .or(page.locator('button:has-text("正在初始化摄像头")'));
   await expect(startButton.first()).toBeVisible({ timeout: 15000 });
 }
 
 /**
- * 「商談開始」ボタンをクリックしてセッションを開始
- * カメラタイムアウト機能により、カメラ初期化に失敗しても「商談開始（録画なし）」ボタンが有効になる
+ * 点击「开始商谈」按钮以开始会话
+ * 借助摄像头超时功能，即使摄像头初始化失败，「开始商谈（无录制）」按钮也会变为可用
  *
- * @param page Playwrightのページオブジェクト
+ * @param page Playwright 的页面对象
  */
 export async function clickStartConversationButton(page: Page): Promise<void> {
-  console.log("clickStartConversationButton: 開始");
+  console.log("clickStartConversationButton: 开始");
 
-  // data-testidを使用してボタンを見つける（最も確実）
+  // 使用 data-testid 查找按钮（最可靠）
   const startButtonByTestId = page.locator('[data-testid="start-conversation-button"]');
 
-  // i18nテキストに対応した複数のボタンテキストパターン
-  // 日本語: "商談開始", "商談開始（録画なし）", "カメラ初期化中..."
-  // 英語: "Start Conversation", "Start Conversation (No Recording)", "Initializing camera..."
+  // 兼容 i18n 文本的多个按钮文本模式
+  // 中文: "开始商谈", "开始商谈（不录制）", "正在初始化摄像头..."
+  // 英文: "Start Conversation", "Start Conversation (No Recording)", "Initializing camera..."
   const startButtonByText = page.locator(
-    'button:has-text("商談開始"), ' +
+    'button:has-text("开始商谈"), ' +
     'button:has-text("Start Conversation"), ' +
-    'button:has-text("カメラ初期化中"), ' +
+    'button:has-text("正在初始化摄像头"), ' +
     'button:has-text("Initializing camera")'
   ).first();
 
-  // data-testidを優先して使用
+  // 优先使用 data-testid
   let startConversationButton = startButtonByTestId;
   const isTestIdVisible = await startButtonByTestId.isVisible().catch(() => false);
 
@@ -70,72 +70,72 @@ export async function clickStartConversationButton(page: Page): Promise<void> {
     startConversationButton = startButtonByText;
   }
 
-  // ボタンが表示されるまで待機（カメラタイムアウトを考慮して長めに設定）
+  // 等待按钮显示（考虑到摄像头超时，等待时间设置较长）
   await expect(startConversationButton).toBeVisible({ timeout: 60000 });
   console.log("clickStartConversationButton: 按钮已显示");
 
-  // カメラタイムアウト後にボタンが有効になるまで待機
-  // ステージング環境ではカメラにアクセスできないため、タイムアウト後に「商談開始（録画なし）」が有効になる
+  // 等待摄像头超时后按钮变为可用
+  // 预发环境无法访问摄像头，超时后「开始商谈（无录制）」变为可用
   let retryCount = 0;
-  const maxRetries = 45; // 最大45秒待機（カメラタイムアウト30秒 + バッファ15秒）
+  const maxRetries = 45; // 最多等待 45 秒（摄像头超时 30 秒 + 缓冲 15 秒）
 
   while (retryCount < maxRetries) {
     const isButtonEnabled = await startConversationButton.isEnabled().catch(() => false);
     const buttonText = await startConversationButton.textContent().catch(() => '');
 
-    console.log(`clickStartConversationButton: 試行 ${retryCount + 1}/${maxRetries}, enabled=${isButtonEnabled}, text="${buttonText}"`);
+    console.log(`clickStartConversationButton: 尝试 ${retryCount + 1}/${maxRetries}, enabled=${isButtonEnabled}, text="${buttonText}"`);
 
     if (isButtonEnabled) {
-      // ボタンが有効な場合はクリック
+      // 按钮可用时点击
       console.log("clickStartConversationButton: 按钮已可用。点击它");
       await startConversationButton.click();
 
-      // セッションが開始されるまで待機（「セッション終了」ボタンが表示されることを確認）
-      const endButton = page.locator('button:has-text("セッション終了"), button:has-text("商談終了"), button:has-text("End Conversation")').first();
+      // 等待会话开始（确认「结束会话」按钮显示）
+      const endButton = page.locator('button:has-text("结束会话"), button:has-text("结束商谈"), button:has-text("End Conversation")').first();
       try {
         await expect(endButton).toBeVisible({ timeout: 30000 });
         console.log("clickStartConversationButton: 会话已开始（结束会话按钮已显示）");
         return;
       } catch {
         console.log("clickStartConversationButton: 未显示结束会话按钮。确认NPC消息");
-        // NPCメッセージが表示されているか確認
-        const npcMessage = page.locator('.MuiPaper-root:has-text("こんにちは")')
-          .or(page.locator('.MuiPaper-root:has-text("いらっしゃいませ")'))
-          .or(page.locator('.MuiPaper-root:has-text("お時間をいただき")'))
-          .or(page.locator('.MuiPaper-root:has-text("ご提案")'));
+        // 确认 NPC 消息是否显示
+        const npcMessage = page.locator('.MuiPaper-root:has-text("你好")')
+          .or(page.locator('.MuiPaper-root:has-text("欢迎光临")'))
+          .or(page.locator('.MuiPaper-root:has-text("感谢您抽出时间")'))
+          .or(page.locator('.MuiPaper-root:has-text("提案")'));
 
         if (await npcMessage.first().isVisible().catch(() => false)) {
           console.log("clickStartConversationButton: 已显示NPC消息。会话开始成功");
           return;
         }
 
-        // 追加待機
+        // 追加等待
         await page.waitForTimeout(2000);
         return;
       }
     }
 
-    // 1秒待機して再試行
+    // 等待 1 秒后重试
     await page.waitForTimeout(1000);
     retryCount++;
   }
 
-  // タイムアウト後もボタンが無効な場合は、JavaScriptで強制的にクリック
+  // 超时后按钮仍不可用时，用 JavaScript 强制点击
   console.log("clickStartConversationButton: 按钮仍不可用。尝试强制点击");
 
   await page.evaluate(() => {
-    // data-testidでボタンを見つける
+    // 用 data-testid 查找按钮
     let btn = document.querySelector('[data-testid="start-conversation-button"]') as HTMLButtonElement;
 
-    // 見つからない場合はテキストで検索
+    // 找不到时用文本搜索
     if (!btn) {
       const buttons = document.querySelectorAll('button');
       for (const b of buttons) {
         const text = b.textContent || '';
         if (
-          text.includes('商談開始') ||
+          text.includes('开始商谈') ||
           text.includes('Start Conversation') ||
-          text.includes('カメラ初期化中') ||
+          text.includes('正在初始化摄像头') ||
           text.includes('Initializing camera')
         ) {
           btn = b as HTMLButtonElement;
@@ -145,14 +145,14 @@ export async function clickStartConversationButton(page: Page): Promise<void> {
     }
 
     if (btn) {
-      // disabled属性を削除
+      // 移除 disabled 属性
       btn.removeAttribute('disabled');
-      // MUIのdisabledクラスも削除
+      // 同时移除 MUI 的 disabled 类
       btn.classList.remove('Mui-disabled');
-      // pointer-eventsを有効化
+      // 启用 pointer-events
       btn.style.pointerEvents = 'auto';
 
-      // クリックイベントを発火
+      // 触发点击事件
       const clickEvent = new MouseEvent('click', {
         bubbles: true,
         cancelable: true,
@@ -162,16 +162,16 @@ export async function clickStartConversationButton(page: Page): Promise<void> {
     }
   });
 
-  // クリック後、セッションが開始されるまで待機
+  // 点击后，等待会话开始
   await page.waitForTimeout(5000);
   console.log("clickStartConversationButton: 强制点击后等待完成");
 }
 
 /**
- * 結果ページに遷移
+ * 跳转到结果页面
  *
- * @param page Playwrightのページオブジェクト
- * @param sessionId セッションID
+ * @param page Playwright 的页面对象
+ * @param sessionId 会话 ID
  */
 export async function navigateToResult(
   page: Page,
@@ -179,61 +179,61 @@ export async function navigateToResult(
 ): Promise<void> {
   await page.goto(`/result/${sessionId}`);
 
-  // 結果ページが表示されるまで待機
-  const resultIndicator = page.locator('text=評価サマリー')
-    .or(page.locator('text=総合スコア'));
+  // 等待结果页面显示
+  const resultIndicator = page.locator('text=评估摘要')
+    .or(page.locator('text=综合分数'));
   await expect(resultIndicator.first()).toBeVisible({ timeout: 30000 });
 }
 
 /**
- * ホームページに遷移
+ * 跳转到首页
  *
- * @param page Playwrightのページオブジェクト
+ * @param page Playwright 的页面对象
  */
 export async function navigateToHome(page: Page): Promise<void> {
   await page.goto("/");
 
-  // ホームページが表示されるまで待機
+  // 等待首页显示
   await expect(page.locator("body")).toBeVisible();
 }
 
 /**
- * ページのローディング完了を待機
+ * 等待页面加载完成
  *
- * @param page Playwrightのページオブジェクト
+ * @param page Playwright 的页面对象
  */
 export async function waitForPageLoad(page: Page): Promise<void> {
-  // ネットワークがアイドル状態になるまで待機
+  // 等待网络进入空闲状态
   await page.waitForLoadState("networkidle");
 }
 
 /**
- * ローディングスピナーが消えるまで待機
+ * 等待加载指示器消失
  *
- * @param page Playwrightのページオブジェクト
- * @param timeout タイムアウト（ミリ秒）
+ * @param page Playwright 的页面对象
+ * @param timeout 超时（毫秒）
  */
 export async function waitForLoadingComplete(
   page: Page,
   timeout: number = 30000
 ): Promise<void> {
-  // Material UIのCircularProgressが消えるまで待機
+  // 等待 Material UI 的 CircularProgress 消失
   const loadingIndicator = page.locator(
     '[role="progressbar"], .MuiCircularProgress-root'
   );
 
-  // ローディングインジケーターが表示されている場合は消えるまで待機
+  // 加载指示器显示时，等待其消失
   if (await loadingIndicator.isVisible().catch(() => false)) {
     await expect(loadingIndicator).not.toBeVisible({ timeout });
   }
 }
 
 /**
- * 要素が表示されるまで待機してクリック
+ * 等待元素显示后点击
  *
- * @param page Playwrightのページオブジェクト
- * @param selector セレクター
- * @param timeout タイムアウト（ミリ秒）
+ * @param page Playwright 的页面对象
+ * @param selector 选择器
+ * @param timeout 超时（毫秒）
  */
 export async function waitAndClick(
   page: Page,
@@ -246,11 +246,11 @@ export async function waitAndClick(
 }
 
 /**
- * テキスト入力フィールドに値を入力
+ * 在文本输入字段中输入值
  *
- * @param page Playwrightのページオブジェクト
- * @param selector セレクター
- * @param value 入力値
+ * @param page Playwright 的页面对象
+ * @param selector 选择器
+ * @param value 输入值
  */
 export async function fillInput(
   page: Page,
@@ -264,11 +264,11 @@ export async function fillInput(
 }
 
 /**
- * スナックバー/トースト通知が表示されるまで待機
+ * 等待 Snackbar/Toast 通知显示
  *
- * @param page Playwrightのページオブジェクト
- * @param text 期待するテキスト（部分一致）
- * @param timeout タイムアウト（ミリ秒）
+ * @param page Playwright 的页面对象
+ * @param text 期望的文本（部分匹配）
+ * @param timeout 超时（毫秒）
  */
 export async function waitForSnackbar(
   page: Page,

@@ -1,38 +1,38 @@
 /**
- * アニメーションコントローラー
- * 瞬き、呼吸、ジェスチャー、アイドルモーションのプロシージャルアニメーションを制御
+ * 动画控制器
+ * 控制眨眼、呼吸、手势、待机动作的程序化动画
  */
 import { VRM } from '@pixiv/three-vrm';
 import { GestureType } from '../../types/avatar';
 
-// 瞬きの設定
+// 眨眼的设置
 const BLINK_MIN_INTERVAL = 2.0;
 const BLINK_MAX_INTERVAL = 6.0;
 const BLINK_DURATION = 0.1;
 
-// 呼吸の設定
+// 呼吸的设置
 const BREATH_CYCLE = 4.0;
 const BREATH_AMPLITUDE = 0.005;
 
-// ジェスチャーの設定
-const NOD_DURATION = 0.6; // うなずき全体の時間（秒）
-const NOD_ANGLE = 0.15; // うなずきの角度（ラジアン、約8.6度）
-const HEAD_TILT_DURATION = 0.8; // 首かしげ全体の時間（秒）
-const HEAD_TILT_ANGLE = 0.12; // 首かしげの角度（ラジアン、約6.9度）
+// 手势的设置
+const NOD_DURATION = 0.6; // 点头总时长（秒）
+const NOD_ANGLE = 0.15; // 点头角度（弧度，约 8.6 度）
+const HEAD_TILT_DURATION = 0.8; // 歪头总时长（秒）
+const HEAD_TILT_ANGLE = 0.12; // 歪头角度（弧度，约 6.9 度）
 
-// アイドルモーション: 視線移動の設定
+// 待机动作：视线移动的设置
 const GAZE_MIN_INTERVAL = 3.0;
 const GAZE_MAX_INTERVAL = 8.0;
 const GAZE_TRANSITION_SPEED = 1.5; // 視線移動速度
-const GAZE_RANGE_H = 0.26; // 水平範囲（ラジアン、約15度）
-const GAZE_RANGE_V = 0.17; // 垂直範囲（ラジアン、約10度）
+const GAZE_RANGE_H = 0.26; // 水平范围（弧度，约 15 度）
+const GAZE_RANGE_V = 0.17; // 垂直范围（弧度，约 10 度）
 
-// アイドルモーション: 体の揺れの設定
+// 待机动作：身体摇晃的设置
 const SWAY_CYCLE_MIN = 5.0;
 const SWAY_CYCLE_MAX = 10.0;
 const SWAY_AMPLITUDE = 0.0087; // 約0.5度
 
-// 発話中・ジェスチャー中のアイドルモーション抑制率
+// 发言中、手势中时待机动作的抑制率
 const IDLE_SUPPRESSION = 0.5;
 
 export class AnimationController {
@@ -41,7 +41,7 @@ export class AnimationController {
   private isSpeaking: boolean = false;
   private expressionController: { getExpressionBlinkValue(): number } | null = null;
 
-  // 瞬き用
+  // 用于眨眼
   private nextBlinkTime: number = 0;
   private isBlinking: boolean = false;
   private blinkProgress: number = 0;
@@ -50,7 +50,7 @@ export class AnimationController {
   private breathTime: number = 0;
   private initialHipsY: number = 0;
 
-  // ジェスチャー用
+  // 用于手势
   private activeGesture: GestureType = 'none';
   private gestureProgress: number = 0;
   private gestureInitialRotationX: number = 0;
@@ -63,7 +63,7 @@ export class AnimationController {
   private targetGazeH: number = 0;
   private targetGazeV: number = 0;
 
-  // 体の揺れ用
+  // 用于身体摇晃
   private swayCycle: number = 7.0;
   private swayTime: number = 0;
   private initialSpineRotationZ: number = 0;
@@ -74,7 +74,7 @@ export class AnimationController {
     this.scheduleNextGaze();
     this.swayCycle = SWAY_CYCLE_MIN + Math.random() * (SWAY_CYCLE_MAX - SWAY_CYCLE_MIN);
 
-    // 初期位置を保存
+    // 保存初始位置
     const hips = this.vrm.humanoid?.getNormalizedBoneNode('hips');
     if (hips) {
       this.initialHipsY = hips.position.y;
@@ -84,29 +84,29 @@ export class AnimationController {
       this.initialSpineRotationZ = spine.rotation.z;
     }
 
-    // 初期ポーズ設定: Tポーズから自然な姿勢に変更
+    // 初始姿势设置：从 T 姿势改为自然姿势
     this.applyInitialPose();
   }
 
   /**
-   * Tポーズから自然な立ち姿勢に変更
-   * 腕を体の横に下ろし、軽く曲げた自然なポーズを設定
+   * 从 T 姿势改为自然的站立姿势
+   * 设置双臂自然垂于身体两侧、微曲的姿势
    */
   private applyInitialPose(): void {
     const humanoid = this.vrm.humanoid;
     if (!humanoid) return;
 
-    // 上腕: 体の横に下ろす（Z軸回転）
+    // 上臂：垂于身体两侧（Z 轴旋转）
     const leftUpperArm = humanoid.getNormalizedBoneNode('leftUpperArm');
     if (leftUpperArm) {
-      leftUpperArm.rotation.z = -1.3; // 約75度下ろす（体に近づける）
+      leftUpperArm.rotation.z = -1.3; // 放下约 75 度（贴近身体）
     }
     const rightUpperArm = humanoid.getNormalizedBoneNode('rightUpperArm');
     if (rightUpperArm) {
       rightUpperArm.rotation.z = 1.3;
     }
 
-    // 前腕: 軽く前方に曲げる（自然な垂れ下がり）
+    // 前臂：轻微向前弯曲（自然下垂）
     const leftLowerArm = humanoid.getNormalizedBoneNode('leftLowerArm');
     if (leftLowerArm) {
       leftLowerArm.rotation.y = 0.3;
@@ -116,7 +116,7 @@ export class AnimationController {
       rightLowerArm.rotation.y = -0.3;
     }
 
-    // 肩: わずかに下げる
+    // 肩膀：轻微下沉
     const leftShoulder = humanoid.getNormalizedBoneNode('leftShoulder');
     if (leftShoulder) {
       leftShoulder.rotation.z = -0.05;
@@ -135,31 +135,31 @@ export class AnimationController {
     this.nextGazeTime = GAZE_MIN_INTERVAL + Math.random() * (GAZE_MAX_INTERVAL - GAZE_MIN_INTERVAL);
   }
 
-  /** 待機アニメーション開始 */
+  /** 开始待机动画 */
   startIdleAnimations(): void {
     this.isRunning = true;
   }
 
-  /** 待機アニメーション停止 */
+  /** 停止待机动画 */
   stopIdleAnimations(): void {
     this.isRunning = false;
   }
 
-  /** 発話状態を設定（アイドルモーション抑制用） */
+  /** 设置发言状态（用于抑制待机动作） */
   setIsSpeaking(speaking: boolean): void {
     this.isSpeaking = speaking;
   }
 
-  /** ExpressionControllerの参照を設定（blink競合回避用） */
+  /** 设置 ExpressionController 的引用（用于避免 blink 冲突） */
   setExpressionController(controller: { getExpressionBlinkValue(): number } | null): void {
     this.expressionController = controller;
   }
 
   /**
-   * うなずきジェスチャーをトリガー
+   * 触发点头手势
    */
   triggerNod(): void {
-    if (this.activeGesture !== 'none') return; // 既にジェスチャー中
+    if (this.activeGesture !== 'none') return; // 已处于手势中
     this.activeGesture = 'nod';
     this.gestureProgress = 0;
     const head = this.vrm.humanoid?.getNormalizedBoneNode('head');
@@ -169,7 +169,7 @@ export class AnimationController {
   }
 
   /**
-   * 首かしげジェスチャーをトリガー
+   * 触发歪头手势
    */
   triggerHeadTilt(): void {
     if (this.activeGesture !== 'none') return;
@@ -182,7 +182,7 @@ export class AnimationController {
   }
 
   /**
-   * 外部からジェスチャーをトリガー
+   * 从外部触发手势
    */
   triggerGesture(gesture: GestureType): void {
     if (gesture === 'nod') {
@@ -192,7 +192,7 @@ export class AnimationController {
     }
   }
 
-  /** 毎フレーム呼び出し */
+  /** 每帧调用 */
   update(deltaTime: number): void {
     if (!this.isRunning) return;
 
@@ -203,12 +203,12 @@ export class AnimationController {
     this.updateSway(deltaTime);
   }
 
-  /** 瞬きの更新 */
+  /** 眨眼的更新 */
   private updateBlink(deltaTime: number): void {
     if (!this.vrm.expressionManager) return;
 
-    // ExpressionControllerが表情ブレンドで使用中のblink値を取得
-    // （例: angry表情の目を細める効果 blink: 0.3）
+    // ExpressionController 获取表情混合中使用的 blink 值
+    // （例如：angry 表情的眯眼效果 blink: 0.3）
     const expressionBlinkValue = this.expressionController?.getExpressionBlinkValue() ?? 0;
 
     if (this.isBlinking) {
@@ -216,14 +216,14 @@ export class AnimationController {
       if (this.blinkProgress >= 1) {
         this.isBlinking = false;
         this.blinkProgress = 0;
-        // 表情ブレンドのblink値を下回らないようにする
+        // 避免低于表情混合的 blink 值
         this.vrm.expressionManager.setValue('blink', expressionBlinkValue);
         this.scheduleNextBlink();
       } else {
         const blinkValue = this.blinkProgress < 0.5
           ? this.blinkProgress * 2
           : (1 - this.blinkProgress) * 2;
-        // 瞬きアニメーション値と表情ブレンド値の大きい方を採用
+        // 取眨眼动画值与表情混合值中较大者
         this.vrm.expressionManager.setValue('blink', Math.max(blinkValue, expressionBlinkValue));
       }
     } else {
@@ -235,7 +235,7 @@ export class AnimationController {
     }
   }
 
-  /** 呼吸の更新 */
+  /** 呼吸的更新 */
   private updateBreath(deltaTime: number): void {
     const hips = this.vrm.humanoid?.getNormalizedBoneNode('hips');
     if (!hips) return;
@@ -245,7 +245,7 @@ export class AnimationController {
     hips.position.y = this.initialHipsY + breathOffset;
   }
 
-  /** ジェスチャーの更新 */
+  /** 手势的更新 */
   private updateGesture(deltaTime: number): void {
     if (this.activeGesture === 'none') return;
 
@@ -258,11 +258,11 @@ export class AnimationController {
     if (this.activeGesture === 'nod') {
       this.gestureProgress += deltaTime / NOD_DURATION;
       if (this.gestureProgress >= 1) {
-        // うなずき完了、元に戻す
+        // 点头完成，恢复原状
         head.rotation.x = this.gestureInitialRotationX;
         this.activeGesture = 'none';
       } else {
-        // サイン波で下→上→下の動き（2回うなずき）
+        // 以正弦波做下→上→下的动作（点头两次）
         const nodOffset = Math.sin(this.gestureProgress * Math.PI * 2) * NOD_ANGLE;
         head.rotation.x = this.gestureInitialRotationX + nodOffset;
       }
@@ -272,42 +272,42 @@ export class AnimationController {
         head.rotation.z = this.gestureInitialRotationZ;
         this.activeGesture = 'none';
       } else {
-        // 傾けて戻す（片道）
+        // 倾斜后回正（单向）
         const tiltPhase = this.gestureProgress < 0.5
-          ? this.gestureProgress * 2 // 0→1（傾ける）
-          : (1 - this.gestureProgress) * 2; // 1→0（戻す）
+          ? this.gestureProgress * 2 // 0→1（倾斜）
+          : (1 - this.gestureProgress) * 2; // 1→0（回正）
         const tiltOffset = tiltPhase * HEAD_TILT_ANGLE;
         head.rotation.z = this.gestureInitialRotationZ + tiltOffset;
       }
     }
   }
 
-  /** 視線移動の更新 */
+  /** 视线移动的更新 */
   private updateGaze(deltaTime: number): void {
-    // 抑制率の計算
+    // 抑制率的计算
     const suppression = (this.isSpeaking || this.activeGesture !== 'none') ? IDLE_SUPPRESSION : 1.0;
 
     this.nextGazeTime -= deltaTime;
     if (this.nextGazeTime <= 0) {
-      // 新しい視線ターゲットを設定
+      // 设置新的视线目标
       this.targetGazeH = (Math.random() * 2 - 1) * GAZE_RANGE_H * suppression;
       this.targetGazeV = (Math.random() * 2 - 1) * GAZE_RANGE_V * suppression;
       this.scheduleNextGaze();
     }
 
-    // 現在の視線をターゲットに向かってスムーズに移動
+    // 将当前视线平滑地移向目标
     const step = GAZE_TRANSITION_SPEED * deltaTime;
     this.currentGazeH += Math.sign(this.targetGazeH - this.currentGazeH) * Math.min(step, Math.abs(this.targetGazeH - this.currentGazeH));
     this.currentGazeV += Math.sign(this.targetGazeV - this.currentGazeV) * Math.min(step, Math.abs(this.targetGazeV - this.currentGazeV));
 
-    // VRM lookAtで視線を設定
+    // 通过 VRM lookAt 设置视线
     if (this.vrm.lookAt) {
       this.vrm.lookAt.yaw = (this.currentGazeH / Math.PI) * 180;
       this.vrm.lookAt.pitch = (this.currentGazeV / Math.PI) * 180;
     }
   }
 
-  /** 体の揺れの更新 */
+  /** 身体摇晃的更新 */
   private updateSway(deltaTime: number): void {
     const spine = this.vrm.humanoid?.getNormalizedBoneNode('spine');
     if (!spine) return;
@@ -319,7 +319,7 @@ export class AnimationController {
     spine.rotation.z = this.initialSpineRotationZ + swayOffset;
   }
 
-  /** リソース解放 */
+  /** 资源释放 */
   dispose(): void {
     this.isRunning = false;
   }

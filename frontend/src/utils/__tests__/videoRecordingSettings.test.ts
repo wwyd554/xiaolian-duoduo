@@ -5,34 +5,34 @@ import {
 } from "../videoRecordingSettings";
 
 describe("videoRecordingSettings", () => {
-  // 各テスト前にlocalStorageとconsole.warnのモックをリセット
+  // 在每次测试前重置 localStorage 和 console.warn 的 mock
   beforeEach(() => {
     localStorage.clear();
     jest.restoreAllMocks();
   });
 
   describe("loadVideoRecordingEnabled", () => {
-    test("未設定の場合はデフォルト値（true）を返す", () => {
+    test("未设置时返回默认值（当前默认关闭录制）", () => {
       expect(loadVideoRecordingEnabled()).toBe(DEFAULT_VIDEO_RECORDING_ENABLED);
-      expect(loadVideoRecordingEnabled()).toBe(true);
+      expect(loadVideoRecordingEnabled()).toBe(false);
     });
 
-    test('"true"が保存されている場合はtrueを返す', () => {
+    test('保存了"true"时返回 true', () => {
       localStorage.setItem("videoRecordingEnabled", "true");
       expect(loadVideoRecordingEnabled()).toBe(true);
     });
 
-    test('"false"が保存されている場合はfalseを返す', () => {
+    test('保存了"false"时返回 false', () => {
       localStorage.setItem("videoRecordingEnabled", "false");
       expect(loadVideoRecordingEnabled()).toBe(false);
     });
 
-    test("不正な値の場合はfalse扱い（=true以外）になる", () => {
+    test("非法值按 false 处理（即非 true）", () => {
       localStorage.setItem("videoRecordingEnabled", "invalid");
       expect(loadVideoRecordingEnabled()).toBe(false);
     });
 
-    test("localStorageが例外を投げる場合はデフォルト値にフォールバックする", () => {
+    test("localStorage 抛出异常时回退到默认值", () => {
       const warnSpy = jest.spyOn(console, "warn").mockImplementation(() => { });
       jest.spyOn(Storage.prototype, "getItem").mockImplementation(() => {
         throw new Error("localStorage unavailable");
@@ -44,17 +44,17 @@ describe("videoRecordingSettings", () => {
   });
 
   describe("saveVideoRecordingEnabled", () => {
-    test("trueを保存できる", () => {
+    test("可以保存 true", () => {
       saveVideoRecordingEnabled(true);
       expect(localStorage.getItem("videoRecordingEnabled")).toBe("true");
     });
 
-    test("falseを保存できる", () => {
+    test("可以保存 false", () => {
       saveVideoRecordingEnabled(false);
       expect(localStorage.getItem("videoRecordingEnabled")).toBe("false");
     });
 
-    test("localStorageが例外を投げても例外を伝播させない", () => {
+    test("localStorage 抛出异常时不传播异常", () => {
       const warnSpy = jest.spyOn(console, "warn").mockImplementation(() => { });
       jest.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
         throw new Error("localStorage unavailable");
@@ -65,8 +65,8 @@ describe("videoRecordingSettings", () => {
     });
   });
 
-  describe("保存と読み込みの往復", () => {
-    test("保存した値を正しく読み込める", () => {
+  describe("保存与读取的往返", () => {
+    test("能正确读取已保存的值", () => {
       saveVideoRecordingEnabled(false);
       expect(loadVideoRecordingEnabled()).toBe(false);
 

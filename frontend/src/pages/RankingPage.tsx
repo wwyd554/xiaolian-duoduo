@@ -5,8 +5,8 @@ import RankingList from "../components/RankingList";
 import { AuthService } from "../services/AuthService";
 
 /**
- * ランキングページ
- * シナリオごとの日次/週次/月次ランキングを表示する
+ * 排行榜页面
+ * 显示每个场景的日/周/月排行榜
  */
 const RankingPage: React.FC = () => {
   const { t } = useTranslation();
@@ -16,12 +16,12 @@ const RankingPage: React.FC = () => {
   const authService = AuthService.getInstance();
 
   useEffect(() => {
-    // ページタイトルの設定
+    // 设置页面标题
     document.title = `${t("ranking.title")} | ${t("app.title")}`;
   }, [t]);
 
   useEffect(() => {
-    // 現在のユーザーIDを取得
+    // 获取当前用户 ID
     const fetchCurrentUser = async () => {
       try {
         const user = await authService.getCurrentUser();

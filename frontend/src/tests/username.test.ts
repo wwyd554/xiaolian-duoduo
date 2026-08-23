@@ -1,78 +1,78 @@
 import { test, expect } from "@playwright/test";
 import { mockAmplifyAuth } from "./mocks/auth-mock";
 
-test.describe("ユーザー名登録・編集機能", () => {
-  // ステージング環境ではAmplify認証モックが機能しないためスキップ
-  // ローカル開発環境でのみ実行可能
+test.describe("用户名注册、编辑功能", () => {
+  // 在预发环境 Amplify 认证 mock 不生效，因此跳过
+  // 仅在本地开发环境可运行
   test.skip();
 
   test.beforeEach(async ({ page }) => {
-    // Amplify認証のモック
+    // Amplify 认证的 mock
     await mockAmplifyAuth(page);
   });
 
-  test("新規サインアップ時にユーザー名フィールドが表示される", async ({
+  test("新用户注册时显示用户名字段", async ({
     page,
   }) => {
-    // ホームページにアクセス
+    // 访问首页
     await page.goto("/");
 
-    // サインアップページへ移動
+    // 跳转到注册页
     await page.locator("text=Sign up").click();
 
-    // メールアドレス入力フィールドがあることを確認
+    // 确认存在邮箱输入字段
     await expect(page.locator('input[name="email"]')).toBeVisible();
 
-    // ユーザー名入力フィールドがあることを確認
+    // 确认存在用户名输入字段
     await expect(
       page.locator('input[name="preferred_username"]'),
     ).toBeVisible();
 
-    // ユーザー名フィールドにはラベルが表示されていることを確認
+    // 确认用户名字段带有标签
     await expect(
       page.locator('label:has-text("Preferred Username")'),
     ).toBeVisible();
   });
 
-  test("プロフィール画面でユーザー名を編集できる", async ({ page }) => {
-    // 認証済み状態でホームページにアクセス
+  test("在个人资料页面可以编辑用户名", async ({ page }) => {
+    // 以已登录状态访问首页
     await page.goto("/");
 
-    // ヘッダーにユーザーアイコンが表示されていることを確認
+    // 确认头部显示用户图标
     await expect(
       page.locator('button[aria-label="user account"]'),
     ).toBeVisible();
 
-    // ユーザーメニューを開く
+    // 打开用户菜单
     await page.locator('button[aria-label="user account"]').click();
 
-    // プロフィールメニューをクリック
-    await page.locator("text=プロフィール").click();
+    // 点击个人资料菜单
+    await page.locator("text=个人资料").click();
 
-    // プロフィールページに遷移したことを確認
+    // 确认跳转到个人资料页
     await expect(page).toHaveURL(/\/profile/);
 
-    // ユーザー名が表示されていることを確認
-    await expect(page.locator("text=ユーザー名:")).toBeVisible();
+    // 确认显示用户名
+    await expect(page.locator("text=用户名:")).toBeVisible();
 
-    // 編集ボタンをクリック
-    await page.locator("text=編集").click();
+    // 点击编辑按钮
+    await page.locator("text=编辑").click();
 
-    // 編集モードになり、テキストフィールドが表示されることを確認
+    // 确认进入编辑模式并显示文本字段
     const usernameField = page.locator('input[type="text"]').first();
     await expect(usernameField).toBeVisible();
 
-    // ユーザー名を変更
+    // 修改用户名
     await usernameField.clear();
-    await usernameField.fill("新しいユーザー名");
+    await usernameField.fill("新用户名");
 
-    // 保存ボタンをクリック
+    // 点击保存按钮
     await page.locator("text=保存").click();
 
-    // 成功メッセージが表示されることを確認
-    await expect(page.locator("text=ユーザー名を更新しました")).toBeVisible();
+    // 确认显示成功消息
+    await expect(page.locator("text=用户名已更新")).toBeVisible();
 
-    // 編集モードが終了し、新しいユーザー名が表示されていることを確認
-    await expect(page.locator("text=新しいユーザー名")).toBeVisible();
+    // 确认编辑模式结束并显示新的用户名
+    await expect(page.locator("text=新用户名")).toBeVisible();
   });
 });

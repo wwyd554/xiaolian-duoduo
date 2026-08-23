@@ -37,8 +37,8 @@ import {
 import { ScenarioInfo } from "../types/api";
 
 /**
- * 音声分析ページ
- * 商談音声データをアップロードして分析するページ
+ * 语音分析页面
+ * 上传洽谈音频数据并进行分析的页面
  */
 const AudioAnalysisPage: React.FC = () => {
   const { t } = useTranslation();
@@ -61,12 +61,12 @@ const AudioAnalysisPage: React.FC = () => {
   const apiService = ApiService.getInstance();
 
   useEffect(() => {
-    // ページタイトルの設定
-    document.title = `${t("audioAnalysis.title", "音声分析")} | ${t("app.title")}`;
+    // 设置页面标题
+    document.title = `${t("audioAnalysis.title", "语音分析")} | ${t("app.title")}`;
   }, [t]);
 
   useEffect(() => {
-    // シナリオ一覧を取得
+    // 获取场景列表
     const fetchScenarios = async () => {
       try {
         const response = await apiService.getScenarios();
@@ -85,10 +85,10 @@ const AudioAnalysisPage: React.FC = () => {
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      // ファイルバリデーション
+      // 文件验证
       const validation = audioAnalysisService.validateAudioFile(file);
       if (!validation.isValid) {
-        setError(validation.error || "ファイル形式が無効です");
+        setError(validation.error || "文件格式无效");
         return;
       }
 
@@ -107,7 +107,7 @@ const AudioAnalysisPage: React.FC = () => {
 
   const handleStartAnalysis = async () => {
     if (!selectedFile || !selectedScenario) {
-      setError("音声ファイルとシナリオを選択してください");
+      setError("请选择音频文件和场景");
       return;
     }
 
@@ -116,7 +116,7 @@ const AudioAnalysisPage: React.FC = () => {
       setIsUploading(true);
       setUploadProgress(0);
 
-      // 音声分析を実行
+      // 执行语音分析
       const result = await audioAnalysisService.executeFullAnalysis(
         selectedFile,
         selectedScenario,
@@ -130,10 +130,10 @@ const AudioAnalysisPage: React.FC = () => {
             setIsUploading(false);
             setIsAnalyzing(true);
           } else if (status.status === "FAILED" || status.currentStep === "ERROR") {
-            // エラー時の処理
+            // 错误时的处理
             setIsUploading(false);
             setIsAnalyzing(false);
-            const errorMessage = status.progress?.error || "音声分析でエラーが発生しました";
+            const errorMessage = status.progress?.error || "语音分析时发生错误";
             setError(errorMessage);
           }
         }
@@ -146,7 +146,7 @@ const AudioAnalysisPage: React.FC = () => {
     } catch (error) {
       console.error("音频分析错误:", error);
       setError(
-        error instanceof Error ? error.message : "音声分析に失敗しました"
+        error instanceof Error ? error.message : "语音分析失败"
       );
       setIsUploading(false);
       setIsAnalyzing(false);
@@ -155,30 +155,30 @@ const AudioAnalysisPage: React.FC = () => {
 
   const handleViewResults = () => {
     setResultDialogOpen(false);
-    // 既存のResultPageに遷移
+    // 跳转到已有的 ResultPage
     navigate(`/result/${analysisSessionId}`);
   };
 
   const getStepContent = () => {
     if (isUploading) {
-      return "音声ファイルをアップロード中...";
+      return "正在上传音频文件...";
     } else if (isAnalyzing) {
       switch (analysisStatus?.currentStep) {
         case "START":
-          return "分析準備中...";
+          return "正在准备分析...";
         case "TRANSCRIBING":
-          return "音声転写中...";
+          return "正在转写音频...";
         case "ANALYZING":
-          return "AI分析中...";
+          return "AI 分析中...";
         case "SAVING":
-          return "結果保存中...";
+          return "正在保存结果...";
         case "ERROR":
-          return "分析でエラーが発生しました";
+          return "分析时发生错误";
         default:
           return "分析中...";
       }
     }
-    return "待機中";
+    return "等待中";
   };
 
   const activeStep = () => {
@@ -187,42 +187,42 @@ const AudioAnalysisPage: React.FC = () => {
     if (analysisStatus?.currentStep === "TRANSCRIBING") return 2;
     if (analysisStatus?.currentStep === "ANALYZING") return 3;
     if (analysisStatus?.currentStep === "SAVING") return 4;
-    if (analysisStatus?.currentStep === "ERROR") return -1; // エラー時は特別扱い
+    if (analysisStatus?.currentStep === "ERROR") return -1; // 错误时特殊处理
     return 0;
   };
 
   const steps = [
-    "アップロード",
-    "分析準備",
-    "音声転写",
-    "AI分析",
-    "結果保存",
+    "上传",
+    "分析准备",
+    "语音转写",
+    "AI 分析",
+    "结果保存",
   ];
 
   return (
     <Container maxWidth="lg">
       <Box sx={{ pt: 4, pb: 8 }}>
         <Typography variant="h4" component="h1" gutterBottom>
-          {t("audioAnalysis.title", "音声分析")}
+          {t("audioAnalysis.title", "语音分析")}
         </Typography>
 
         <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
           {t(
             "audioAnalysis.description",
-            "実際の商談音声データをアップロードして、選択したシナリオで分析を行います。"
+            "上传真实的洽谈音频数据，按所选场景进行分析。"
           )}
         </Typography>
 
         <Card sx={{ mb: 4 }}>
           <CardContent>
             <Typography variant="h6" gutterBottom>
-              {t("audioAnalysis.settings", "分析設定")}
+              {t("audioAnalysis.settings", "分析设置")}
             </Typography>
 
-            {/* 言語選択 */}
+            {/* 语言选择 */}
             <Box sx={{ mb: 3 }}>
               <Typography variant="subtitle2" gutterBottom>
-                {t("audioAnalysis.language", "言語設定")}
+                {t("audioAnalysis.language", "语言设置")}
               </Typography>
               <Box sx={{ display: "flex", gap: 1 }}>
                 <Chip
@@ -240,16 +240,16 @@ const AudioAnalysisPage: React.FC = () => {
               </Box>
             </Box>
 
-            {/* シナリオ選択 */}
+            {/* 场景选择 */}
             <Box sx={{ mb: 3 }}>
               <FormControl fullWidth>
                 <InputLabel>
-                  {t("audioAnalysis.selectScenario", "分析シナリオを選択")}
+                  {t("audioAnalysis.selectScenario", "选择分析场景")}
                 </InputLabel>
                 <Select
                   value={selectedScenario}
                   onChange={(e) => handleScenarioChange(e.target.value)}
-                  label={t("audioAnalysis.selectScenario", "分析シナリオを選択")}
+                  label={t("audioAnalysis.selectScenario", "选择分析场景")}
                 >
                   {scenarios.map((scenario) => (
                     <MenuItem key={scenario.scenarioId} value={scenario.scenarioId}>
@@ -260,7 +260,7 @@ const AudioAnalysisPage: React.FC = () => {
               </FormControl>
             </Box>
 
-            {/* ファイル選択 */}
+            {/* 文件选择 */}
             <Box sx={{ mb: 3 }}>
               <input
                 accept="audio/*,.mp3,.wav,.flac,.ogg"
@@ -278,19 +278,19 @@ const AudioAnalysisPage: React.FC = () => {
                 >
                   {selectedFile
                     ? selectedFile.name
-                    : t("audioAnalysis.selectFile", "音声ファイルを選択")}
+                    : t("audioAnalysis.selectFile", "选择音频文件")}
                 </Button>
               </label>
             </Box>
 
-            {/* エラー表示 */}
+            {/* 错误提示 */}
             {error && (
               <Alert severity="error" sx={{ mb: 3 }}>
                 {error}
               </Alert>
             )}
 
-            {/* 分析開始ボタン */}
+            {/* 开始分析按钮 */}
             <Button
               variant="contained"
               color="primary"
@@ -301,17 +301,17 @@ const AudioAnalysisPage: React.FC = () => {
               }
               size="large"
             >
-              {t("audioAnalysis.startAnalysis", "分析開始")}
+              {t("audioAnalysis.startAnalysis", "开始分析")}
             </Button>
           </CardContent>
         </Card>
 
-        {/* 進行状況表示 */}
+        {/* 进度显示 */}
         {(isUploading || isAnalyzing) && (
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
-                {t("audioAnalysis.progress", "分析進行状況")}
+                {t("audioAnalysis.progress", "分析进度")}
               </Typography>
 
               <Stepper activeStep={activeStep()} sx={{ mb: 3 }}>
@@ -343,14 +343,14 @@ const AudioAnalysisPage: React.FC = () => {
               <Typography variant="caption" color="text.secondary">
                 {t(
                   "audioAnalysis.processingNote",
-                  "※ 処理に時間がかかる場合があります。画面を閉じずにお待ちください。"
+                  "※ 处理可能需要一些时间，请勿关闭页面，请稍候。"
                 )}
               </Typography>
             </CardContent>
           </Card>
         )}
 
-        {/* 結果表示ダイアログ */}
+        {/* 结果显示对话框 */}
         <Dialog
           open={resultDialogOpen}
           onClose={() => setResultDialogOpen(false)}
@@ -358,32 +358,32 @@ const AudioAnalysisPage: React.FC = () => {
           fullWidth
         >
           <DialogTitle>
-            {t("audioAnalysis.analysisComplete", "音声分析完了")}
+            {t("audioAnalysis.analysisComplete", "语音分析完成")}
           </DialogTitle>
           <DialogContent>
             <Typography variant="body1" sx={{ mb: 2 }}>
               {t(
                 "audioAnalysis.analysisCompleteMessage",
-                "音声分析が完了しました。結果を確認しますか？"
+                "语音分析已完成。要查看结果吗？"
               )}
             </Typography>
             <Typography variant="body2" color="text.secondary">
               {t(
                 "audioAnalysis.resultViewNote",
-                "分析結果画面では、話者の役割分析、評価スコア、リファレンスチェックなどの詳細を確認できます。"
+                "在分析结果页面可以查看说话人角色分析、评分、参考检查等详细信息。"
               )}
             </Typography>
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setResultDialogOpen(false)}>
-              {t("common.cancel", "キャンセル")}
+              {t("common.cancel", "取消")}
             </Button>
             <Button
               onClick={handleViewResults}
               variant="contained"
               color="primary"
             >
-              {t("audioAnalysis.viewResults", "結果を確認")}
+              {t("audioAnalysis.viewResults", "查看结果")}
             </Button>
           </DialogActions>
         </Dialog>

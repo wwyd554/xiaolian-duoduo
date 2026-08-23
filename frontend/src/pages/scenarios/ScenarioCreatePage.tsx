@@ -25,7 +25,7 @@ import {
   validateSharing,
 } from "../../utils/validation";
 
-// ステップコンポーネントをインポート
+// 导入步骤组件
 import BasicInfoStep from "./creation/BasicInfoStep";
 import NPCInfoStep from "./creation/NPCInfoStep";
 import GoalsStep from "./creation/GoalsStep";
@@ -36,17 +36,17 @@ import PreviewStep from "./creation/PreviewStep";
 import { ScenarioInfo, DifficultyLevel } from "../../types/api";
 
 /**
- * シナリオ作成ページ
- * ユーザーがカスタムシナリオを作成するためのマルチステップフォーム
+ * 场景创建页面
+ * 用户创建自定义场景的多步骤表单
  */
 const ScenarioCreatePage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const apiService = ApiService.getInstance();
 
-  // ステップ管理
+  // 步骤管理
   const [activeStep, setActiveStep] = useState(0);
-  // アップロード用の一時ID（シナリオ作成前のファイルアップロードに使用）
+  // 上传用的临时 ID（用于场景创建前的文件上传）
   const [tempUploadId] = useState(() => `temp-${Date.now()}`);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -59,7 +59,7 @@ const ScenarioCreatePage: React.FC = () => {
     }>
   >([]);
 
-  // バリデーションエラー管理
+  // 校验错误管理
   const [validationErrors, setValidationErrors] = useState<{
     basicInfo: Record<string, string | null>;
     npcInfo: Record<string, string | null>;
@@ -154,12 +154,12 @@ const ScenarioCreatePage: React.FC = () => {
     }
   };
 
-  // アバター・音声モデル管理
+  // 头像、语音模型管理
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [voiceId, setVoiceId] = useState<string>("");
   const [enableAvatar, setEnableAvatar] = useState<boolean>(true);
 
-  // フォームデータ
+  // 表单数据
   const [formData, setFormData] = useState({
     // 基本情報
     scenarioId: "",
@@ -168,7 +168,7 @@ const ScenarioCreatePage: React.FC = () => {
     difficulty: "normal" as DifficultyLevel,
     category: "",
     language: "zh", // 默认中文
-    maxTurns: undefined as number | undefined, // 最大ターン数（任意）
+    maxTurns: undefined as number | undefined, // 最大轮数（可选）
 
     // NPC情報
     npc: {
@@ -179,7 +179,7 @@ const ScenarioCreatePage: React.FC = () => {
       description: "",
     },
 
-    // 目標・メトリクス
+    // 目标、指标
     objectives: [] as string[],
     initialMetrics: {
       angerLevel: 1,
@@ -222,13 +222,13 @@ const ScenarioCreatePage: React.FC = () => {
 
   // 初期化処理
   useEffect(() => {
-    // ガードレールリストの取得
+    // 获取护栏列表
     const loadGuardrails = async () => {
       try {
         const guardrails = await apiService.getGuardrails();
         setGuardrailsList(guardrails);
 
-        // デフォルト値として最初のガードレールを設定
+        // 将第一个护栏设置为默认值
         if (guardrails.length > 0) {
           setFormData((prev) => ({
             ...prev,
@@ -244,7 +244,7 @@ const ScenarioCreatePage: React.FC = () => {
     loadGuardrails();
   }, [t, apiService]);
 
-  // ステップの定義
+  // 步骤的定义
   const steps = [
     { label: t("scenarios.create.steps.basicInfo") },
     { label: t("scenarios.create.steps.npcInfo") },
@@ -255,14 +255,14 @@ const ScenarioCreatePage: React.FC = () => {
     { label: t("scenarios.create.steps.preview") },
   ];
 
-  // 次のステップへ
+  // 进入下一步
   const handleNext = () => {
-    // 現在のステップのバリデーション
+    // 当前步骤的校验
     let isValid = true;
     const currentErrors = { ...validationErrors };
 
     if (activeStep === 0) {
-      // 基本情報のバリデーション
+      // 基本信息校验
       const errors = validateBasicInfo(
         formData.title,
         formData.description,
@@ -274,31 +274,31 @@ const ScenarioCreatePage: React.FC = () => {
       isValid = Object.values(errors).every((error) => error === null);
       currentErrors.basicInfo = errors;
     } else if (activeStep === 1) {
-      // NPC情報のバリデーション
+      // NPC 信息校验
       const errors = validateNpcInfo(
         formData.npc.name,
         formData.npc.role,
         formData.npc.company,
       );
-      // voiceId必須チェック
+      // voiceId 必填检查
       if (!voiceId) {
         (errors as Record<string, string | null>).voiceId = "scenarios.validation.voiceIdRequired";
       }
       isValid = Object.values(errors).every((error) => error === null);
       currentErrors.npcInfo = errors;
     } else if (activeStep === 2) {
-      // 目標のバリデーション
+      // 目标校验
       const errors = validateGoals(formData.objectives, formData.goals);
       isValid = Object.values(errors).every((error) => error === null);
       currentErrors.goals = errors;
     } else if (activeStep === 3) {
-      // PDF資料ステップは特別なバリデーションは不要
+      // PDF 资料步骤无需特殊校验
       isValid = true;
     } else if (activeStep === 4) {
-      // 提案資料ステップは特別なバリデーションは不要（任意項目）
+      // 提案资料步骤无需特殊校验（可选项目）
       isValid = true;
     } else if (activeStep === 5) {
-      // 共有設定のバリデーション
+      // 共享设置校验
       const errors = validateSharing(
         formData.visibility,
         formData.sharedWithUsers,
@@ -308,27 +308,27 @@ const ScenarioCreatePage: React.FC = () => {
       currentErrors.sharing = errors;
     }
 
-    // バリデーションエラーを更新
+    // 更新校验错误
     setValidationErrors(currentErrors);
 
-    // バリデーションが成功した場合のみ次のステップへ
+    // 仅在校验成功时进入下一步
     if (isValid) {
       setActiveStep((prevStep) => prevStep + 1);
     }
   };
 
-  // 前のステップへ
+  // 返回上一步
   const handleBack = () => {
     setActiveStep((prevStep) => prevStep - 1);
   };
 
-  // シナリオの保存
+  // 保存场景
   const handleSubmit = async () => {
     setIsSubmitting(true);
     setError(null);
 
     try {
-      // アバターアップロード処理
+      // 头像上传处理
       let avatarId: string | undefined;
       if (avatarFile) {
         const avatarService = AvatarService.getInstance();
@@ -346,7 +346,7 @@ const ScenarioCreatePage: React.FC = () => {
         avatarId = createResult.avatarId;
       }
 
-      // APIリクエスト用にデータを整形
+      // 为 API 请求整理数据
       const scenarioData: Partial<ScenarioInfo> & { tempUploadId?: string } = {
         scenarioId: formData.scenarioId,
         title: formData.title,
@@ -372,10 +372,10 @@ const ScenarioCreatePage: React.FC = () => {
         tempUploadId,
       };
 
-      // APIでシナリオを作成
+      // 通过 API 创建场景
       const response = await apiService.createScenario(scenarioData);
 
-      // 成功した場合
+      // 成功时
       navigate("/scenarios", {
         state: {
           success: true,
@@ -395,7 +395,7 @@ const ScenarioCreatePage: React.FC = () => {
     }
   };
 
-  // キャンセル処理
+  // 取消处理
   const handleCancel = () => {
     if (window.confirm(t("scenarios.create.confirmCancel"))) {
       navigate("/scenarios");
@@ -415,7 +415,7 @@ const ScenarioCreatePage: React.FC = () => {
           {t("scenarios.create.title")}
         </Typography>
 
-        {/* エラーメッセージ */}
+        {/* 错误消息 */}
         {error && (
           <Alert severity="error" sx={{ mb: 3 }}>
             <AlertTitle>{t("common.error")}</AlertTitle>
@@ -511,7 +511,7 @@ const ScenarioCreatePage: React.FC = () => {
           </Button>
         </Paper>
 
-        {/* ステッパー */}
+        {/* 步骤条 */}
         <Stepper activeStep={activeStep} sx={{ mb: 4 }} alternativeLabel>
           {steps.map((step, index) => (
             <Step key={index}>
@@ -520,7 +520,7 @@ const ScenarioCreatePage: React.FC = () => {
           ))}
         </Stepper>
 
-        {/* 現在のステップのコンテンツ */}
+        {/* 当前步骤的内容 */}
         <Box sx={{ mt: 2, mb: 4 }}>
           {activeStep === 0 && (
             <BasicInfoStep
@@ -608,7 +608,7 @@ const ScenarioCreatePage: React.FC = () => {
           {activeStep === 6 && <PreviewStep formData={formData} />}
         </Box>
 
-        {/* ナビゲーションボタン */}
+        {/* 导航按钮 */}
         <Box sx={{ display: "flex", justifyContent: "space-between", mt: 4 }}>
           <Button
             variant="outlined"

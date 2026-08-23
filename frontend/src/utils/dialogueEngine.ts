@@ -7,10 +7,10 @@ import type {
 } from "../types/index";
 import { dialogueConfig } from "../config/dialogueConfig";
 
-// 評価指標の制限値とセッション設定
+// 评估指标的限制值与会话设置
 const { METRICS_MIN, METRICS_MAX } = dialogueConfig;
 
-// 評価指標を更新する関数
+// 更新评估指标的函数
 export const updateMetrics = (
   currentMetrics: Metrics,
   change: Partial<Metrics>,
@@ -42,7 +42,7 @@ export const updateMetrics = (
   return newMetrics;
 };
 
-// メッセージにメトリクス変化情報を追加する処理
+// 为消息添加指标变化信息的处理
 export const addMetricsChangesToMessages = (messages: Message[]): Message[] => {
   let previousMetrics: Metrics | null = null;
 
@@ -65,30 +65,30 @@ export const addMetricsChangesToMessages = (messages: Message[]): Message[] => {
 };
 
 /**
- * NPCとユーザーのメッセージ数からターン数を計算する関数
+ * 根据 NPC 与用户的消息数计算轮数的函数
  *
- * @param messageCount 現在のメッセージ総数
- * @returns 現在のターン数（NPCとユーザーのやり取り1往復を1ターンとしてカウント）
+ * @param messageCount 当前消息总数
+ * @returns 当前轮数（NPC 与用户的一来一回计为 1 轮）
  */
 export function calculateCurrentTurns(messageCount: number): number {
-  // NPCの初期メッセージを考慮して、奇数の場合は切り上げる
+  // 考虑 NPC 的初始消息，奇数时向上取整
   return Math.ceil(messageCount / 2);
 }
 
 /**
- * セッション終了条件を判定する関数
+ * 判断会话结束条件的函数
  *
- * 以下の条件のいずれかが満たされた場合にセッションを終了します：
- * 1. 怒りメーターが最大値に達した場合
- * 2. すべてのゴールが達成された場合
- * 3. メッセージ数がシナリオの最大ターン数または設定された上限に達した場合
+ * 满足以下任一条件时结束会话：
+ * 1. 怒气计达到最大值时
+ * 2. 所有目标均达成时
+ * 3. 消息数达到场景的最大轮数或设置的上限时
  *
- * @param metrics 現在のメトリクス値
- * @param messageCount 現在のメッセージ数
- * @param goalStatuses ゴール達成状況（オプショナル）
- * @param goals シナリオのゴール定義（オプショナル）
- * @param scenario シナリオ情報（オプショナル）
- * @returns セッションを終了すべき場合はtrue
+ * @param metrics 当前指标值
+ * @param messageCount 当前消息数
+ * @param goalStatuses 目标达成情况（可选）
+ * @param goals 场景的目标定义（可选）
+ * @param scenario 场景信息（可选）
+ * @returns 应结束会话时返回 true
  */
 export const shouldEndSession = (
   metrics: Metrics,
@@ -97,12 +97,12 @@ export const shouldEndSession = (
   goals?: Goal[],
   scenario?: Scenario,
 ): boolean => {
-  // 1. 怒りが最大値に達した場合
+  // 1. 怒气达到最大值时
   if (metrics.angerLevel >= METRICS_MAX) {
     return true;
   }
 
-  // 2. すべてのゴールが達成された場合
+  // 2. 所有目标均达成时
   if (goalStatuses && goals && goals.length > 0) {
     const allGoalsAchieved = goals.every((goal) => {
       const status = goalStatuses.find((s) => s.goalId === goal.id);
@@ -114,8 +114,8 @@ export const shouldEndSession = (
     }
   }
 
-  // 3. メッセージ数が最大ターン数に達した場合
-  // シナリオに指定があればそれを使用、なければデフォルト値を使用
+  // 3. 消息数达到最大轮数时
+  // 场景有指定时使用之，否则使用默认值
   const maxTurns = scenario?.maxTurns || dialogueConfig.MAX_MESSAGE_COUNT;
   const currentTurns = calculateCurrentTurns(messageCount);
 
@@ -127,20 +127,20 @@ export const shouldEndSession = (
 };
 
 /**
- * セッション終了理由を生成する関数
+ * 生成会话结束原因的函数
  *
- * セッションが終了した理由を判断し、適切なメッセージを返します。
- * 終了理由は以下の優先順位で判断されます：
- * 1. 怒りメーターが最大値に達した場合
- * 2. すべてのゴールが達成された場合
- * 3. メッセージ数が最大ターン数に達した場合
+ * 判断会话结束的原因并返回相应的消息。
+ * 按以下优先级判断结束原因：
+ * 1. 怒气计达到最大值时
+ * 2. 所有目标均达成时
+ * 3. 消息数达到最大轮数时
  *
- * @param metrics 現在のメトリクス値
- * @param messageCount 現在のメッセージ数
- * @param goalStatuses ゴール達成状況（オプショナル）
- * @param goals シナリオのゴール定義（オプショナル）
- * @param scenario シナリオ情報（オプショナル）
- * @returns セッション終了理由のメッセージ
+ * @param metrics 当前指标值
+ * @param messageCount 当前消息数
+ * @param goalStatuses 目标达成情况（可选）
+ * @param goals 场景的目标定义（可选）
+ * @param scenario 场景信息（可选）
+ * @returns 会话结束原因的消息
  */
 export const getSessionEndReason = (
   metrics: Metrics,
@@ -153,7 +153,7 @@ export const getSessionEndReason = (
     return "客户非常不满，商谈中断了。";
   }
 
-  // すべてのゴールが達成された場合
+  // 所有目标均达成时
   if (goalStatuses && goals && goals.length > 0) {
     const allGoalsAchieved = goals.every((goal) => {
       const status = goalStatuses.find((s) => s.goalId === goal.id);
@@ -165,7 +165,7 @@ export const getSessionEndReason = (
     }
   }
 
-  // メッセージ数が最大ターン数に達した場合
+  // 消息数达到最大轮数时
   const maxTurns = scenario?.maxTurns || dialogueConfig.MAX_MESSAGE_COUNT;
   const currentTurns = calculateCurrentTurns(messageCount);
 

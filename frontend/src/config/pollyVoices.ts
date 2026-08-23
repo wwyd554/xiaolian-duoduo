@@ -1,9 +1,9 @@
 /**
- * Amazon Polly 音声モデル定義
- * 言語別のneural/generativeモデル一覧
+ * Amazon Polly 语音模型定义
+ * 按语言区分的 neural/generative 模型列表
  */
 
-/** 音声モデル情報 */
+/** 语音模型信息 */
 export interface PollyVoiceModel {
   voiceId: string;
   displayName: string;
@@ -11,7 +11,7 @@ export interface PollyVoiceModel {
   engines: ('neural' | 'generative')[];
 }
 
-/** 言語別音声モデル一覧 */
+/** 按语言区分的语音模型列表 */
 export const POLLY_VOICES: Record<string, PollyVoiceModel[]> = {
   ja: [
     { voiceId: 'Takumi', displayName: 'Takumi', gender: 'male', engines: ['neural'] },
@@ -36,8 +36,8 @@ export const POLLY_VOICES: Record<string, PollyVoiceModel[]> = {
 };
 
 /**
- * generative対応モデルのセット（バックエンドのエンジン自動選択用）
- * 重要: バックエンドの cdk/lambda/textToSpeech/app.ts の GENERATIVE_VOICE_IDS と同期が必要
+ * generative 支持模型的集合（用于后端引擎的自动选择）
+ * 重要: 需要与后端 cdk/lambda/textToSpeech/app.ts 的 GENERATIVE_VOICE_IDS 保持同步
  */
 export const GENERATIVE_VOICE_IDS = new Set(
   Object.values(POLLY_VOICES)
@@ -47,7 +47,7 @@ export const GENERATIVE_VOICE_IDS = new Set(
 );
 
 /**
- * 指定言語の音声モデル一覧を取得
+ * 获取指定语言的语音模型列表
  */
 export const getVoicesForLanguage = (languageCode: string): PollyVoiceModel[] => {
   const lang = languageCode.split('-')[0];
@@ -55,7 +55,7 @@ export const getVoicesForLanguage = (languageCode: string): PollyVoiceModel[] =>
 };
 
 /**
- * voiceIdからエンジンを自動選択（generative優先）
+ * 根据 voiceId 自动选择引擎（优先使用 generative）
  */
 export const getPreferredEngine = (voiceId: string): 'generative' | 'neural' => {
   return GENERATIVE_VOICE_IDS.has(voiceId) ? 'generative' : 'neural';

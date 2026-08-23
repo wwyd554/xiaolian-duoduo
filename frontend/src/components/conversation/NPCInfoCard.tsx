@@ -16,7 +16,7 @@ interface NPCInfoCardProps {
 }
 
 /**
- * NPCの情報を表示するカードコンポーネント
+ * 显示 NPC 信息的卡片组件
  */
 const NPCInfoCard: React.FC<NPCInfoCardProps> = ({ npc }) => {
   const { t } = useTranslation();

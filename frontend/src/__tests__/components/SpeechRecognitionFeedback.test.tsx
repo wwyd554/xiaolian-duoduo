@@ -2,23 +2,23 @@ import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import SpeechRecognitionFeedback from "../../components/SpeechRecognitionFeedback";
 
-// i18nのモック
+// i18n 的 mock
 jest.mock("react-i18next", () => ({
   useTranslation: () => ({
     t: (key: string) => {
       const translations: { [key: string]: string } = {
-        "speech.listening": "リスニング中...",
-        "speech.processing": "処理中...",
-        "speech.a11y.listening": "音声認識中です。話しかけてください。",
-        "speech.a11y.processing": "音声を処理中です。お待ちください。",
-        "speech.error.permissionDenied": "マイクの使用が許可されていません。",
-        "speech.error.noSpeech": "音声が検出されませんでした。",
-        "speech.error.network": "ネットワークエラーが発生しました。",
+        "speech.listening": "正在聆听...",
+        "speech.processing": "处理中...",
+        "speech.a11y.listening": "正在语音识别，请说话。",
+        "speech.a11y.processing": "正在处理语音，请稍候。",
+        "speech.error.permissionDenied": "麦克风使用未获得许可。",
+        "speech.error.noSpeech": "未检测到语音。",
+        "speech.error.network": "发生网络错误。",
         "speech.error.notSupported":
-          "お使いのブラウザは音声認識に対応していません。",
-        "speech.error.unknown": "予期しないエラーが発生しました。",
-        "speech.switchToTextInput": "テキスト入力に切り替える",
-        "speech.switchToText": "テキスト入力に切り替え",
+          "您的浏览器不支持语音识别。",
+        "speech.error.unknown": "发生意外错误。",
+        "speech.switchToTextInput": "切换到文本输入",
+        "speech.switchToText": "切换到文本输入",
       };
       return translations[key] || key;
     },
@@ -26,7 +26,7 @@ jest.mock("react-i18next", () => ({
 }));
 
 describe("SpeechRecognitionFeedback", () => {
-  test("リスニング中の状態が正しく表示される", () => {
+  test("聆听中的状态正确显示", () => {
     render(
       <SpeechRecognitionFeedback
         isListening={true}
@@ -35,15 +35,15 @@ describe("SpeechRecognitionFeedback", () => {
       />,
     );
 
-    // リスニング中のテキストが表示されている
-    expect(screen.getByText("リスニング中...")).toBeInTheDocument();
+    // 聆听中的文本显示
+    expect(screen.getByText("正在聆听...")).toBeInTheDocument();
 
-    // アイコンが表示されている (Micアイコン)
+    // 图标显示 (Mic 图标)
     const micIcon = document.querySelector("svg");
     expect(micIcon).toBeInTheDocument();
   });
 
-  test("処理中の状態が正しく表示される", () => {
+  test("处理中的状态正确显示", () => {
     render(
       <SpeechRecognitionFeedback
         isListening={false}
@@ -52,17 +52,17 @@ describe("SpeechRecognitionFeedback", () => {
       />,
     );
 
-    // 処理中のテキストが表示されている
-    expect(screen.getByText("処理中...")).toBeInTheDocument();
+    // 处理中的文本显示
+    expect(screen.getByText("处理中...")).toBeInTheDocument();
 
-    // プログレスインジケータが表示されている
+    // 进度指示器显示
     const progressIndicator = document.querySelector(
       ".MuiCircularProgress-root",
     );
     expect(progressIndicator).toBeInTheDocument();
   });
 
-  test("非アクティブ状態では何も表示されない", () => {
+  test("非活动状态不显示任何内容", () => {
     const { container } = render(
       <SpeechRecognitionFeedback
         isListening={false}
@@ -71,11 +71,11 @@ describe("SpeechRecognitionFeedback", () => {
       />,
     );
 
-    // 何も表示されていない
+    // 无任何显示
     expect(container).toBeEmptyDOMElement();
   });
 
-  test("マイク許可エラーが表示される", () => {
+  test("麦克风权限错误显示", () => {
     render(
       <SpeechRecognitionFeedback
         isListening={false}
@@ -85,16 +85,16 @@ describe("SpeechRecognitionFeedback", () => {
       />,
     );
 
-    // エラーメッセージが表示されている
+    // 错误消息显示
     expect(
-      screen.getByText("マイクの使用が許可されていません。"),
+      screen.getByText("麦克风使用未获得许可。"),
     ).toBeInTheDocument();
 
-    // テキスト入力切替ボタンが表示されている
-    expect(screen.getByText("テキスト入力に切り替え")).toBeInTheDocument();
+    // 文本输入切换按钮显示
+    expect(screen.getByText("切换到文本输入")).toBeInTheDocument();
   });
 
-  test("音声未検出エラーが表示される", () => {
+  test("未检测到语音错误显示", () => {
     render(
       <SpeechRecognitionFeedback
         isListening={false}
@@ -104,11 +104,11 @@ describe("SpeechRecognitionFeedback", () => {
     );
 
     expect(
-      screen.getByText("音声が検出されませんでした。"),
+      screen.getByText("未检测到语音。"),
     ).toBeInTheDocument();
   });
 
-  test("ネットワークエラーが表示される", () => {
+  test("网络错误显示", () => {
     render(
       <SpeechRecognitionFeedback
         isListening={false}
@@ -118,11 +118,11 @@ describe("SpeechRecognitionFeedback", () => {
     );
 
     expect(
-      screen.getByText("ネットワークエラーが発生しました。"),
+      screen.getByText("发生网络错误。"),
     ).toBeInTheDocument();
   });
 
-  test("ブラウザ非対応エラーが表示される", () => {
+  test("浏览器不支持错误显示", () => {
     render(
       <SpeechRecognitionFeedback
         isListening={false}
@@ -132,11 +132,11 @@ describe("SpeechRecognitionFeedback", () => {
     );
 
     expect(
-      screen.getByText("お使いのブラウザは音声認識に対応していません。"),
+      screen.getByText("您的浏览器不支持语音识别。"),
     ).toBeInTheDocument();
   });
 
-  test("不明なエラーが表示される", () => {
+  test("未知错误显示", () => {
     render(
       <SpeechRecognitionFeedback
         isListening={false}
@@ -146,11 +146,11 @@ describe("SpeechRecognitionFeedback", () => {
     );
 
     expect(
-      screen.getByText("予期しないエラーが発生しました。"),
+      screen.getByText("发生意外错误。"),
     ).toBeInTheDocument();
   });
 
-  test("テキスト入力に切り替えボタンがクリックで呼び出される", () => {
+  test("点击切换到文本输入按钮时被调用", () => {
     const handleSwitchToTextInput = jest.fn();
 
     render(
@@ -162,14 +162,14 @@ describe("SpeechRecognitionFeedback", () => {
       />,
     );
 
-    // テキスト入力切替ボタンをクリック
-    fireEvent.click(screen.getByText("テキスト入力に切り替え"));
+    // 点击文本输入切换按钮
+    fireEvent.click(screen.getByText("切换到文本输入"));
 
-    // コールバックが呼ばれたことを確認
+    // 确认回调被调用
     expect(handleSwitchToTextInput).toHaveBeenCalledTimes(1);
   });
 
-  test("アクセシビリティのためのaria属性が設定されている", () => {
+  test("为无障碍设置了 aria 属性", () => {
     render(
       <SpeechRecognitionFeedback
         isListening={true}
@@ -178,17 +178,17 @@ describe("SpeechRecognitionFeedback", () => {
       />,
     );
 
-    // リスニング状態のaria-live要素
+    // 聆听状态的 aria-live 元素
     const statusElement = screen.getByRole("status");
     expect(statusElement).toHaveAttribute("aria-live", "polite");
 
-    // スクリーンリーダー向けのテキスト
+    // 面向屏幕阅读器的文本
     expect(
-      screen.getByText("音声認識中です。話しかけてください。"),
+      screen.getByText("正在语音识别，请说话。"),
     ).toBeInTheDocument();
   });
 
-  test("エラー時のアラートがaria-liveを持っている", () => {
+  test("错误时的提示包含 aria-live", () => {
     render(
       <SpeechRecognitionFeedback
         isListening={false}
@@ -197,7 +197,7 @@ describe("SpeechRecognitionFeedback", () => {
       />,
     );
 
-    // エラーアラートのaria-live要素
+    // 错误提示的 aria-live 元素
     const alertElement = screen.getByRole("alert");
     expect(alertElement).toHaveAttribute("aria-live", "assertive");
   });

@@ -37,7 +37,7 @@ const ErrorAlert: React.FC<ErrorAlertProps> = ({
 }) => {
   const { t } = useTranslation();
 
-  // デフォルトのタイトル
+  // 默认标题
   const defaultTitles = {
     error: t("common.error"),
     warning: t("common.warning"),
@@ -47,7 +47,7 @@ const ErrorAlert: React.FC<ErrorAlertProps> = ({
 
   const finalTitle = title || defaultTitles[severity];
 
-  // フルスクリーン表示の場合
+  // 全屏显示的情况
   if (fullScreen) {
     return (
       <Box
@@ -122,7 +122,7 @@ const ErrorAlert: React.FC<ErrorAlertProps> = ({
     );
   }
 
-  // 通常のSnackbar表示
+  // 常规 Snackbar 显示
   return (
     <Snackbar
       open={open}

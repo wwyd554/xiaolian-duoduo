@@ -3,21 +3,21 @@ import { render, screen } from "@testing-library/react";
 import MessageAccordion from "../../components/referenceCheck/MessageAccordion";
 import type { ReferenceCheckEvaluation } from "../../types/api";
 
-// i18nのモック（デフォルト値を返す）
+// i18n 的 mock（返回默认值）
 jest.mock("react-i18next", () => ({
   useTranslation: () => ({
     t: (key: string, _defaultValue?: unknown, options?: unknown) => {
       const translations: { [key: string]: string } = {
-        "referenceCheck.status.success": "適切",
-        "referenceCheck.status.issue": "問題あり",
-        "referenceCheck.status.notApplicable": "対象外",
-        "referenceCheck.userMessage": "ユーザーの発言",
-        "referenceCheck.relatedDocument": "関連ドキュメント",
-        "referenceCheck.reviewComment": "レビューコメント",
+        "referenceCheck.status.success": "适当",
+        "referenceCheck.status.issue": "存在问题",
+        "referenceCheck.status.notApplicable": "不适用",
+        "referenceCheck.userMessage": "用户发言",
+        "referenceCheck.relatedDocument": "相关文档",
+        "referenceCheck.reviewComment": "审核意见",
       };
       if (key === "referenceCheck.messageNumber") {
         const opts = options as { number: number } | undefined;
-        return `メッセージ ${opts?.number ?? ""}`;
+        return `消息 ${opts?.number ?? ""}`;
       }
       return translations[key] || key;
     },
@@ -25,51 +25,51 @@ jest.mock("react-i18next", () => ({
 }));
 
 /**
- * MessageAccordionコンポーネントのテスト
+ * MessageAccordion 组件的测试
  *
- * 3分類評価（appropriate / not_applicable / issue）に応じた
- * ステータスラベルが正しく表示されることを検証する。
+ * 验证根据 3 类评估（appropriate / not_applicable / issue）
+ * 状态标签是否正确显示。
  */
 describe("MessageAccordion", () => {
   const renderAccordion = (evaluation: ReferenceCheckEvaluation) =>
     render(
       <MessageAccordion
         message={{
-          message: "テストメッセージ",
+          message: "测试消息",
           evaluation,
-          relatedDocument: "テスト資料",
-          reviewComment: "テストコメント",
+          relatedDocument: "测试资料",
+          reviewComment: "测试意见",
         }}
         index={0}
       />,
     );
 
-  test("appropriateの場合「適切」ラベルが表示される", () => {
+  test("appropriate 时显示「适当」标签", () => {
     renderAccordion("appropriate");
-    expect(screen.getByText("適切")).toBeInTheDocument();
+    expect(screen.getByText("适当")).toBeInTheDocument();
   });
 
-  test("issueの場合「問題あり」ラベルが表示される", () => {
+  test("issue 时显示「存在问题」标签", () => {
     renderAccordion("issue");
-    expect(screen.getByText("問題あり")).toBeInTheDocument();
+    expect(screen.getByText("存在问题")).toBeInTheDocument();
   });
 
-  test("not_applicableの場合「対象外」ラベルが表示される", () => {
+  test("not_applicable 时显示「不适用」标签", () => {
     renderAccordion("not_applicable");
-    expect(screen.getByText("対象外")).toBeInTheDocument();
+    expect(screen.getByText("不适用")).toBeInTheDocument();
   });
 
-  test("メッセージ本文・関連ドキュメント・レビューコメントが表示される", () => {
+  test("消息正文、相关文档、审核意见均显示", () => {
     renderAccordion("issue");
-    expect(screen.getByText("テストメッセージ")).toBeInTheDocument();
-    expect(screen.getByText("テスト資料")).toBeInTheDocument();
-    expect(screen.getByText("テストコメント")).toBeInTheDocument();
+    expect(screen.getByText("测试消息")).toBeInTheDocument();
+    expect(screen.getByText("测试资料")).toBeInTheDocument();
+    expect(screen.getByText("测试意见")).toBeInTheDocument();
   });
 
-  test("メッセージ番号が表示される", () => {
+  test("消息编号显示", () => {
     renderAccordion("appropriate");
     expect(
-      screen.getByText((content) => content.startsWith("メッセージ")),
+      screen.getByText((content) => content.startsWith("消息")),
     ).toBeInTheDocument();
   });
 });

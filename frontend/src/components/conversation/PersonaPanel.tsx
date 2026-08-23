@@ -8,8 +8,8 @@ interface PersonaPanelProps {
 }
 
 /**
- * ペルソナ情報パネルコンポーネント
- * NPC名、役職、アバターアイコン、ペルソナ説明文を表示する
+ * 人设信息面板组件
+ * 显示 NPC 名称、职务、化身图标和人设说明文字
  */
 const PersonaPanel: React.FC<PersonaPanelProps> = ({ npc }) => {
   const { t } = useTranslation();

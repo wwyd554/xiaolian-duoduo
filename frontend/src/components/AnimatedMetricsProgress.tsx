@@ -27,26 +27,26 @@ interface AnimatedMetricsProgressProps {
   tooltipText?: string;
   detailedScores?: Record<string, number | undefined>;
   /**
-   * アニメーションの速度（ミリ秒）
-   * 値が小さいほど速く、大きいほど遅くなります
+   * 动画速度（毫秒）
+   * 数值越小越快，越大越慢
    */
   animationSpeed?: number;
   /**
-   * 閾値に達した時のアラートレベル
-   * 'none': アラートなし
-   * 'low': 低レベルアラート
-   * 'medium': 中レベルアラート
-   * 'high': 高レベルアラート
+   * 达到阈值时的提示级别
+   * 'none'：无提示
+   * 'low'：低级别提示
+   * 'medium'：中级别提示
+   * 'high'：高级别提示
    */
   alertLevel?: "none" | "low" | "medium" | "high";
 }
 
 /**
- * アニメーション付きメトリクス進捗表示コンポーネント
+ * 带动画的指标进度显示组件
  *
- * リアルタイム評価指標を視覚的に表示し、値の変化をアニメーションで強調します。
- * アクセシビリティ対応済み：スクリーンリーダー互換、キーボードナビゲーション、
- * 色覚異常を考慮した色のコントラスト、ARIA属性を適切に設定しています。
+ * 以可视化方式显示实时评估指标，并用动画强调数值变化。
+ * 已支持无障碍：屏幕阅读器兼容、键盘导航、
+ * 已恰当设置考虑色觉异常的配色对比度及 ARIA 属性。
  */
 const AnimatedMetricsProgress: React.FC<AnimatedMetricsProgressProps> = ({
   value,
@@ -63,33 +63,33 @@ const AnimatedMetricsProgress: React.FC<AnimatedMetricsProgressProps> = ({
   alertLevel = "medium",
 }) => {
   const { t } = useTranslation();
-  // アニメーション用の現在値
+  // 动画用的当前值
   const [animatedValue, setAnimatedValue] = useState<number>(
     prevValue !== undefined ? prevValue : value,
   );
 
-  // アニメーション速度を参照できるように
+  // 以便能引用动画速度
   const animationSpeedRef = React.useRef(animationSpeed);
-  // 値が変わったら参照を更新
+  // 数值变化时更新引用
   React.useEffect(() => {
     animationSpeedRef.current = animationSpeed;
   }, [animationSpeed]);
 
-  // 上昇中か下降中か
+  // 正在上升还是下降
   const isIncreasing = prevValue !== undefined && value > prevValue;
   const isDecreasing = prevValue !== undefined && value < prevValue;
 
-  // アニメーション用の状態
+  // 动画用的状态
   const [isAnimating, setIsAnimating] = useState(false);
   const [pulseEffect, setPulseEffect] = useState(false);
 
-  // 値が変わったらアニメーションする
+  // 数值变化时播放动画
   useEffect(() => {
     if (prevValue !== undefined && prevValue !== value) {
       setIsAnimating(true);
       setPulseEffect(true);
 
-      // アニメーションのステップ数
+      // 动画的步数
       const steps = 20;
       const increment = (value - prevValue) / steps;
       let currentStep = 0;
@@ -105,16 +105,16 @@ const AnimatedMetricsProgress: React.FC<AnimatedMetricsProgressProps> = ({
           setAnimatedValue(value);
           setIsAnimating(false);
 
-          // パルスエフェクトを少し遅れて終了
+          // 脉冲效果稍作延迟后结束
           setTimeout(() => setPulseEffect(false), 500);
         }
-      }, animationSpeedRef.current); // 参照から現在のアニメーション速度を使用
+      }, animationSpeedRef.current); // 从引用使用当前动画速度
 
       return () => clearInterval(intervalId);
     }
   }, [value, prevValue, maxValue]);
 
-  // 更新中の場合もパルスエフェクトを有効にする
+  // 更新中也启用脉冲效果
   useEffect(() => {
     if (isUpdating) {
       setPulseEffect(true);
@@ -123,57 +123,57 @@ const AnimatedMetricsProgress: React.FC<AnimatedMetricsProgressProps> = ({
     }
   }, [isUpdating, isAnimating]);
 
-  // 詳細表示の開閉状態
+  // 详细显示的开合状态
   const [detailsOpen, setDetailsOpen] = useState(false);
 
-  // 詳細表示の切り替え
+  // 详细显示的切换
   const toggleDetails = () => {
     setDetailsOpen(!detailsOpen);
   };
 
-  // プログレスバーの値を計算（0-100の範囲にする）
+  // 计算进度条的值（限制在 0-100 范围）
   const progressValue = (animatedValue / maxValue) * 100;
 
-  // メトリクスの種類を判定
+  // 判断指标的类型
   const getMetricType = (): "anger" | "trust" | "progress" => {
-    if (label.includes("怒り") || label.includes("anger")) {
+    if (label.includes("愤怒") || label.includes("anger")) {
       return "anger";
-    } else if (label.includes("信頼") || label.includes("trust")) {
+    } else if (label.includes("信任") || label.includes("trust")) {
       return "trust";
     } else {
       return "progress";
     }
   };
 
-  // メトリクスの値に基づいて色を動的に設定
+  // 根据指标的值动态设置颜色
   const getDynamicColor = () => {
     const metricType = getMetricType();
     if (metricType === "anger") {
-      // 怒りメーターの場合は逆になる（高いほど赤）
+      // 愤怒计的情况相反（越高越红）
       if (value >= 8) return "error";
       if (value >= 5) return "warning";
       return "success";
     } else {
-      // 信頼度や進捗度の場合（高いほど緑）
+      // 信任度或进度的情况（越高越绿）
       if (value >= 8) return "success";
       if (value >= 5) return "info";
       return "error";
     }
   };
 
-  // アクセシビリティのための状態説明テキストを生成
+  // 生成用于无障碍的状态说明文本
   const getAriaValueText = () => {
     const percentage = Math.round((value / maxValue) * 100);
     const metricType = getMetricType();
     const status = getMetricsStatus(value, metricType, t);
 
-    return `${label}は${value}/${maxValue}で、${percentage}パーセント。状態: ${status}`;
+    return `${label}为${value}/${maxValue}，${percentage}百分比。状态：${status}`;
   };
 
-  // 動的な色を適用するかどうか
+  // 是否应用动态颜色
   const actualColor = color === "primary" ? getDynamicColor() : color;
 
-  // 詳細スコアがあるかどうか
+  // 是否有详细得分
   const hasDetailedScores =
     detailedScores && Object.keys(detailedScores).length > 0;
 
@@ -319,7 +319,7 @@ const AnimatedMetricsProgress: React.FC<AnimatedMetricsProgressProps> = ({
         />
       </Box>
 
-      {/* 詳細スコアの表示 */}
+      {/* 详细得分的显示 */}
       {hasDetailedScores && (
         <Collapse in={detailsOpen} timeout="auto" unmountOnExit>
           <Box
@@ -333,10 +333,10 @@ const AnimatedMetricsProgress: React.FC<AnimatedMetricsProgressProps> = ({
             }}
             id={`details-${label.replace(/\s+/g, "-")}`}
             role="region"
-            aria-label={`${label}の詳細スコア`}
+            aria-label={`${label} 的详细得分`}
           >
             {Object.entries(detailedScores).map(([key, score]) => {
-              // キー名を表示用に変換
+              // 将键名转换为显示用
               const displayName = key
                 .replace(/Score$/, "")
                 .replace(/([A-Z])/g, " $1")
@@ -360,7 +360,7 @@ const AnimatedMetricsProgress: React.FC<AnimatedMetricsProgressProps> = ({
               );
             })}
 
-            {/* 分析テキストは共通エリアに表示するため、ここから削除 */}
+            {/* 分析文本显示在公共区域，故从此处删除 */}
           </Box>
         </Collapse>
       )}

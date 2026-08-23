@@ -24,20 +24,20 @@ jobs:
           echo "Target branch: $BASE_BRANCH"
           echo "Source branch: $HEAD_BRANCH"
           
-          # 特別なPRのパターンを確認（リリース、ホットフィックスなど）
+          # 检查特殊的 PR 模式（发布、热修复等）
           if [[ "$PR_TITLE" =~ ^(Release:|Hotfix:|RELEASE:|HOTFIX:) ]]; then
-            echo "このPRはリリースまたはホットフィックスのため、mainターゲットが許可されています"
+            echo "该 PR 属于发布或热修复，因此允许以 main 为目标分支"
             exit 0
           fi
           
-          # 対象ブランチがdevでない場合は警告を出す
+          # 目标分支不是 dev 时发出警告
           if [[ "$BASE_BRANCH" != "dev" ]]; then
-            echo "::warning::⚠️ このPR #$PR_NUMBER のターゲットブランチが '$BASE_BRANCH' に設定されています。"
-            echo "::warning::特別な理由がない限り、PRのターゲットブランチは 'dev' にすべきです。"
-            echo "::warning::PR作成者は意図的にこのターゲットブランチを選択したか確認してください。"
+            echo "::warning::⚠️ 该 PR #$PR_NUMBER 的目标分支被设置为 '$BASE_BRANCH'。"
+            echo "::warning::除非有特殊理由，PR 的目标分支应为 'dev'。"
+            echo "::warning::请确认 PR 创建者是否有意选择了该目标分支。"
             
-            # GitHub APIを使用してPRにコメントを追加
-            COMMENT="⚠️ **警告: ターゲットブランチの確認**\n\nこのPRのターゲットブランチが \`$BASE_BRANCH\` に設定されています。\n\n特別な理由（リリースやホットフィックスなど）がない限り、PRのターゲットブランチは \`dev\` にすべきです。意図的にこのターゲットブランチを選択した場合は無視してください。そうでない場合は、PRのターゲットブランチを変更することを検討してください。"
+            # 使用 GitHub API 向 PR 添加评论
+            COMMENT="⚠️ **警告: 目标分支确认**\n\n该 PR 的目标分支被设置为 \`$BASE_BRANCH\`。\n\n除非有特殊理由（发布或热修复等），PR 的目标分支应为 \`dev\`。如果是有意选择的，请忽略本提醒；否则请考虑修改 PR 的目标分支。"
             
             curl -X POST \
               -H "Authorization: token $GITHUB_TOKEN" \
@@ -45,8 +45,8 @@ jobs:
               "https://api.github.com/repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" \
               -d "{\"body\":\"$COMMENT\"}"
             
-            # エラーではなく警告として扱う
+            # 作为警告而非错误处理
             # exit 1
           else
-            echo "✅ ターゲットブランチが正しく 'dev' に設定されています"
+            echo "✅ 目标分支已正确设置为 'dev'"
           fi

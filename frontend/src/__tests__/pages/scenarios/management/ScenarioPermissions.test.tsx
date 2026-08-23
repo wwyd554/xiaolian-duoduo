@@ -1,8 +1,8 @@
 /**
- * シナリオ管理ページの権限チェックロジックのテスト
+ * 场景管理页面的权限检查逻辑测试
  *
- * システムシナリオの編集は管理者のみ、削除は不可、
- * カスタムシナリオは作成者のみ編集・削除可能であることを検証する
+ * 验证系统场景仅管理员可编辑、不可删除，
+ * 自定义场景仅创建者可编辑、删除
  */
 import { render, screen, waitFor } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
@@ -10,7 +10,7 @@ import { I18nextProvider } from "react-i18next";
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 
-// テスト用i18n設定
+// 测试用 i18n 配置
 i18n.use(initReactI18next).init({
   lng: "ja",
   fallbackLng: "ja",
@@ -19,31 +19,31 @@ i18n.use(initReactI18next).init({
   resources: {
     ja: {
       translation: {
-        "scenarios.management.title": "シナリオ管理",
-        "scenarios.management.subtitle": "シナリオの管理",
-        "scenarios.management.importButton": "インポート",
-        "scenarios.management.scenarioTitle": "タイトル",
-        "scenarios.management.difficulty": "難易度",
-        "scenarios.management.category": "カテゴリ",
-        "scenarios.management.language": "言語",
-        "scenarios.management.actions": "アクション",
-        "scenarios.management.edit": "編集",
-        "scenarios.management.delete": "削除",
-        "scenarios.management.export": "エクスポート",
-        "scenarios.beginner": "初級",
-        "scenarios.intermediate": "中級",
-        "scenarios.advanced": "上級",
-        "common.processing": "処理中...",
-        "scenarios.noScenarios": "シナリオがありません",
+        "scenarios.management.title": "场景管理",
+        "scenarios.management.subtitle": "场景的管理",
+        "scenarios.management.importButton": "导入",
+        "scenarios.management.scenarioTitle": "标题",
+        "scenarios.management.difficulty": "难度",
+        "scenarios.management.category": "类别",
+        "scenarios.management.language": "语言",
+        "scenarios.management.actions": "操作",
+        "scenarios.management.edit": "编辑",
+        "scenarios.management.delete": "删除",
+        "scenarios.management.export": "导出",
+        "scenarios.beginner": "初级",
+        "scenarios.intermediate": "中级",
+        "scenarios.advanced": "高级",
+        "common.processing": "处理中...",
+        "scenarios.noScenarios": "没有场景",
       },
     },
   },
 });
 
-// モック用の変数（テストケースごとに変更可能）
+// 供 mock 使用的变量（可按测试用例修改）
 let mockIsAdmin = false;
 
-// AWS Amplifyのモック
+// AWS Amplify 的 mock
 jest.mock("aws-amplify/auth", () => ({
   getCurrentUser: jest.fn().mockResolvedValue({
     userId: "test-user-id",
@@ -51,7 +51,7 @@ jest.mock("aws-amplify/auth", () => ({
   }),
 }));
 
-// AuthServiceのモック
+// AuthService 的 mock
 jest.mock("../../../../services/AuthService", () => ({
   AuthService: {
     getInstance: jest.fn().mockReturnValue({
@@ -60,7 +60,7 @@ jest.mock("../../../../services/AuthService", () => ({
   },
 }));
 
-// ApiServiceのモック（テストケースごとにシナリオデータを変更）
+// ApiService 的 mock（按测试用例修改场景数据）
 let mockScenarios: Array<Record<string, unknown>> = [];
 
 jest.mock("../../../../services/ApiService", () => ({
@@ -76,7 +76,7 @@ jest.mock("../../../../services/ApiService", () => ({
 
 import ScenarioManagementPage from "../../../../pages/scenarios/management/ScenarioManagementPage";
 
-// テスト用ヘルパー: コンポーネントをレンダリング
+// 测试辅助函数：渲染组件
 const renderPage = () => {
   return render(
     <BrowserRouter>
@@ -87,19 +87,19 @@ const renderPage = () => {
   );
 };
 
-describe("シナリオ権限チェック", () => {
+describe("场景权限检查", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockIsAdmin = false;
     mockScenarios = [];
   });
 
-  describe("システムシナリオ（createdBy: system）", () => {
+  describe("系统场景（createdBy: system）", () => {
     beforeEach(() => {
       mockScenarios = [
         {
           scenarioId: "system-scenario-1",
-          title: "システムシナリオ",
+          title: "系统场景",
           difficulty: "normal",
           category: "IT",
           language: "ja",
@@ -108,121 +108,121 @@ describe("シナリオ権限チェック", () => {
       ];
     });
 
-    it("一般ユーザーには編集ボタンが表示されない", async () => {
+    it("普通用户不显示编辑按钮", async () => {
       mockIsAdmin = false;
       renderPage();
 
       await waitFor(() => {
-        expect(screen.getByText("システムシナリオ")).toBeInTheDocument();
+        expect(screen.getByText("系统场景")).toBeInTheDocument();
       });
 
-      // 編集ボタンが存在しないことを確認
-      const editButtons = screen.queryAllByLabelText(/編集/);
+      // 确认编辑按钮不存在
+      const editButtons = screen.queryAllByLabelText(/编辑/);
       expect(editButtons).toHaveLength(0);
     });
 
-    it("管理者には編集ボタンが表示される", async () => {
+    it("管理员显示编辑按钮", async () => {
       mockIsAdmin = true;
       renderPage();
 
       await waitFor(() => {
-        expect(screen.getByText("システムシナリオ")).toBeInTheDocument();
+        expect(screen.getByText("系统场景")).toBeInTheDocument();
       });
 
-      // 編集ボタンが存在することを確認
-      const editButton = screen.getByLabelText("編集 システムシナリオ");
+      // 确认编辑按钮存在
+      const editButton = screen.getByLabelText("编辑 系统场景");
       expect(editButton).toBeInTheDocument();
     });
 
-    it("管理者でも削除ボタンは表示されない", async () => {
+    it("即使是管理员也不显示删除按钮", async () => {
       mockIsAdmin = true;
       renderPage();
 
       await waitFor(() => {
-        expect(screen.getByText("システムシナリオ")).toBeInTheDocument();
+        expect(screen.getByText("系统场景")).toBeInTheDocument();
       });
 
-      // 削除ボタンが存在しないことを確認
-      const deleteButtons = screen.queryAllByLabelText(/削除/);
+      // 确认删除按钮不存在
+      const deleteButtons = screen.queryAllByLabelText(/删除/);
       expect(deleteButtons).toHaveLength(0);
     });
   });
 
-  describe("カスタムシナリオ（自分が作成）", () => {
+  describe("自定义场景（自己创建）", () => {
     beforeEach(() => {
       mockScenarios = [
         {
           scenarioId: "my-scenario-1",
-          title: "自分のシナリオ",
+          title: "自己的场景",
           difficulty: "beginner",
-          category: "一般",
+          category: "通用",
           language: "ja",
-          createdBy: "test-user-id", // 現在のユーザーID
+          createdBy: "test-user-id", // 当前用户 ID
         },
       ];
     });
 
-    it("作成者には編集ボタンと削除ボタンが表示される", async () => {
+    it("创建者显示编辑按钮和删除按钮", async () => {
       renderPage();
 
       await waitFor(() => {
-        expect(screen.getByText("自分のシナリオ")).toBeInTheDocument();
+        expect(screen.getByText("自己的场景")).toBeInTheDocument();
       });
 
-      expect(screen.getByLabelText("編集 自分のシナリオ")).toBeInTheDocument();
-      expect(screen.getByLabelText("削除 自分のシナリオ")).toBeInTheDocument();
+      expect(screen.getByLabelText("编辑 自己的场景")).toBeInTheDocument();
+      expect(screen.getByLabelText("删除 自己的场景")).toBeInTheDocument();
     });
   });
 
-  describe("カスタムシナリオ（他人が作成）", () => {
+  describe("自定义场景（他人创建）", () => {
     beforeEach(() => {
       mockScenarios = [
         {
           scenarioId: "other-scenario-1",
-          title: "他人のシナリオ",
+          title: "他人的场景",
           difficulty: "advanced",
           category: "金融",
           language: "ja",
-          createdBy: "other-user-id", // 別のユーザーID
+          createdBy: "other-user-id", // 其他用户 ID
         },
       ];
     });
 
-    it("他人のシナリオには編集・削除ボタンが表示されない", async () => {
+    it("他人的场景不显示编辑、删除按钮", async () => {
       renderPage();
 
       await waitFor(() => {
-        expect(screen.getByText("他人のシナリオ")).toBeInTheDocument();
+        expect(screen.getByText("他人的场景")).toBeInTheDocument();
       });
 
-      const editButtons = screen.queryAllByLabelText(/編集/);
-      const deleteButtons = screen.queryAllByLabelText(/削除/);
+      const editButtons = screen.queryAllByLabelText(/编辑/);
+      const deleteButtons = screen.queryAllByLabelText(/删除/);
       expect(editButtons).toHaveLength(0);
       expect(deleteButtons).toHaveLength(0);
     });
 
-    it("管理者でも他人のカスタムシナリオは編集・削除できない", async () => {
+    it("即使是管理员也不能编辑、删除他人的自定义场景", async () => {
       mockIsAdmin = true;
       renderPage();
 
       await waitFor(() => {
-        expect(screen.getByText("他人のシナリオ")).toBeInTheDocument();
+        expect(screen.getByText("他人的场景")).toBeInTheDocument();
       });
 
-      const editButtons = screen.queryAllByLabelText(/編集/);
-      const deleteButtons = screen.queryAllByLabelText(/削除/);
+      const editButtons = screen.queryAllByLabelText(/编辑/);
+      const deleteButtons = screen.queryAllByLabelText(/删除/);
       expect(editButtons).toHaveLength(0);
       expect(deleteButtons).toHaveLength(0);
     });
   });
 
-  describe("混合シナリオ一覧", () => {
-    it("管理者はシステムシナリオの編集と自分のシナリオの編集・削除ができる", async () => {
+  describe("混合场景列表", () => {
+    it("管理员可以编辑系统场景并编辑、删除自己的场景", async () => {
       mockIsAdmin = true;
       mockScenarios = [
         {
           scenarioId: "system-1",
-          title: "システムA",
+          title: "系统A",
           difficulty: "normal",
           category: "IT",
           language: "ja",
@@ -230,15 +230,15 @@ describe("シナリオ権限チェック", () => {
         },
         {
           scenarioId: "my-1",
-          title: "自分のB",
+          title: "自己的B",
           difficulty: "beginner",
-          category: "一般",
+          category: "通用",
           language: "ja",
           createdBy: "test-user-id",
         },
         {
           scenarioId: "other-1",
-          title: "他人のC",
+          title: "他人的C",
           difficulty: "advanced",
           category: "金融",
           language: "ja",
@@ -249,72 +249,72 @@ describe("シナリオ権限チェック", () => {
       renderPage();
 
       await waitFor(() => {
-        expect(screen.getByText("システムA")).toBeInTheDocument();
-        expect(screen.getByText("自分のB")).toBeInTheDocument();
-        expect(screen.getByText("他人のC")).toBeInTheDocument();
+        expect(screen.getByText("系统A")).toBeInTheDocument();
+        expect(screen.getByText("自己的B")).toBeInTheDocument();
+        expect(screen.getByText("他人的C")).toBeInTheDocument();
       });
 
-      // システムシナリオ: 編集○、削除×
-      expect(screen.getByLabelText("編集 システムA")).toBeInTheDocument();
-      expect(screen.queryByLabelText("削除 システムA")).not.toBeInTheDocument();
+      // 系统场景: 编辑○、删除×
+      expect(screen.getByLabelText("编辑 系统A")).toBeInTheDocument();
+      expect(screen.queryByLabelText("删除 系统A")).not.toBeInTheDocument();
 
-      // 自分のシナリオ: 編集○、削除○
-      expect(screen.getByLabelText("編集 自分のB")).toBeInTheDocument();
-      expect(screen.getByLabelText("削除 自分のB")).toBeInTheDocument();
+      // 自己的场景: 编辑○、删除○
+      expect(screen.getByLabelText("编辑 自己的B")).toBeInTheDocument();
+      expect(screen.getByLabelText("删除 自己的B")).toBeInTheDocument();
 
-      // 他人のシナリオ: 編集×、削除×
-      expect(screen.queryByLabelText("編集 他人のC")).not.toBeInTheDocument();
-      expect(screen.queryByLabelText("削除 他人のC")).not.toBeInTheDocument();
+      // 他人的场景: 编辑×、删除×
+      expect(screen.queryByLabelText("编辑 他人的C")).not.toBeInTheDocument();
+      expect(screen.queryByLabelText("删除 他人的C")).not.toBeInTheDocument();
     });
   });
 
-  describe("レガシーシナリオ（createdBy 未設定）", () => {
-    it("createdByが未設定のシナリオは編集・削除ボタンが表示されない", async () => {
+  describe("旧版场景（createdBy 未设置）", () => {
+    it("createdBy 未设置的场景不显示编辑、删除按钮", async () => {
       mockScenarios = [
         {
           scenarioId: "legacy-scenario-1",
-          title: "レガシーシナリオ",
+          title: "旧版场景",
           difficulty: "normal",
-          category: "一般",
+          category: "通用",
           language: "ja",
-          // createdBy なし（旧データ）
+          // 无 createdBy（旧数据）
         },
       ];
 
       renderPage();
 
       await waitFor(() => {
-        expect(screen.getByText("レガシーシナリオ")).toBeInTheDocument();
+        expect(screen.getByText("旧版场景")).toBeInTheDocument();
       });
 
-      // createdByが未設定の場合、誰も編集・削除できない
-      const editButtons = screen.queryAllByLabelText(/編集/);
-      const deleteButtons = screen.queryAllByLabelText(/削除/);
+      // createdBy 未设置时，任何人都不能编辑、删除
+      const editButtons = screen.queryAllByLabelText(/编辑/);
+      const deleteButtons = screen.queryAllByLabelText(/删除/);
       expect(editButtons).toHaveLength(0);
       expect(deleteButtons).toHaveLength(0);
     });
 
-    it("管理者でもcreatedByが未設定のシナリオは編集・削除できない", async () => {
+    it("即使是管理员也不能编辑、删除 createdBy 未设置的场景", async () => {
       mockIsAdmin = true;
       mockScenarios = [
         {
           scenarioId: "legacy-scenario-2",
-          title: "レガシーシナリオ2",
+          title: "旧版场景2",
           difficulty: "normal",
-          category: "一般",
+          category: "通用",
           language: "ja",
-          // createdBy なし
+          // 无 createdBy
         },
       ];
 
       renderPage();
 
       await waitFor(() => {
-        expect(screen.getByText("レガシーシナリオ2")).toBeInTheDocument();
+        expect(screen.getByText("旧版场景2")).toBeInTheDocument();
       });
 
-      const editButtons = screen.queryAllByLabelText(/編集/);
-      const deleteButtons = screen.queryAllByLabelText(/削除/);
+      const editButtons = screen.queryAllByLabelText(/编辑/);
+      const deleteButtons = screen.queryAllByLabelText(/删除/);
       expect(editButtons).toHaveLength(0);
       expect(deleteButtons).toHaveLength(0);
     });

@@ -3,20 +3,20 @@ import { useReferenceCheck } from "../../hooks/useReferenceCheck";
 import type { ReferenceCheckResult } from "../../types/api";
 
 /**
- * useReferenceCheckフックのテスト
+ * useReferenceCheck 钩子的测试
  *
- * 3分類評価（appropriate / not_applicable / issue）のうち、
- * 「問題あり (issue)」のみがissuesCountにカウントされることを検証する。
+ * 在 3 类评估（appropriate / not_applicable / issue）中，
+ * 仅「存在问题 (issue)」会被计入 issuesCount。
  */
 describe("useReferenceCheck", () => {
   /**
-   * テスト用のリファレンスチェック結果を生成するヘルパー
+   * 生成测试用资料检查结果的辅助函数
    */
   const createResult = (
     evaluations: ReferenceCheckResult["messages"][number]["evaluation"][],
   ): ReferenceCheckResult => ({
     messages: evaluations.map((evaluation, index) => ({
-      message: `メッセージ${index + 1}`,
+      message: `消息${index + 1}`,
       relatedDocument: "",
       reviewComment: "",
       evaluation,
@@ -27,7 +27,7 @@ describe("useReferenceCheck", () => {
     },
   });
 
-  test("initialDataがnullの場合、issuesCountは0になる", () => {
+  test("initialData 为 null 时，issuesCount 为 0", () => {
     const { result } = renderHook(() => useReferenceCheck(true, null));
 
     expect(result.current.data).toBeNull();
@@ -37,29 +37,29 @@ describe("useReferenceCheck", () => {
     expect(result.current.error).toBe("");
   });
 
-  test("issueの発言のみがissuesCountにカウントされる", () => {
+  test("仅 issue 的发言计入 issuesCount", () => {
     const data = createResult(["issue", "appropriate", "not_applicable"]);
     const { result } = renderHook(() => useReferenceCheck(true, data));
 
     expect(result.current.issuesCount).toBe(1);
   });
 
-  test("not_applicable（対象外）は問題としてカウントされない", () => {
-    // 挨拶や一般的な進行など、資料参照が不要な発言のみのケース
+  test("not_applicable（不适用）不作为问题计数", () => {
+    // 仅问候和一般推进等无需资料参考的发言场景
     const data = createResult(["not_applicable", "not_applicable"]);
     const { result } = renderHook(() => useReferenceCheck(true, data));
 
     expect(result.current.issuesCount).toBe(0);
   });
 
-  test("appropriate（適切）のみの場合、issuesCountは0になる", () => {
+  test("仅 appropriate（适当）时，issuesCount 为 0", () => {
     const data = createResult(["appropriate", "appropriate"]);
     const { result } = renderHook(() => useReferenceCheck(true, data));
 
     expect(result.current.issuesCount).toBe(0);
   });
 
-  test("複数のissueがある場合、その件数がカウントされる", () => {
+  test("存在多个 issue 时，按其数量计数", () => {
     const data = createResult([
       "issue",
       "issue",
@@ -72,7 +72,7 @@ describe("useReferenceCheck", () => {
     expect(result.current.issuesCount).toBe(3);
   });
 
-  test("isVisibleがfalseの場合、dataはnullになるがissuesCountは計算される", () => {
+  test("isVisible 为 false 时，data 为 null 但仍计算 issuesCount", () => {
     const data = createResult(["issue", "appropriate"]);
     const { result } = renderHook(() => useReferenceCheck(false, data));
 

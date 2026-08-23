@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
 import { I18nextProvider } from "react-i18next";
-// テスト用のi18n設定
+// 测试用 i18n 配置
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 
@@ -15,26 +15,26 @@ i18n.use(initReactI18next).init({
   resources: {
     ja: {
       translation: {
-        "scenarios.management.title": "シナリオ管理",
+        "scenarios.management.title": "场景管理",
         "scenarios.management.subtitle":
-          "シナリオの編集、削除、インポート、エクスポートができます",
-        "scenarios.management.importButton": "シナリオをインポート",
-        "scenarios.management.scenarioTitle": "タイトル",
-        "scenarios.management.difficulty": "難易度",
-        "scenarios.management.category": "カテゴリ",
-        "scenarios.management.language": "言語",
-        "scenarios.management.actions": "アクション",
-        "scenarios.beginner": "初級",
-        "scenarios.intermediate": "中級",
-        "scenarios.advanced": "上級",
-        "common.processing": "処理中...",
+          "可以对场景进行编辑、删除、导入、导出",
+        "scenarios.management.importButton": "导入场景",
+        "scenarios.management.scenarioTitle": "标题",
+        "scenarios.management.difficulty": "难度",
+        "scenarios.management.category": "类别",
+        "scenarios.management.language": "语言",
+        "scenarios.management.actions": "操作",
+        "scenarios.beginner": "初级",
+        "scenarios.intermediate": "中级",
+        "scenarios.advanced": "高级",
+        "common.processing": "处理中...",
       },
     },
   },
 });
 import ScenarioManagementPage from "../../../../pages/scenarios/management/ScenarioManagementPage";
 
-// AWS Amplifyのモック
+// AWS Amplify 的 mock
 jest.mock("aws-amplify/auth", () => ({
   getCurrentUser: jest.fn().mockResolvedValue({
     userId: "test-user-id",
@@ -42,7 +42,7 @@ jest.mock("aws-amplify/auth", () => ({
   }),
 }));
 
-// ApiServiceのモック
+// ApiService 的 mock
 jest.mock("../../../../services/ApiService", () => {
   return {
     ApiService: {
@@ -51,7 +51,7 @@ jest.mock("../../../../services/ApiService", () => {
           scenarios: [
             {
               scenarioId: "test-scenario-1",
-              title: "テストシナリオ1",
+              title: "测试场景1",
               difficulty: "beginner",
               category: "Technology",
               language: "ja",
@@ -61,7 +61,7 @@ jest.mock("../../../../services/ApiService", () => {
         }),
         exportScenario: jest.fn().mockResolvedValue({
           scenarios: [
-            { scenarioId: "test-scenario-1", title: "テストシナリオ1" },
+            { scenarioId: "test-scenario-1", title: "测试场景1" },
           ],
           npcs: [{ id: "npc-1", name: "NPC 1" }],
         }),
@@ -70,7 +70,7 @@ jest.mock("../../../../services/ApiService", () => {
   };
 });
 
-// AuthServiceのモック
+// AuthService 的 mock
 jest.mock("../../../../services/AuthService", () => ({
   AuthService: {
     getInstance: jest.fn().mockReturnValue({
@@ -93,7 +93,7 @@ describe("ScenarioManagementPage Component", () => {
       </BrowserRouter>,
     );
 
-    // 基本的な要素が表示されることを確認
-    expect(screen.getByText(/シナリオ管理/i)).toBeInTheDocument();
+    // 确认基本元素显示
+    expect(screen.getByText(/场景管理/i)).toBeInTheDocument();
   });
 });

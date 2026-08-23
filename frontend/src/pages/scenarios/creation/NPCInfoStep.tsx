@@ -39,16 +39,16 @@ const NPCInfoStep: React.FC<NPCInfoStepProps> = ({
   const { t } = useTranslation();
   const [newPersonality, setNewPersonality] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
-  // WR-015: alert()をMUI Alertに置き換え
+  // WR-015: 将 alert() 替换为 MUI Alert
   const [fileError, setFileError] = useState<string>("");
 
-  // 言語に応じた音声モデル一覧を取得
+  // 根据语言获取语音模型列表
   const availableVoices = useMemo(() => {
     const lang = formData.language || "zh";
     return getVoicesForLanguage(lang);
   }, [formData.language]);
 
-  // 性別表示用ラベル
+  // 性别显示用标签
   const genderLabel = (gender: string): string => {
     switch (gender) {
       case "male": return t("scenarios.create.voice.male");
@@ -59,13 +59,13 @@ const NPCInfoStep: React.FC<NPCInfoStepProps> = ({
     }
   };
 
-  // テキストフィールド変更ハンドラー
+  // 文本框变更处理器
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     updateFormData({ [name]: value });
   };
 
-  // 性格特性の追加
+  // 添加性格特征
   const handleAddPersonality = () => {
     if (
       newPersonality.trim() &&
@@ -78,7 +78,7 @@ const NPCInfoStep: React.FC<NPCInfoStepProps> = ({
     }
   };
 
-  // 性格特性の削除
+  // 删除性格特征
   const handleDeletePersonality = (personalityToDelete: string) => {
     updateFormData({
       personality: formData.npc.personality.filter(
@@ -87,17 +87,17 @@ const NPCInfoStep: React.FC<NPCInfoStepProps> = ({
     });
   };
 
-  // VRMファイル選択ハンドラー
+  // VRM 文件选择处理器
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // .vrm拡張子チェック
+      // .vrm 扩展名检查
       if (!file.name.toLowerCase().endsWith(".vrm")) {
         setFileError(t("scenarios.create.avatar.invalidFormat"));
         if (fileInputRef.current) fileInputRef.current.value = "";
         return;
       }
-      // 50MB制限チェック
+      // 50MB 大小限制检查
       if (file.size > 50 * 1024 * 1024) {
         setFileError(t("scenarios.create.avatar.fileTooLarge"));
         if (fileInputRef.current) fileInputRef.current.value = "";
@@ -106,13 +106,13 @@ const NPCInfoStep: React.FC<NPCInfoStepProps> = ({
       setFileError("");
       onAvatarFileChange?.(file);
     }
-    // inputをリセット（同じファイルを再選択可能にする）
+    // 重置 input（允许重新选择同一文件）
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
   };
 
-  // VRMファイル削除ハンドラー
+  // VRM 文件删除处理器
   const handleFileRemove = () => {
     onAvatarFileChange?.(null);
   };
@@ -127,7 +127,7 @@ const NPCInfoStep: React.FC<NPCInfoStepProps> = ({
       </Typography>
 
       <Box sx={{ mt: 3 }}>
-        {/* NPCの名前 */}
+        {/* NPC 的姓名 */}
         <TextField
           fullWidth
           required
@@ -166,12 +166,12 @@ const NPCInfoStep: React.FC<NPCInfoStepProps> = ({
           error={Boolean(validationErrors.company)}
         />
 
-        {/* 音声モデル選択 */}
-        {/* 将来拡張: 音声プレビュー再生機能を追加する場合は、
-            Selectの各MenuItemにPlayArrowIconボタンを追加し、
-            PollyService.synthesizeSpeech()でサンプルテキストを再生する。
-            コンポーネントの拡張性を維持するため、プレビュー機能は
-            別コンポーネント（VoicePreviewButton等）として切り出すことを推奨。 */}
+        {/* 语音模型选择 */}
+        {/* 将来扩展：如需添加语音预览播放功能，请
+            在各 MenuItem 中添加 PlayArrowIcon 按钮，
+            并使用 PollyService.synthesizeSpeech() 播放示例文本。
+            为保持组件的可扩展性，建议将预览功能
+            拆分为独立组件（如 VoicePreviewButton）。 */}
         <FormControl
           fullWidth
           required
@@ -202,7 +202,7 @@ const NPCInfoStep: React.FC<NPCInfoStepProps> = ({
           </FormHelperText>
         </FormControl>
 
-        {/* アバター表示On/Offトグル */}
+        {/* 头像显示开/关切换 */}
         <FormControlLabel
           control={
             <Switch
@@ -219,7 +219,7 @@ const NPCInfoStep: React.FC<NPCInfoStepProps> = ({
           {t("scenarios.create.avatar.enableToggleHelp")}
         </Typography>
 
-        {/* VRMアバターアップロード（アバター有効時のみ表示） */}
+        {/* VRM 头像上传（头像启用时显示） */}
         {enableAvatar && (
           <>
             <Typography variant="subtitle1" sx={{ mt: 2, mb: 1 }}>
@@ -340,7 +340,7 @@ const NPCInfoStep: React.FC<NPCInfoStepProps> = ({
           sx={{ mt: 3 }}
         />
 
-        {/* 初期メッセージ */}
+        {/* 初始消息 */}
         <TextField
           fullWidth
           label={t("scenarios.fields.npcInitialMessage")}

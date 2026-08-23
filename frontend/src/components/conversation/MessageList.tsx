@@ -17,16 +17,16 @@ interface MessageListProps {
   onStartConversation: () => void;
   isCameraInitialized?: boolean;
   cameraError?: boolean;
-  /** ビデオ録画機能の有効/無効 */
+  /** 视频录像功能的启用/禁用 */
   videoRecordingEnabled?: boolean;
-  /** スライド画像一覧（サムネイル表示用） */
+  /** 幻灯片图片列表（用于缩略图显示） */
   slideImages?: SlideImageInfo[];
-  /** スライドサムネイルクリック時のコールバック */
+  /** 点击幻灯片缩略图时的回调 */
   onSlideClick?: (slideIndex: number) => void;
 }
 
 /**
- * メッセージリストコンポーネント
+ * 消息列表组件
  */
 const MessageList: React.FC<MessageListProps> = ({
   messages,
@@ -46,12 +46,12 @@ const MessageList: React.FC<MessageListProps> = ({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  // 商談開始ボタンの有効化判定とラベルを算出
-  // 録画オフの場合は常に開始可能（カメラ初期化を待たない）
-  // 録画オンの場合はカメラ初期化完了またはカメラエラー時のみ開始可能
+  // 计算商谈开始按钮的可用性判定和标签
+  // 录像关闭时始终可开始（不等待摄像头初始化）
+  // 录像开启时仅在摄像头初始化完成或摄像头出错时才能开始
   const canStart = !videoRecordingEnabled || isCameraInitialized || cameraError;
 
-  // ボタンラベルの決定（aria-labelと表示テキストで共用）
+  // 按钮标签的决定（aria-label 与显示文本共用）
   const startButtonLabel = useMemo(() => {
     if (!videoRecordingEnabled) {
       return t("conversation.startButtonNoRecording");
@@ -65,11 +65,11 @@ const MessageList: React.FC<MessageListProps> = ({
     return t("conversation.cameraInitializing");
   }, [videoRecordingEnabled, isCameraInitialized, cameraError, t]);
 
-  // メッセージ自動スクロール（親要素のスクロールを防止）
+  // 消息自动滚动（防止父元素滚动）
   useEffect(() => {
     const container = scrollContainerRef.current;
     if (container) {
-      // requestAnimationFrameでレンダリング後にスクロール
+      // 用 requestAnimationFrame 在渲染后滚动
       requestAnimationFrame(() => {
         container.scrollTop = container.scrollHeight;
       });
@@ -100,7 +100,7 @@ const MessageList: React.FC<MessageListProps> = ({
             {scenario.description}
           </Typography>
 
-          {/* 録画オフ時のメッセージ */}
+          {/* 录像关闭时的消息 */}
           {!videoRecordingEnabled && (
             <Typography
               variant="caption"
@@ -112,7 +112,7 @@ const MessageList: React.FC<MessageListProps> = ({
             </Typography>
           )}
 
-          {/* 録画オン時のカメラ初期化中メッセージ */}
+          {/* 录像开启且摄像头初始化中的消息 */}
           {videoRecordingEnabled && !isCameraInitialized && !cameraError && (
             <Typography
               variant="caption"
@@ -125,7 +125,7 @@ const MessageList: React.FC<MessageListProps> = ({
             </Typography>
           )}
 
-          {/* 録画オン時のカメラアクセス失敗メッセージ */}
+          {/* 录像开启且摄像头访问失败的消息 */}
           {videoRecordingEnabled && cameraError && (
             <Typography
               variant="caption"
@@ -172,7 +172,7 @@ const MessageList: React.FC<MessageListProps> = ({
                   }}
                 >
                   <Typography variant="body1">{message.content}</Typography>
-                  {/* スライド添付サムネイル */}
+                  {/* 幻灯片附件缩略图 */}
                   {message.presentedSlides && message.presentedSlides.length > 0 && slideImages.length > 0 && (
                     <Box sx={{ mt: 0.5, display: "flex", gap: 0.5, flexWrap: "wrap" }}>
                       {message.presentedSlides.map((page) => {

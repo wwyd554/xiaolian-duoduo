@@ -26,7 +26,7 @@ const AnimatedMessage: React.FC<AnimatedMessageProps> = ({
   const [isTyping, setIsTyping] = useState(typingEffect);
   const messageRef = useRef<HTMLDivElement>(null);
 
-  // メッセージのアニメーション表示
+  // 消息的动画显示
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsVisible(true);
@@ -35,7 +35,7 @@ const AnimatedMessage: React.FC<AnimatedMessageProps> = ({
     return () => clearTimeout(timer);
   }, [animationDelay]);
 
-  // タイピングエフェクト
+  // 打字效果
   useEffect(() => {
     if (!isTyping || !isVisible) return;
 
@@ -54,13 +54,13 @@ const AnimatedMessage: React.FC<AnimatedMessageProps> = ({
     return () => clearInterval(interval);
   }, [content, isTyping, isVisible]);
 
-  // 表示する日時
+  // 要显示的日期时间
   const displayTime =
     typeof timestamp === "string"
       ? new Date(timestamp).toLocaleTimeString()
       : timestamp.toLocaleTimeString();
 
-  // ユーザーまたはNPCに応じたスタイル
+  // 根据用户或 NPC 区分的样式
   const isUser = sender === "user";
 
   return (

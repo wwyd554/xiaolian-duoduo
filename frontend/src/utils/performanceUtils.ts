@@ -1,38 +1,38 @@
 /**
- * パフォーマンスユーティリティ
+ * 性能工具
  *
- * パフォーマンス最適化のためのヘルパー関数を提供します。
- * レンダリングパフォーマンスの測定、デバウンス、スロットル、
- * デバイス性能に基づいた最適化などの機能を提供します。
+ * 提供用于性能优化的辅助函数。
+ * 提供渲染性能测量、防抖、节流、
+ * 基于设备性能的优化等功能。
  *
  * @module performanceUtils
- * @author AI営業ロールプレイ開発チーム
+ * @author AI 销售角色扮演开发团队
  * @version 1.0.0
  * @example
- * // パフォーマンス情報の取得
+ * // 获取性能信息
  * import { getPerformanceInfo } from '../utils/performanceUtils';
  *
  * const perfInfo = getPerformanceInfo();
  * if (perfInfo.isLowEndDevice) {
- *   // 低スペックデバイス向けの最適化を実行
+ *   // 针对低配设备执行优化
  * }
  */
 
 /**
- * レンダリングパフォーマンスを測定する
+ * 测量渲染性能
  *
- * コンポーネントのレンダリング時間を測定し、コンソールに出力します。
- * 開発環境でのみ動作し、本番環境では何もしません。
+ * 测量组件的渲染时间并输出到控制台。
+ * 仅在开发环境生效，生产环境不执行任何操作。
  *
- * @template T - コールバック関数の戻り値の型
- * @param {string} componentName - コンポーネント名
- * @param {() => T} callback - 測定対象の関数
- * @returns {T} - callback関数の戻り値
+ * @template T - 回调函数返回值的类型
+ * @param {string} componentName - 组件名
+ * @param {() => T} callback - 待测量的函数
+ * @returns {T} - callback 函数的返回值
  *
  * @example
- * // レンダリング時間の測定
+ * // 测量渲染时间
  * const result = measureRenderTime('MyComponent', () => {
- *   // 測定したい処理
+ *   // 要测量的处理
  *   return someValue;
  * });
  */
@@ -40,7 +40,7 @@ export const measureRenderTime = <T>(
   componentName: string,
   callback: () => T,
 ): T => {
-  // 本番環境では測定しない
+  // 生产环境不测量
   if (process.env.NODE_ENV === "production") {
     return callback();
   }
@@ -52,20 +52,20 @@ export const measureRenderTime = <T>(
 };
 
 /**
- * デバウンス関数
+ * 防抖函数
  *
- * 指定された時間内に複数回呼び出された場合、最後の呼び出しのみを実行します。
- * 高頻度で発生するイベントのパフォーマンス最適化に使用します。
+ * 在指定时间内被多次调用时，仅执行最后一次调用。
+ * 用于高频事件的性能优化。
  *
- * @template T - 関数の型
- * @param {T} func - 実行する関数
- * @param {number} wait - 待機時間（ミリ秒）
- * @returns {(...args: Parameters<T>) => void} - デバウンスされた関数
+ * @template T - 函数的类型
+ * @param {T} func - 要执行的函数
+ * @param {number} wait - 等待时间（毫秒）
+ * @returns {(...args: Parameters<T>) => void} - 防抖后的函数
  *
  * @example
- * // リサイズイベントのデバウンス
+ * // 调整大小事件的防抖
  * const handleResize = debounce(() => {
- *   // リサイズ処理
+ *   // 调整大小处理
  * }, 200);
  *
  * window.addEventListener('resize', handleResize);
@@ -90,20 +90,20 @@ export const debounce = <T extends (...args: unknown[]) => unknown>(
 };
 
 /**
- * スロットル関数
+ * 节流函数
  *
- * 指定された時間内に一度だけ関数を実行します。
- * スクロールイベントなどの高頻度イベントのパフォーマンス最適化に使用します。
+ * 在指定时间内仅执行一次函数。
+ * 用于滚动事件等高频率事件的性能优化。
  *
- * @template T - 関数の型
- * @param {T} func - 実行する関数
- * @param {number} limit - 制限時間（ミリ秒）
- * @returns {(...args: Parameters<T>) => void} - スロットルされた関数
+ * @template T - 函数的类型
+ * @param {T} func - 要执行的函数
+ * @param {number} limit - 限制时间（毫秒）
+ * @returns {(...args: Parameters<T>) => void} - 节流后的函数
  *
  * @example
- * // スクロールイベントのスロットル
+ * // 滚动事件的节流
  * const handleScroll = throttle(() => {
- *   // スクロール処理
+ *   // 滚动处理
  * }, 100);
  *
  * window.addEventListener('scroll', handleScroll);
@@ -126,28 +126,28 @@ export const throttle = <T extends (...args: unknown[]) => unknown>(
 };
 
 /**
- * ブラウザのパフォーマンス情報を取得する
+ * 获取浏览器的性能信息
  *
- * 現在のブラウザ環境のパフォーマンス情報を取得します。
- * モバイルデバイスの検出やハードウェアの性能に基づいた最適化に使用できます。
+ * 获取当前浏览器环境的性能信息。
+ * 可用于移动设备检测或基于硬件性能的优化。
  *
- * @returns {Object} パフォーマンス情報オブジェクト
- * @returns {boolean} isMobile - モバイルデバイスかどうか
- * @returns {boolean} isLowEndDevice - 低スペックデバイスかどうか
- * @returns {boolean} prefersReducedMotion - ユーザーがアニメーションの削減を希望しているか
- * @returns {number} hardwareConcurrency - CPUコア数
- * @returns {number|undefined} deviceMemory - デバイスのメモリ量（GB）
- * @returns {string} connectionType - ネットワーク接続タイプ
+ * @returns {Object} 性能信息对象
+ * @returns {boolean} isMobile - 是否为移动设备
+ * @returns {boolean} isLowEndDevice - 是否为低配设备
+ * @returns {boolean} prefersReducedMotion - 用户是否希望减少动画
+ * @returns {number} hardwareConcurrency - CPU 核心数
+ * @returns {number|undefined} deviceMemory - 设备内存量（GB）
+ * @returns {string} connectionType - 网络连接类型
  *
  * @example
  * const perfInfo = getPerformanceInfo();
  *
  * if (perfInfo.isLowEndDevice) {
- *   // 低スペックデバイス向けの最適化
+ *   // 针对低配设备的优化
  * }
  *
  * if (perfInfo.prefersReducedMotion) {
- *   // アニメーションを無効化または簡素化
+ *   // 禁用或简化动画
  * }
  */
 export const getPerformanceInfo = () => {
@@ -156,7 +156,7 @@ export const getPerformanceInfo = () => {
       navigator.userAgent,
     );
 
-  // deviceMemoryはNavigatorインターフェースの標準プロパティではないため、拡張インターフェースを使用
+  // deviceMemory 不是 Navigator 接口的标准属性，因此使用扩展接口
   interface NavigatorWithMemory extends Navigator {
     deviceMemory?: number;
   }
@@ -170,7 +170,7 @@ export const getPerformanceInfo = () => {
     window.matchMedia &&
     window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  // ネットワーク接続情報のためのインターフェース
+  // 用于网络连接信息的接口
   interface NetworkInformation {
     effectiveType?: string;
     downlink?: number;
@@ -196,20 +196,20 @@ export const getPerformanceInfo = () => {
 };
 
 /**
- * デバイス性能に基づいてアニメーションを最適化する
+ * 根据设备性能优化动画
  *
- * デバイスの性能に基づいて、アニメーションの複雑さを調整します。
- * 低スペックデバイスでは簡易的なアニメーションを使用します。
- * また、prefers-reduced-motionの設定が有効な場合はアニメーションを無効化します。
+ * 根据设备性能调整动画的复杂度。
+ * 低配设备使用简易动画。
+ * 此外，当 prefers-reduced-motion 设置生效时禁用动画。
  *
- * @param {string} defaultAnimation - デフォルトのアニメーション設定
- * @returns {string} - 最適化されたアニメーション設定
+ * @param {string} defaultAnimation - 默认的动画设置
+ * @returns {string} - 优化后的动画设置
  *
  * @example
- * // アニメーションの最適化
+ * // 动画的优化
  * const animation = optimizeAnimation('bounce 1s ease-in-out');
  *
- * // CSSスタイルに適用
+ * // 应用于 CSS 样式
  * const styles = {
  *   animation: animation
  * };
@@ -222,7 +222,7 @@ export const optimizeAnimation = (defaultAnimation: string): string => {
   }
 
   if (isLowEndDevice) {
-    // 低スペックデバイスでは簡易的なアニメーションを使用
+    // 低配设备使用简易动画
     if (defaultAnimation.includes("bounce")) {
       return "bounce 1.5s ease-in-out";
     }

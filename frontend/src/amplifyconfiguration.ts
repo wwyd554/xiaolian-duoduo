@@ -21,7 +21,7 @@ export const amplifyConfig = {
       },
     },
   },
-  // 追加: TranscribeのWebSocketエンドポイント
+  // 补充: Transcribe 的 WebSocket 端点
   TRANSCRIBE: {
     WEBSOCKET: {
       endpoint: import.meta.env.VITE_TRANSCRIBE_WEBSOCKET_URL || "",

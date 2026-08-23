@@ -1,5 +1,5 @@
 /**
- * フォーム関連の型定義
+ * 表单相关的类型定义
  */
 
 import {
@@ -11,7 +11,7 @@ import {
 } from "./api";
 
 /**
- * シナリオ作成フォームの基本情報
+ * 场景创建表单的基本信息
  */
 export interface ScenarioBasicInfo {
   scenarioId?: string;
@@ -24,7 +24,7 @@ export interface ScenarioBasicInfo {
 }
 
 /**
- * 設定フォームデータ
+ * 共享设置表单数据
  */
 export interface SharingFormData {
   visibility: VisibilityType;
@@ -33,7 +33,7 @@ export interface SharingFormData {
 }
 
 /**
- * シナリオ作成フォーム全体のデータ
+ * 场景创建表单的整体数据
  */
 export interface ScenarioFormData {
   scenarioId?: string;
@@ -52,7 +52,7 @@ export interface ScenarioFormData {
   guardrail: string;
 }
 
-// 後方互換性のためのエイリアス
+// 用于向后兼容的别名
 export type NpcFormData = NPCInfo;
 export type GoalFormData = GoalInfo;
 export type InitialMetrics = MetricsInfo;

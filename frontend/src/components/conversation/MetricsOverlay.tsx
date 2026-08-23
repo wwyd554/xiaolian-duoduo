@@ -11,8 +11,8 @@ interface MetricsOverlayProps {
 }
 
 /**
- * メトリクスオーバーレイコンポーネント
- * 半透明背景 + blur で左上に表示するコンパクトなメトリクス表示
+ * 指标覆盖层组件
+ * 以半透明背景 + 模糊效果显示在左上角的紧凑指标展示
  */
 const MetricsOverlay: React.FC<MetricsOverlayProps> = ({
   currentMetrics,

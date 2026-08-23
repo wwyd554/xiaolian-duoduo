@@ -23,8 +23,8 @@ interface GoalsPanelProps {
 }
 
 /**
- * ゴール表示パネルコンポーネント
- * 会話シナリオのゴールとその達成状況を表示する
+ * 目标展示面板组件
+ * 显示会话场景的目标及其达成情况
  */
 const GoalsPanel: React.FC<GoalsPanelProps> = ({ goals, goalStatuses }) => {
   const { t } = useTranslation();
@@ -42,7 +42,7 @@ const GoalsPanel: React.FC<GoalsPanelProps> = ({ goals, goalStatuses }) => {
             {t("conversation.negotiationGoal")}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            このシナリオにはゴールが設定されていません。
+            该场景未设置目标。
           </Typography>
         </CardContent>
       </Card>
@@ -106,7 +106,7 @@ const GoalsPanel: React.FC<GoalsPanelProps> = ({ goals, goalStatuses }) => {
                         {goal.description}
                       </Typography>
                       {goal.isRequired && (
-                        <Tooltip title="必須ゴール">
+                        <Tooltip title="必需目标">
                           <PriorityHighIcon
                             color="primary"
                             fontSize="small"

@@ -27,7 +27,7 @@ const GoalsStep: React.FC<GoalsStepProps> = ({
 }) => {
   const { t } = useTranslation();
 
-  // 新しいゴール編集用
+  // 用于编辑新目标
   const [editingGoal, setEditingGoal] = useState<GoalFormData | null>(null);
   const [isCreatingNewGoal, setIsCreatingNewGoal] = useState(false);
   const [newGoalDescription, setNewGoalDescription] = useState("");
@@ -36,7 +36,7 @@ const GoalsStep: React.FC<GoalsStepProps> = ({
   const [newGoalCriteria, setNewGoalCriteria] = useState("");
   const [goalCriteriaList, setGoalCriteriaList] = useState<string[]>([]);
 
-  // メトリクスの変更
+  // 指标的变更
   const handleMetricChange =
     (metric: keyof typeof formData.initialMetrics) =>
     (_event: Event, value: number | number[]) => {
@@ -48,10 +48,10 @@ const GoalsStep: React.FC<GoalsStepProps> = ({
       });
     };
 
-  // ゴール編集モード開始
+  // 开始目标编辑模式
   const startEditGoal = (goal?: GoalFormData) => {
     if (goal) {
-      // 既存ゴールの編集
+      // 编辑既有目标
       setEditingGoal(goal);
       setIsCreatingNewGoal(false);
       setNewGoalDescription(goal.description);
@@ -59,7 +59,7 @@ const GoalsStep: React.FC<GoalsStepProps> = ({
       setNewGoalPriority(goal.priority);
       setGoalCriteriaList([...goal.criteria]);
     } else {
-      // 新規ゴールの作成
+      // 创建新目标
       setEditingGoal(null);
       setIsCreatingNewGoal(true);
       setNewGoalDescription("");
@@ -70,7 +70,7 @@ const GoalsStep: React.FC<GoalsStepProps> = ({
     setNewGoalCriteria("");
   };
 
-  // 条件の追加
+  // 添加条件
   const handleAddCriteria = () => {
     if (
       newGoalCriteria.trim() &&
@@ -81,17 +81,17 @@ const GoalsStep: React.FC<GoalsStepProps> = ({
     }
   };
 
-  // 条件の削除
+  // 删除条件
   const handleDeleteCriteria = (index: number) => {
     const updatedCriteria = [...goalCriteriaList];
     updatedCriteria.splice(index, 1);
     setGoalCriteriaList(updatedCriteria);
   };
 
-  // ゴールの保存
+  // 保存目标
   const handleSaveGoal = () => {
     if (!newGoalDescription.trim() || goalCriteriaList.length === 0) {
-      return; // バリデーションエラー
+      return; // 校验错误
     }
 
     const goalToSave: GoalFormData = {
@@ -104,18 +104,18 @@ const GoalsStep: React.FC<GoalsStepProps> = ({
 
     let updatedGoals;
     if (editingGoal) {
-      // 既存ゴールの更新
+      // 更新既有目标
       updatedGoals = formData.goals.map((goal) =>
         goal.id === editingGoal.id ? goalToSave : goal,
       );
     } else {
-      // 新規ゴールの追加
+      // 添加新目标
       updatedGoals = [...formData.goals, goalToSave];
     }
 
     updateFormData({ goals: updatedGoals });
 
-    // フォームリセット
+    // 重置表单
     setNewGoalDescription("");
     setNewGoalRequired(true);
     setNewGoalPriority(3);
@@ -125,7 +125,7 @@ const GoalsStep: React.FC<GoalsStepProps> = ({
     setIsCreatingNewGoal(false);
   };
 
-  // ゴールの削除
+  // 删除目标
   const handleDeleteGoal = (id: string) => {
     updateFormData({
       goals: formData.goals.filter((goal) => goal.id !== id),
@@ -141,13 +141,13 @@ const GoalsStep: React.FC<GoalsStepProps> = ({
         {t("scenarios.create.goalsDescription")}
       </Typography>
 
-      {/* 初期メトリクス設定 */}
+      {/* 初始指标设置 */}
       <Paper sx={{ p: 3, mt: 3 }}>
         <Typography variant="subtitle1" gutterBottom>
           {t("scenarios.fields.initialMetrics")}
         </Typography>
 
-        {/* 怒りメーター */}
+        {/* 愤怒表 */}
         <Box sx={{ mt: 3 }}>
           <Typography id="anger-level-slider" gutterBottom>
             {t("metrics.angerLevel")}: {formData.initialMetrics.angerLevel}
@@ -209,7 +209,7 @@ const GoalsStep: React.FC<GoalsStepProps> = ({
         </Box>
       </Paper>
 
-      {/* ゴール設定 */}
+      {/* 目标设置 */}
       <Paper sx={{ p: 3, mt: 3 }}>
         <Box
           sx={{
@@ -237,7 +237,7 @@ const GoalsStep: React.FC<GoalsStepProps> = ({
           </Button>
         </Box>
 
-        {/* ゴール編集フォーム */}
+        {/* 目标编辑表单 */}
         {(editingGoal !== null ||
           isCreatingNewGoal ||
           newGoalDescription !== "" ||
@@ -374,7 +374,7 @@ const GoalsStep: React.FC<GoalsStepProps> = ({
           </Card>
         )}
 
-        {/* ゴール一覧 */}
+        {/* 目标列表 */}
         {formData.goals.length > 0 ? (
           <Stack spacing={2}>
             {formData.goals.map((goal) => (

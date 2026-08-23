@@ -17,27 +17,27 @@ import { useTranslation } from "react-i18next";
 import type { SlideImageInfo } from "../../types/api";
 
 interface SlideZoomModalProps {
-  /** モーダル表示状態 */
+  /** 弹窗显示状态 */
   open: boolean;
-  /** スライド画像一覧 */
+  /** 幻灯片图片列表 */
   slides: SlideImageInfo[];
-  /** 現在表示中のスライドインデックス */
+  /** 当前显示的幻灯片索引 */
   currentIndex: number;
-  /** 提示済みスライドのページ番号リスト */
+  /** 已展示幻灯片的页码列表 */
   presentedPages: number[];
-  /** スライド変更コールバック */
+  /** 幻灯片变更回调 */
   onSlideChange: (index: number) => void;
-  /** 提示ボタン押下時のコールバック */
+  /** 点击展示按钮时的回调 */
   onPresent: (pageNumber: number) => void;
-  /** 提示取消ボタン押下時のコールバック */
+  /** 点击取消展示按钮时的回调 */
   onUnpresent: (pageNumber: number) => void;
-  /** モーダル閉じるコールバック */
+  /** 弹窗关闭回调 */
   onClose: () => void;
 }
 
 /**
- * スライド拡大モーダル
- * スライドを大きく表示し、前後のスライドに移動可能
+ * 幻灯片放大弹窗
+ * 放大显示幻灯片，可在前后幻灯片间切换
  */
 const SlideZoomModal: React.FC<SlideZoomModalProps> = ({
   open,
@@ -64,11 +64,11 @@ const SlideZoomModal: React.FC<SlideZoomModalProps> = ({
     if (hasNext) onSlideChange(currentIndex + 1);
   }, [hasNext, currentIndex, onSlideChange]);
 
-  // キーボードナビゲーション
+  // 键盘导航
   useEffect(() => {
     if (!open) return;
     const handleKeyDown = (e: KeyboardEvent) => {
-      // テキスト入力中やボタンフォーカス中はスキップ
+      // 文本输入中或按钮聚焦中时跳过
       const target = e.target as HTMLElement;
       if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'BUTTON' || target.isContentEditable) {
         return;
@@ -133,7 +133,7 @@ const SlideZoomModal: React.FC<SlideZoomModalProps> = ({
           minHeight: 400,
         }}
       >
-        {/* スライド画像 */}
+        {/* 幻灯片图片 */}
         <Box
           sx={{
             flex: 1,
@@ -169,7 +169,7 @@ const SlideZoomModal: React.FC<SlideZoomModalProps> = ({
           )}
         </Box>
 
-        {/* ナビゲーション + 提示ボタン */}
+        {/* 导航 + 展示按钮 */}
         <Box
           sx={{
             display: "flex",

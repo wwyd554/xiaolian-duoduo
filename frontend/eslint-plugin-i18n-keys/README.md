@@ -1,8 +1,8 @@
 # eslint-plugin-i18n-keys
 
-AIセールスロールプレイ用の翻訳キー検証ESLintプラグイン
+AI 销售陪练用的翻译 key 校验 ESLint 插件
 
-## インストール
+## 安装
 
 ```bash
 npm install --save-dev ./eslint-plugin-i18n-keys
@@ -10,7 +10,7 @@ npm install --save-dev ./eslint-plugin-i18n-keys
 
 ## 使用方法
 
-`.eslintrc.js` ファイルに以下の設定を追加します：
+在 `.eslintrc.js` 文件中添加以下配置：
 
 ```javascript
 module.exports = {
@@ -19,13 +19,13 @@ module.exports = {
 };
 ```
 
-## ルール
+## 规则
 
-このプラグインでは以下のルールが提供されます：
+本插件提供以下规则：
 
 ### no-duplicate-keys
 
-翻訳ファイル内の重複キーを検出します。
+检测翻译文件中的重复 key。
 
 ```javascript
 // .eslintrc.js
@@ -36,7 +36,7 @@ rules: {
 
 ### ensure-i18n-initialized
 
-i18n初期化チェックのない翻訳使用を検出します。
+检测没有 i18n 初始化检查的翻译使用。
 
 ```javascript
 // .eslintrc.js
@@ -47,7 +47,7 @@ rules: {
 
 ### no-raw-translation-keys
 
-翻訳キーがそのまま表示されている可能性のあるコードを検出します。
+检测翻译 key 可能被原样显示的代码。
 
 ```javascript
 // .eslintrc.js
@@ -56,9 +56,9 @@ rules: {
 }
 ```
 
-## 推奨設定
+## 推荐配置
 
-推奨設定は以下のルールを含みます：
+推荐配置包含以下规则：
 
 ```javascript
 // .eslintrc.js

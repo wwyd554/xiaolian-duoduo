@@ -2,18 +2,18 @@ import type { Message, Metrics, Session } from "../types/index";
 import i18next from "i18next";
 
 /**
- * 分析サービス - セッション分析とレポート生成を担当
+ * 分析服务 - 负责会话分析与报告生成
  */
 export class AnalyticsService {
   private static instance: AnalyticsService;
 
   private constructor() {
-    // シングルトンパターン
+    // 单例模式
     console.log("分析服务初始化");
   }
 
   /**
-   * シングルトンインスタンスを取得
+   * 获取单例实例
    */
   public static getInstance(): AnalyticsService {
     if (!AnalyticsService.instance) {
@@ -23,28 +23,28 @@ export class AnalyticsService {
   }
 
   /**
-   * セッションスコアを計算
+   * 计算会话得分
    *
-   * @param metrics 最終メトリクス
-   * @param messages メッセージ履歴
+   * @param metrics 最终指标
+   * @param messages 消息历史
    */
   public calculateSessionScore(metrics: Metrics, messages: Message[]): number {
-    const angerScore = Math.max(0, 10 - metrics.angerLevel) * 3; // 最大30点 (低いほど良い)
-    const trustScore = metrics.trustLevel * 4; // 最大40点
-    const progressScore = metrics.progressLevel * 3; // 最大30点
+    const angerScore = Math.max(0, 10 - metrics.angerLevel) * 3; // 最高 30 分（越低越好）
+    const trustScore = metrics.trustLevel * 4; // 最高 40 分
+    const progressScore = metrics.progressLevel * 3; // 最高 30 分
 
-    // ボーナス/ペナルティ計算
+    // 奖励/扣分计算
     const messageCount = messages.filter((msg) => msg.sender === "user").length;
     let bonusPoints = 0;
 
-    // 適切な長さの対話にボーナス
+    // 对长度适中的对话给予奖励
     if (messageCount >= 5 && messageCount <= 15) {
       bonusPoints += 5;
     } else if (messageCount > 15) {
-      bonusPoints -= 5; // 冗長なやり取りにはペナルティ
+      bonusPoints -= 5; // 对冗长对话进行扣分
     }
 
-    // 最終スコア計算 (100点満点)
+    // 最终得分计算（满分 100 分）
     let finalScore = angerScore + trustScore + progressScore + bonusPoints;
     finalScore = Math.min(100, Math.max(0, finalScore));
 
@@ -52,22 +52,22 @@ export class AnalyticsService {
   }
 
   /**
-   * メトリクス変化のチャートデータを生成
+   * 生成指标变化的图表数据
    */
   public generateMetricsChartData(messages: Message[]) {
-    // メトリクスを持つメッセージのみフィルタ
+    // 仅筛选带指标的消息
     const metricsMessages = messages.filter((msg) => msg.metrics);
 
     if (metricsMessages.length === 0) {
       return null;
     }
 
-    // タイムスタンプラベルを生成
+    // 生成时间戳标签
     const labels = metricsMessages.map((_message, index) =>
       i18next.t("results.round", { count: index + 1 }),
     );
 
-    // データセット作成
+    // 创建数据集
     const angerData = metricsMessages.map(
       (msg) => msg.metrics?.angerLevel || 0,
     );
@@ -107,7 +107,7 @@ export class AnalyticsService {
   }
 
   /**
-   * キーポイントの分析を生成
+   * 生成要点分析
    */
   public generateKeyPoints(session: Session): string[] {
     const keyPoints: string[] = [];
@@ -165,7 +165,7 @@ export class AnalyticsService {
   }
 
   /**
-   * モックパフォーマンスデータを生成（デモ用）
+   * 生成模拟性能数据（用于演示）
    */
   public generateMockPerformanceData() {
     return {

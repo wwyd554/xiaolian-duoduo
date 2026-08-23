@@ -1,7 +1,7 @@
 /**
- * VRMアバターコンテナコンポーネント
- * EmojiFeedbackContainerと同等のインターフェースを提供し、
- * WebGLサポートチェック、エラーハンドリング、発話インジケーターを含む
+ * VRM 化身容器组件
+ * 提供与 EmojiFeedbackContainer 相同的接口，
+ * 包含 WebGL 支持检查、错误处理和发言指示器
  */
 import React, { useEffect, useCallback, useState, useMemo, useRef } from 'react';
 import { Box, Typography, CircularProgress, Alert } from '@mui/material';
@@ -15,7 +15,7 @@ import { useAvatar } from './AvatarContext';
 import VRMAvatar from './VRMAvatar';
 
 /**
- * WebGLサポートをチェックする（初期化時に一度だけ実行）
+ * 检查 WebGL 支持（仅在初始化时执行一次）
  */
 const checkWebGLSupport = (): boolean => {
   try {
@@ -27,12 +27,12 @@ const checkWebGLSupport = (): boolean => {
   }
 };
 
-// WebGLサポート状態をモジュールレベルでキャッシュ
+// 在模块级别缓存 WebGL 支持状态
 const webGLSupported = checkWebGLSupport();
 
 /**
- * VRMアバターコンテナコンポーネント
- * EmojiFeedbackContainerと同等のインターフェースを提供
+ * VRM 化身容器组件
+ * 提供与 EmojiFeedbackContainer 相同的接口
  */
 const VRMAvatarContainer: React.FC<VRMAvatarContainerProps> = ({
   avatarId,
@@ -48,28 +48,28 @@ const VRMAvatarContainer: React.FC<VRMAvatarContainerProps> = ({
   const { t } = useTranslation();
   const { avatarInfo, isLoading: isContextLoading, error: contextError, loadAvatar } = useAvatar();
 
-  // ローカル状態
+  // 本地状态
   const [isModelLoading, setIsModelLoading] = useState<boolean>(false);
   const [modelError, setModelError] = useState<Error | null>(null);
   const [previousEmotion, setPreviousEmotion] = useState<EmotionState>('neutral');
   const [visemeData, setVisemeData] = useState<VisemeData[] | undefined>(undefined);
 
-  // 感情変更通知のフラグ（無限ループ防止）
+  // 感情变更通知的标志（防止无限循环）
   const emotionChangeNotifiedRef = useRef<EmotionState>('neutral');
 
-  // loadAvatarをRefで保持（useEffect依存を避ける）
+  // 用 Ref 保持 loadAvatar（避免 useEffect 依赖）
   const loadAvatarRef = useRef(loadAvatar);
 
   useEffect(() => {
     loadAvatarRef.current = loadAvatar;
   }, [loadAvatar]);
 
-  // アバターの読み込み
+  // 化身加载
   useEffect(() => {
     const initializeAvatar = async () => {
       try {
         const targetId = avatarId || 'default';
-        // カスタムアバターの場合、s3Keyが揃うまで読み込みを待機
+        // 自定义化身时，等待 s3Key 齐全后再加载
         if (targetId !== 'default' && !avatarS3Key) {
           return;
         }
@@ -82,9 +82,9 @@ const VRMAvatarContainer: React.FC<VRMAvatarContainerProps> = ({
     initializeAvatar();
   }, [avatarId, avatarS3Key]);
 
-  // 感情状態の計算（メトリクスベースとdirectEmotionを統合）
+  // 感情状态的计算（整合基于指标与 directEmotion）
   const currentEmotion = useMemo<EmotionState>(() => {
-    // メトリクスベースの感情を常に計算
+    // 始终计算基于指标的感情
     const metricsEmotion = calculateEmotionState({
       angerLevel,
       trustLevel,
@@ -92,20 +92,20 @@ const VRMAvatarContainer: React.FC<VRMAvatarContainerProps> = ({
       previousEmotion,
     });
 
-    // directEmotionが未指定の場合はメトリクスベースを使用
+    // 未指定 directEmotion 时使用基于指标的
     if (!directEmotion) return metricsEmotion;
 
-    // メトリクスが強い感情を示している場合はメトリクスを優先
-    // （怒りメーターが高いのにneutralのままになる問題を防止）
+    // 当指标显示强烈感情时优先采用指标
+    // （防止愤怒计很高却仍保持 neutral 的问题）
     if (metricsEmotion === 'angry' || metricsEmotion === 'annoyed') {
       return metricsEmotion;
     }
 
-    // それ以外はdirectEmotion（API応答）を優先
+    // 否则优先采用 directEmotion（API 响应）
     return directEmotion;
   }, [angerLevel, trustLevel, progressLevel, previousEmotion, directEmotion]);
 
-  // visemeデータのCustomEventリスナー
+  // viseme 数据的 CustomEvent 监听器
   useEffect(() => {
     const handleVisemeData = (event: Event) => {
       const customEvent = event as CustomEvent;
@@ -119,53 +119,53 @@ const VRMAvatarContainer: React.FC<VRMAvatarContainerProps> = ({
     };
   }, []);
 
-  // 感情状態の変更を通知（Refで重複通知を防止）
+  // 通知感情状态的变化（通过 Ref 防止重复通知）
   useEffect(() => {
     if (currentEmotion !== emotionChangeNotifiedRef.current) {
       emotionChangeNotifiedRef.current = currentEmotion;
-      // previousEmotionの更新は次のレンダリングサイクルで行う
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- 意図的な設計: 感情状態の追跡に必要
+      // previousEmotion 的更新在下一个渲染周期进行
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- 有意的设计：用于跟踪感情状态
       setPreviousEmotion(currentEmotion);
       onEmotionChange?.(currentEmotion);
     }
   }, [currentEmotion, onEmotionChange]);
 
-  // モデル読み込み完了ハンドラー
+  // 模型加载完成处理器
   const handleModelLoad = useCallback(() => {
     setIsModelLoading(false);
     setModelError(null);
   }, []);
 
-  // モデル読み込みエラーハンドラー
+  // 模型加载错误处理器
   const handleModelError = useCallback((error: Error) => {
     setIsModelLoading(false);
     setModelError(error);
     console.error('VRM模型加载错误:', error);
   }, []);
 
-  // モデルURLの取得
+  // 模型 URL 的获取
   const modelUrl = useMemo(() => {
     if (!avatarInfo?.modelPath) return null;
-    // WR-006: CDN URL（https://）の場合はそのまま使用
+    // WR-006: CDN URL（https://）时直接使用
     if (avatarInfo.modelPath.startsWith('http://') || avatarInfo.modelPath.startsWith('https://')) {
       return avatarInfo.modelPath;
     }
-    // 絶対パスの場合はそのまま使用
+    // 绝对路径时直接使用
     if (avatarInfo.modelPath.startsWith('/')) {
       return avatarInfo.modelPath;
     }
-    // 相対パスの場合は/models/avatars/を付加
+    // 相对路径时附加 /models/avatars/
     const url = `/models/avatars/${avatarInfo.modelPath}`;
     return url;
   }, [avatarInfo]);
 
-  // ローディング状態
+  // 加载状态
   const isLoading = isContextLoading || isModelLoading;
 
-  // エラー状態
+  // 错误状态
   const error = contextError || modelError;
 
-  // WebGLがサポートされていない場合
+  // 不支持 WebGL 的情况
   if (!webGLSupported) {
     return (
       <Box
@@ -185,13 +185,13 @@ const VRMAvatarContainer: React.FC<VRMAvatarContainerProps> = ({
       >
         <ErrorIcon sx={{ fontSize: 48, color: 'warning.main', mb: 2 }} />
         <Typography variant="body1" color="text.secondary" textAlign="center">
-          {t('avatar.webglNotSupported', 'お使いのブラウザはWebGLをサポートしていません。3Dアバターを表示するには、WebGL対応のブラウザをご使用ください。')}
+          {t('avatar.webglNotSupported', '您的浏览器不支持 WebGL。要显示 3D 化身，请使用支持 WebGL 的浏览器。')}
         </Typography>
       </Box>
     );
   }
 
-  // エラー表示
+  // 错误显示
   if (error) {
     return (
       <Box
@@ -211,17 +211,17 @@ const VRMAvatarContainer: React.FC<VRMAvatarContainerProps> = ({
           role="alert"
         >
           <Typography variant="body2">
-            {t('avatar.loadError', 'アバターの読み込みに失敗しました')}
+            {t('avatar.loadError', '化身加载失败')}
           </Typography>
           <Typography variant="caption" color="text.secondary">
-            {t('avatar.loadErrorDetail', 'エラーが発生しました。再読み込みしてください。')}
+            {t('avatar.loadErrorDetail', '发生错误，请重新加载。')}
           </Typography>
         </Alert>
       </Box>
     );
   }
 
-  // ローディング表示
+  // 加载显示
   if (isLoading || !modelUrl) {
     return (
       <Box
@@ -240,7 +240,7 @@ const VRMAvatarContainer: React.FC<VRMAvatarContainerProps> = ({
       >
         <CircularProgress size={40} sx={{ mb: 2 }} />
         <Typography variant="body2" color="text.secondary">
-          {t('avatar.loading', 'アバターを読み込み中...')}
+          {t('avatar.loading', '正在加载化身...')}
         </Typography>
       </Box>
     );
@@ -254,22 +254,22 @@ const VRMAvatarContainer: React.FC<VRMAvatarContainerProps> = ({
         height: '100%',
       }}
     >
-      {/* アクセシビリティ対応のためのラベル */}
+      {/* 用于无障碍支持的标签 */}
       <Typography
         id="avatar-label"
         sx={{ position: 'absolute', left: '-9999px' }}
       >
-        {t('avatar.label', '3Dアバター表示エリア')}
+        {t('avatar.label', '3D化身显示区域')}
       </Typography>
 
       <Typography
         id="avatar-description"
         sx={{ position: 'absolute', left: '-9999px' }}
       >
-        {t('avatar.description', '現在の感情状態を3Dアバターで表現しています')}
+        {t('avatar.description', '当前感情状态通过 3D 化身呈现')}
       </Typography>
 
-      {/* VRMアバター */}
+      {/* VRM 化身 */}
       <Box
         sx={{
           width: '100%',
@@ -292,7 +292,7 @@ const VRMAvatarContainer: React.FC<VRMAvatarContainerProps> = ({
 
 
 
-      {/* 感情状態インジケーター（デバッグ用、本番では非表示可） */}
+      {/* 感情状态指示器（调试用，生产环境可隐藏） */}
       {process.env.NODE_ENV === 'development' && (
         <Box
           sx={{

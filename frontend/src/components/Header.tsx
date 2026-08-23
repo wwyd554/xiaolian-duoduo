@@ -34,12 +34,12 @@ import { useTranslation } from "react-i18next";
 import LanguageSwitcher from "./LanguageSwitcher";
 
 interface HeaderProps {
-  // showBackButton?: boolean; // 現在は未使用
+  // showBackButton?: boolean; // 当前未使用
   pageTitle?: string;
 }
 
 /**
- * アプリケーションヘッダーコンポーネント
+ * 应用顶部栏组件
  */
 const Header: React.FC<HeaderProps> = ({ pageTitle }) => {
   const { t } = useTranslation();
@@ -58,7 +58,7 @@ const Header: React.FC<HeaderProps> = ({ pageTitle }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
-  // ユーザー情報を非同期で取得
+  // 异步获取用户信息
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -75,76 +75,76 @@ const Header: React.FC<HeaderProps> = ({ pageTitle }) => {
     fetchUser();
   }, [t, authService]);
 
-  // メニューを開く
+  // 打开菜单
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
 
-  // メニューを閉じる
+  // 关闭菜单
   const handleMenuClose = () => {
     setAnchorEl(null);
   };
 
-  // プロフィールページに移動
+  // 跳转到个人资料页面
   const handleProfileClick = () => {
     handleMenuClose();
     navigate("/profile");
   };
 
-  // ログアウト処理
+  // 登出处理
   const handleLogout = async () => {
     handleMenuClose();
     try {
       await authService.logout();
       navigate("/");
-      window.location.reload(); // アプリケーションをリロードして認証状態をリセット
+      window.location.reload(); // 重新加载应用以重置认证状态
     } catch (error) {
       console.error(t("errors.logout"), error);
     }
   };
 
-  // 前の画面に戻る
-  // 前のページに戻る機能（未使用のため削除）
+  // 返回上一个页面
+  // 返回上一页的功能（未使用，故删除）
   // const handleGoBack = () => {
   //   navigate(-1);
   // };
 
-  // ホーム画面に移動
+  // 跳转到主页
   const handleHomeClick = () => {
     navigate("/");
     setDrawerOpen(false);
   };
 
-  // シナリオ選択画面に移動
+  // 跳转到场景选择页面
   const handleScenariosClick = () => {
     navigate("/scenarios");
     setDrawerOpen(false);
   };
 
-  // 履歴画面に移動
+  // 跳转到历史页面
   const handleHistoryClick = () => {
     navigate("/history");
     setDrawerOpen(false);
   };
 
-  // ランキング画面に移動
+  // 跳转到排行榜页面
   const handleRankingsClick = () => {
     navigate("/rankings");
     setDrawerOpen(false);
   };
 
-  // ドロワーを開閉
+  // 抽屉的开合
   const toggleDrawer = () => {
     setDrawerOpen(!drawerOpen);
   };
 
-  // ユーザー名の表示用（優先順位：preferredUsername > name > メールアドレス）
+  // 用于显示用户名（优先级：preferredUsername > name > 邮箱）
   const displayName =
     currentUser?.preferredUsername ||
     currentUser?.name ||
     t("auth.notLoggedIn");
 
-  // ナビゲーションの描画
+  // 导航的绘制
   const drawerContent = (
     <Box sx={{ width: 250 }} role="presentation">
       <List>
@@ -219,7 +219,7 @@ const Header: React.FC<HeaderProps> = ({ pageTitle }) => {
                 opacity: 0.8,
               },
               transition: "all 0.2s ease",
-              userSelect: "none", // テキスト選択を防止
+              userSelect: "none", // 防止文本选中
             }}
             onClick={handleHomeClick}
           >
@@ -323,7 +323,7 @@ const Header: React.FC<HeaderProps> = ({ pageTitle }) => {
         </Toolbar>
       </AppBar>
 
-      {/* モバイル版ナビゲーションドロワー */}
+      {/* 移动端导航抽屉 */}
       <Drawer anchor="left" open={drawerOpen} onClose={toggleDrawer}>
         {drawerContent}
       </Drawer>

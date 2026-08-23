@@ -55,9 +55,9 @@ const PdfFilesStep: React.FC<PdfFilesStepProps> = ({
 
   return (
     <PdfUploader
-      title={t("scenarios.create.pdfFiles.title") || "営業資料のアップロード（評価用）"}
-      description={t("scenarios.create.pdfFiles.description") || "営業資料をPDFでアップロードすると、セッション後の評価で発言内容の正確性を自動チェックできます。（最大5つまで）"}
-      note={t("scenarios.create.pdfFiles.note") || "※ アップロードしたPDFは、営業セッション後のリファレンスチェックに使用されます"}
+      title={t("scenarios.create.pdfFiles.title") || "上传销售资料（用于评估）"}
+      description={t("scenarios.create.pdfFiles.description") || "以 PDF 形式上传销售资料后，会话后的评估可自动检查发言内容的准确性。（最多 5 个）"}
+      note={t("scenarios.create.pdfFiles.note") || "※ 上传的 PDF 将用于销售会话后的参考检查"}
       files={formData.pdfFiles}
       maxFiles={5}
       multiple

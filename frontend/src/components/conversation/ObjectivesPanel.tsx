@@ -7,7 +7,7 @@ interface ObjectivesPanelProps {
 }
 
 /**
- * 商談目標表示パネルコンポーネント
+ * 商谈目标展示面板组件
  */
 const ObjectivesPanel: React.FC<ObjectivesPanelProps> = ({ objectives }) => {
   const { t } = useTranslation();

@@ -1,11 +1,11 @@
-// API型定義の再エクスポート
+// 重新导出 API 类型定义
 export * from "./api";
 
-// 新しい型定義のエクスポート
+// 导出新的类型定义
 export * from "./forms";
 export * from "./components";
 
-// 明示的なimport（循環参照回避のため）
+// 显式 import（为避免循环引用）
 import type {
   DifficultyLevel,
   ComplianceViolation,
@@ -15,45 +15,45 @@ import type {
   MetricsInfo,
 } from "./api";
 
-// シナリオ情報（フロントエンド用）
+// 场景信息（前端用）
 export interface Scenario {
   id: string;
   title: string;
   description: string;
   difficulty: DifficultyLevel;
   industry: string;
-  initialMessage?: string; // シナリオごとの初期メッセージ
-  language?: string; // シナリオの言語 (ja|en)
+  initialMessage?: string; // 各场景的初始消息
+  language?: string; // 场景的语言（ja|en）
   npc: NPCInfo;
   initialMetrics: ExtendedMetrics;
-  goals: GoalInfo[]; // シナリオのゴール一覧
-  maxTurns?: number; // 最大会話ターン数（指定しない場合はデフォルト値を使用）
-  enableAvatar?: boolean; // アバター表示On/Off（未設定時はfalse）
-  suggestionEnabled?: boolean; // サジェスト返答ボタンの有効/無効（未設定時はfalse）
-  initialSuggestions?: string[]; // 商談開始時に表示する初回サジェスト返答候補
+  goals: GoalInfo[]; // 场景的目标列表
+  maxTurns?: number; // 最大对话轮数（未指定时使用默认值）
+  enableAvatar?: boolean; // 头像显示开/关（未设置时为 false）
+  suggestionEnabled?: boolean; // 建议回复按钮的启用/禁用（未设置时为 false）
+  initialSuggestions?: string[]; // 商谈开始时显示的初次建议回复候选
 }
 
-// 拡張メトリクス（詳細スコア付き）
+// 扩展指标（带详细得分）
 export interface ExtendedMetrics extends MetricsInfo {
-  angerChange?: number; // 変化量
-  trustChange?: number; // 変化量
-  progressChange?: number; // 変化量
+  angerChange?: number; // 变化量
+  trustChange?: number; // 变化量
+  progressChange?: number; // 变化量
 
-  // 詳細スコア
-  communicationScore?: number; // コミュニケーションスキル (1-10)
-  needsAnalysisScore?: number; // ニーズ分析力 (1-10)
-  proposalQualityScore?: number; // 提案品質 (1-10)
-  flexibilityScore?: number; // 柔軟性 (1-10)
-  trustBuildingScore?: number; // 信頼構築 (1-10)
-  objectionHandlingScore?: number; // 異議対応力 (1-10)
-  closingSkillScore?: number; // クロージングスキル (1-10)
-  listeningSkillScore?: number; // 傾聴スキル (1-10)
-  productKnowledgeScore?: number; // 製品知識 (1-10)
-  customerFocusScore?: number; // 顧客中心思考 (1-10)
-  analysis?: string; // 簡潔な分析テキスト
+  // 详细得分
+  communicationScore?: number; // 沟通技巧（1-10）
+  needsAnalysisScore?: number; // 需求分析能力（1-10）
+  proposalQualityScore?: number; // 提案质量（1-10）
+  flexibilityScore?: number; // 灵活性（1-10）
+  trustBuildingScore?: number; // 信任建立（1-10）
+  objectionHandlingScore?: number; // 异议应对能力（1-10）
+  closingSkillScore?: number; // 成交技巧（1-10）
+  listeningSkillScore?: number; // 倾听技巧（1-10）
+  productKnowledgeScore?: number; // 产品知识（1-10）
+  customerFocusScore?: number; // 客户中心思维（1-10）
+  analysis?: string; // 简洁的分析文本
 }
 
-// メッセージ
+// 消息
 export interface Message {
   id: string;
   sender: "user" | "npc";
@@ -61,11 +61,11 @@ export interface Message {
   timestamp: Date;
   metrics?: ExtendedMetrics;
   compliance?: ComplianceCheck;
-  /** このメッセージ送信時に選択されていたスライドページ番号リスト */
+  /** 发送此消息时选中的幻灯片页码列表 */
   presentedSlides?: number[];
 }
 
-// セッション情報
+// 会话信息
 export interface Session {
   id: string;
   scenarioId: string;
@@ -75,13 +75,13 @@ export interface Session {
   finalMetrics: ExtendedMetrics;
   finalScore: number;
   feedback: string[];
-  goalStatuses: GoalStatus[]; // ゴール達成状況
-  goalScore: number; // ゴールスコア（0-100）
-  complianceViolations?: ComplianceViolation[]; // コンプライアンス違反リスト
-  endReason?: string; // セッション終了理由
+  goalStatuses: GoalStatus[]; // 目标达成情况
+  goalScore: number; // 目标得分（0-100）
+  complianceViolations?: ComplianceViolation[]; // 合规违规列表
+  endReason?: string; // 会话结束原因
 }
 
-// 対話応答パターン
+// 对话响应模式
 export interface ResponsePattern {
   keywords: string[];
   responses: string[];
@@ -93,7 +93,7 @@ export interface ResponsePattern {
   };
 }
 
-// 対話ルール
+// 对话规则
 export interface DialogueRule {
   trigger: string[];
   response: string;
@@ -101,16 +101,16 @@ export interface DialogueRule {
   priority: number;
 }
 
-// ゴール達成状況
+// 目标达成情况
 export interface GoalStatus {
-  goalId: string; // ゴールID
-  progress: number; // 進捗度（0-100%）
-  achieved: boolean; // 達成済みかどうか
-  achievedAt?: Date; // 達成日時
-  reason?: string; // 達成/未達成の理由
+  goalId: string; // 目标 ID
+  progress: number; // 进度（0-100%）
+  achieved: boolean; // 是否已达成
+  achievedAt?: Date; // 达成时间
+  reason?: string; // 达成/未达成的理由
 }
 
-// 感情状態
+// 情感状态
 export type EmotionState =
   | "angry"
   | "annoyed"
@@ -118,7 +118,7 @@ export type EmotionState =
   | "satisfied"
   | "happy";
 
-// 感情状態計算のためのパラメータ
+// 用于情感状态计算的参数
 export interface EmotionCalculationParams {
   angerLevel: number;
   trustLevel: number;
@@ -126,7 +126,7 @@ export interface EmotionCalculationParams {
   previousEmotion?: EmotionState;
 }
 
-// 後方互換性のためのエイリアス
+// 用于向后兼容的别名
 export type NPC = NPCInfo;
 export type Goal = GoalInfo;
 export type Metrics = ExtendedMetrics;

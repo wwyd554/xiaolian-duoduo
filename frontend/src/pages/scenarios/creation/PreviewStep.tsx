@@ -17,7 +17,7 @@ import { PreviewStepProps } from "../../../types";
 const PreviewStep: React.FC<PreviewStepProps> = ({ formData }) => {
   const { t } = useTranslation();
 
-  // ラベル変換をメモ化してパフォーマンスを向上
+  // 将标签转换记忆化以提升性能
   const difficultyLabels = useMemo(
     () => ({
       easy: t("scenarios.difficulty.easy"),
@@ -49,7 +49,7 @@ const PreviewStep: React.FC<PreviewStepProps> = ({ formData }) => {
     [t],
   );
 
-  // Guardrail情報をメモ化
+  // 将护栏信息记忆化
   const guardrailInfo = useMemo(() => {
     if (!formData.guardrail) {
       return { label: t("common.none"), description: "" };
@@ -59,7 +59,7 @@ const PreviewStep: React.FC<PreviewStepProps> = ({ formData }) => {
     };
   }, [formData.guardrail, t]);
 
-  // 難易度の表示用ラベル
+  // 难度的显示标签
   const getDifficultyLabel = (difficulty: string): string => {
     return (
       difficultyLabels[difficulty as keyof typeof difficultyLabels] ||
@@ -67,12 +67,12 @@ const PreviewStep: React.FC<PreviewStepProps> = ({ formData }) => {
     );
   };
 
-  // カテゴリの表示用ラベル
+  // 分类的显示标签
   const getCategoryLabel = (category: string): string => {
     return categoryLabels[category as keyof typeof categoryLabels] || category;
   };
 
-  // 公開設定の表示用ラベル
+  // 公开设置的显示标签
   const getVisibilityLabel = (
     visibility: "public" | "private" | "shared",
   ): string => {
@@ -198,7 +198,7 @@ const PreviewStep: React.FC<PreviewStepProps> = ({ formData }) => {
         )}
       </Paper>
 
-      {/* 初期メトリクスとゴール */}
+      {/* 初始指标与目标 */}
       <Paper
         sx={{ p: 3, mt: 3 }}
         role="region"
@@ -211,7 +211,7 @@ const PreviewStep: React.FC<PreviewStepProps> = ({ formData }) => {
             gap: 3,
           }}
         >
-          {/* 初期メトリクス */}
+          {/* 初始指标 */}
           <Box sx={{ flex: 1 }}>
             <Typography
               variant="subtitle1"
@@ -231,7 +231,7 @@ const PreviewStep: React.FC<PreviewStepProps> = ({ formData }) => {
               </Typography>
               <Rating
                 name="anger-level"
-                value={formData.initialMetrics.angerLevel / 2} // 10段階を5段階に変換
+                value={formData.initialMetrics.angerLevel / 2} // 将 10 档转换为 5 档
                 precision={0.5}
                 readOnly
                 aria-labelledby="anger-level-label"
@@ -252,7 +252,7 @@ const PreviewStep: React.FC<PreviewStepProps> = ({ formData }) => {
               </Typography>
               <Rating
                 name="trust-level"
-                value={formData.initialMetrics.trustLevel / 2} // 10段階を5段階に変換
+                value={formData.initialMetrics.trustLevel / 2} // 将 10 档转换为 5 档
                 precision={0.5}
                 readOnly
                 aria-labelledby="trust-level-label"
@@ -277,7 +277,7 @@ const PreviewStep: React.FC<PreviewStepProps> = ({ formData }) => {
               </Typography>
               <Rating
                 name="progress-level"
-                value={formData.initialMetrics.progressLevel / 2} // 10段階を5段階に変換
+                value={formData.initialMetrics.progressLevel / 2} // 将 10 档转换为 5 档
                 precision={0.5}
                 readOnly
                 aria-labelledby="progress-level-label"
@@ -293,11 +293,11 @@ const PreviewStep: React.FC<PreviewStepProps> = ({ formData }) => {
             </Box>
           </Box>
 
-          {/* ゴール（目標セクションはgoalsに統合済み） */}
+          {/* 目标（目标区段已整合到 goals） */}
         </Box>
       </Paper>
 
-      {/* ゴール */}
+      {/* 目标 */}
       <Paper sx={{ p: 3, mt: 3 }} role="region" aria-labelledby="goals-title">
         <Typography variant="subtitle1" gutterBottom id="goals-title">
           {t("scenarios.fields.goals")}

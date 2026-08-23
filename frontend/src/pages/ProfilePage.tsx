@@ -4,7 +4,7 @@ import UserNameEditor from "../components/user/UserNameEditor";
 import { useTranslation } from "react-i18next";
 
 /**
- * ユーザープロフィール編集ページ
+ * 用户个人资料编辑页面
  */
 const ProfilePage: React.FC = () => {
   const { t } = useTranslation();
@@ -20,7 +20,7 @@ const ProfilePage: React.FC = () => {
           <Box sx={{ mt: 4 }}>
             <UserNameEditor />
 
-            {/* 将来的に追加のプロフィール設定コンポーネントをここに配置 */}
+            {/* 将来在这里添加更多的个人资料设置组件 */}
           </Box>
         </Box>
       </Container>

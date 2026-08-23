@@ -18,7 +18,7 @@ interface MetricsPanelProps {
 }
 
 /**
- * メトリクス表示パネルコンポーネント（3つの基本メトリクスのみ）
+ * 指标展示面板组件（仅 3 个基础指标）
  * Display panel for basic metrics (only 3 fundamental metrics)
  */
 const MetricsPanel: React.FC<MetricsPanelProps> = ({
@@ -52,13 +52,13 @@ const MetricsPanel: React.FC<MetricsPanelProps> = ({
             {t("metrics.realtimeEvaluation")}
           </Typography>
 
-          {/* フォールバックモード表示は削除されました */}
+          {/* 回退模式显示已删除 */}
         </Box>
 
-        {/* 総合スコアは削除されました */}
+        {/* 综合得分已删除 */}
         <Divider sx={{ my: 1 }} />
 
-        {/* 怒りメーター */}
+        {/* 愤怒计 */}
         <AnimatedMetricsProgress
           value={currentMetrics.angerLevel}
           prevValue={prevMetrics?.angerLevel}
@@ -93,7 +93,7 @@ const MetricsPanel: React.FC<MetricsPanelProps> = ({
           animationSpeed={40}
         />
 
-        {/* 分析テキスト表示エリア */}
+        {/* 分析文本显示区域 */}
         <Collapse
           in={
             currentMetrics.analysis !== undefined &&

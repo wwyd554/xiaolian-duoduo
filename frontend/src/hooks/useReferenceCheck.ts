@@ -1,7 +1,7 @@
 import { ReferenceCheckResult } from "../types/api";
 
 /**
- * リファレンスチェックの状態
+ * 参考资料核查的状态
  */
 export interface ReferenceCheckState {
   data: ReferenceCheckResult | null;
@@ -12,21 +12,21 @@ export interface ReferenceCheckState {
 }
 
 /**
- * リファレンスチェック用カスタムフック
- * Step Functionsで取得済みのリファレンスチェック結果を表示するためのフック
+ * 参考资料核查用的自定义 Hook
+ * 用于显示从 Step Functions 获取的参考资料核查结果的 Hook
  * 
- * @param isVisible コンポーネントが表示されているかどうか
- * @param initialData Step Functionsで取得済みのリファレンスチェック結果
- * @returns リファレンスチェックの状態
+ * @param isVisible 组件是否处于显示状态
+ * @param initialData 从 Step Functions 获取的参考资料核查结果
+ * @returns 参考资料核查的状态
  */
 export const useReferenceCheck = (
   isVisible = true,
   initialData: ReferenceCheckResult | null = null,
 ): ReferenceCheckState => {
   /**
-   * 問題があるメッセージの数を計算
-   * 「問題あり (issue)」のみをカウントする。
-   * 「対象外 (not_applicable)」（挨拶・一般的な進行など）は問題として扱わない。
+   * 计算有问题的消息数量
+   * 仅统计“有问题 (issue)”。
+   * “不适用 (not_applicable)”（问候、一般进程等）不作为问题处理。
    */
   const issuesCount = initialData?.messages
     ? initialData.messages.filter((msg) => msg.evaluation === "issue").length

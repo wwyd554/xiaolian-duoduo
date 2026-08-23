@@ -50,13 +50,13 @@ const ScenarioCard: React.FC<ScenarioCardProps> = ({
   const navigate = useNavigate();
   const apiService = ApiService.getInstance();
 
-  // メニュー状態
+  // 菜单状态
   const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
-  // メニュー操作ハンドラー
+  // 菜单操作处理器
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setMenuAnchorEl(event.currentTarget);
   };
@@ -65,7 +65,7 @@ const ScenarioCard: React.FC<ScenarioCardProps> = ({
     setMenuAnchorEl(null);
   };
 
-  // シナリオ開始
+  // 开始场景
   const handleStartScenario = () => {
     if (onScenarioStart) {
       onScenarioStart(scenario.scenarioId);
@@ -74,27 +74,27 @@ const ScenarioCard: React.FC<ScenarioCardProps> = ({
     }
   };
 
-  // シナリオ編集
+  // 编辑场景
   const handleEditScenario = () => {
     handleMenuClose();
     navigate(`/scenarios/edit/${scenario.scenarioId}`);
   };
 
-  // シナリオ複製
+  // 复制场景
   const handleDuplicateScenario = async () => {
     handleMenuClose();
-    // 複製機能は将来実装予定
+    // 复制功能计划将来实现
     alert(t("scenarios.duplicate.notImplemented"));
   };
 
-  // シナリオ共有
+  // 共享场景
   const handleShareScenario = () => {
     handleMenuClose();
-    // 共有機能は将来実装予定
+    // 共享功能计划将来实现
     alert(t("scenarios.share.notImplemented"));
   };
 
-  // シナリオ削除ダイアログ
+  // 场景删除对话框
   const handleDeleteDialogOpen = () => {
     handleMenuClose();
     setDeleteDialogOpen(true);
@@ -105,7 +105,7 @@ const ScenarioCard: React.FC<ScenarioCardProps> = ({
     setDeleteError(null);
   };
 
-  // シナリオ削除処理
+  // 场景删除处理
   const handleDeleteScenario = async () => {
     setIsDeleting(true);
     setDeleteError(null);
@@ -114,7 +114,7 @@ const ScenarioCard: React.FC<ScenarioCardProps> = ({
       await apiService.deleteScenario(scenario.scenarioId);
       handleDeleteDialogClose();
 
-      // 親コンポーネントに削除を通知
+      // 通知父组件已删除
       if (onDeleted) {
         onDeleted(scenario.scenarioId);
       }
@@ -130,7 +130,7 @@ const ScenarioCard: React.FC<ScenarioCardProps> = ({
     }
   };
 
-  // 難易度のラベル取得
+  // 获取难度标签
   const getDifficultyLabel = (difficulty: string): string => {
     const labels: Record<string, string> = {
       easy: t("scenarios.difficulty.easy"),
@@ -144,7 +144,7 @@ const ScenarioCard: React.FC<ScenarioCardProps> = ({
     return labels[difficulty] || difficulty;
   };
 
-  // 難易度に応じたカラー
+  // 根据难度返回颜色
   const getDifficultyColor = (
     difficulty: string,
   ):
@@ -176,10 +176,10 @@ const ScenarioCard: React.FC<ScenarioCardProps> = ({
     return colors[difficulty] || "default";
   };
 
-  // カスタムシナリオかどうか
+  // 是否为自定义场景
   const isCustomScenario = scenario.isCustom || false;
 
-  // 公開設定のラベル
+  // 公开设置的标签
   const getVisibilityLabel = (): string => {
     if (!isOwner) return "";
 
@@ -201,7 +201,7 @@ const ScenarioCard: React.FC<ScenarioCardProps> = ({
       sx={{ height: "100%", display: "flex", flexDirection: "column" }}
     >
       <CardContent sx={{ flexGrow: 1 }}>
-        {/* シナリオ情報 */}
+        {/* 场景信息 */}
         <Box
           sx={{
             display: "flex",
@@ -220,9 +220,9 @@ const ScenarioCard: React.FC<ScenarioCardProps> = ({
           )}
         </Box>
 
-        {/* チップ表示 */}
+        {/* 标签显示 */}
         <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5, mb: 1 }}>
-          {/* 難易度 */}
+          {/* 难度 */}
           <Chip
             size="small"
             label={getDifficultyLabel(scenario.difficulty)}
@@ -230,7 +230,7 @@ const ScenarioCard: React.FC<ScenarioCardProps> = ({
             variant="outlined"
           />
 
-          {/* カテゴリ/業界 */}
+          {/* 分类/行业 */}
           <Chip
             size="small"
             label={
@@ -241,7 +241,7 @@ const ScenarioCard: React.FC<ScenarioCardProps> = ({
             variant="outlined"
           />
 
-          {/* カスタムシナリオ表示 */}
+          {/* 自定义场景显示 */}
           {isCustomScenario && (
             <Chip
               size="small"
@@ -261,7 +261,7 @@ const ScenarioCard: React.FC<ScenarioCardProps> = ({
           )}
         </Box>
 
-        {/* シナリオ説明 */}
+        {/* 场景说明 */}
         <Typography
           variant="body2"
           color="text.secondary"
@@ -302,7 +302,7 @@ const ScenarioCard: React.FC<ScenarioCardProps> = ({
         </Box>
       </CardActions>
 
-      {/* メニュー */}
+      {/* 菜单 */}
       <Menu
         anchorEl={menuAnchorEl}
         open={Boolean(menuAnchorEl)}
@@ -337,7 +337,7 @@ const ScenarioCard: React.FC<ScenarioCardProps> = ({
         </MenuItem>
       </Menu>
 
-      {/* 削除確認ダイアログ */}
+      {/* 删除确认对话框 */}
       <Dialog open={deleteDialogOpen} onClose={handleDeleteDialogClose}>
         <DialogTitle>{t("scenarios.delete.confirmTitle")}</DialogTitle>
         <DialogContent>

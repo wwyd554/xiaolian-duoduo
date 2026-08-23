@@ -1,13 +1,13 @@
 /**
- * 認証サービス - Cognito連携版
+ * 认证服务 - Cognito 集成版
  *
- * Amazon Cognitoと連携して認証機能を提供
+ * 与 Amazon Cognito 集成，提供认证功能
  *
- * ユーザープロフィール情報
- * - email: メールアドレス（必須、サインイン用）
- * - name: 名前（表示用）
- * - preferredUsername: ユーザー名（表示、変更可能）
- * - userId: Cognito ID (sub属性)
+ * 用户资料信息
+ * - email：邮箱地址（必填，用于登录）
+ * - name：姓名（用于显示）
+ * - preferredUsername：用户名（用于显示、可修改）
+ * - userId：Cognito ID（sub 属性）
  */
 import {
   getCurrentUser,
@@ -24,20 +24,20 @@ export class AuthService {
     name: string;
     email: string;
     preferredUsername?: string;
-    userId?: string; // Cognito ID (sub属性)
+    userId?: string; // Cognito ID（sub 属性）
   } | null = null;
   private cachedIsAdmin: boolean | null = null;
   private cachedIsAdminAt: number = 0;
-  /** 管理者キャッシュの有効期間（5分） */
+  /** 管理员缓存有效期（5 分钟） */
   private static readonly ADMIN_CACHE_TTL_MS = 5 * 60 * 1000;
 
   private constructor() {
-    // シングルトンパターン
+    // 单例模式
     console.log("认证服务初始化");
   }
 
   /**
-   * シングルトンインスタンスを取得
+   * 获取单例实例
    */
   public static getInstance(): AuthService {
     if (!AuthService.instance) {
@@ -47,19 +47,19 @@ export class AuthService {
   }
 
   /**
-   * ローカル（邀请码制）認証データを取得。未ログイン時は null。
+   * 获取本地（邀请码制）认证数据。未登录时为 null。
    */
   private getLocalAuth() {
     return loadAuth();
   }
 
   /**
-   * ユーザー情報を取得してキャッシュする
+   * 获取用户信息并缓存
    * @private
    */
   private async fetchAndCacheUserInfo(): Promise<void> {
     try {
-      // ローカル認証（邀请码制）が有効ならそれを使う
+      // 若本地认证（邀请码制）有效则使用它
       const local = this.getLocalAuth();
       if (local) {
         this.cachedUser = {
@@ -70,16 +70,16 @@ export class AuthService {
         };
         return;
       }
-      // 現在のユーザー情報を取得
+      // 获取当前用户信息
       const cognitoUser = await getCurrentUser();
-      // ユーザー属性を取得
+      // 获取用户属性
       const userAttributes = await fetchUserAttributes();
-      // セッション情報を取得
+      // 获取会话信息
       const session = await fetchAuthSession();
 
       if (cognitoUser && session) {
-        // Cognitoからユーザー情報を取得
-        // ユーザー属性からpreferred_usernameを取得
+        // 从 Cognito 获取用户信息
+        // 从用户属性中获取 preferred_username
         const preferredUsername =
           userAttributes["preferred_username"] || cognitoUser.username;
 
@@ -88,7 +88,7 @@ export class AuthService {
           email:
             userAttributes.email || cognitoUser.signInDetails?.loginId || "",
           preferredUsername: preferredUsername,
-          userId: cognitoUser.userId, // Cognitoのsub属性（ユーザーID）
+          userId: cognitoUser.userId, // Cognito 的 sub 属性（用户 ID）
         };
         console.log("已获取用户信息:", this.cachedUser);
       } else {
@@ -102,12 +102,12 @@ export class AuthService {
   }
 
   /**
-   * ログアウト
+   * 登出
    */
   public async logout(): Promise<void> {
     try {
       if (this.getLocalAuth()) {
-        // ローカル認証：ローカルストレージをクリア
+        // 本地认证：清除本地存储
         clearAuth();
         this.cachedUser = null;
         this.cachedIsAdmin = null;
@@ -126,7 +126,7 @@ export class AuthService {
   }
 
   /**
-   * 認証状態を取得
+   * 获取认证状态
    */
   public async isLoggedIn(): Promise<boolean> {
     try {
@@ -142,7 +142,7 @@ export class AuthService {
   }
 
   /**
-   * 現在のユーザー情報を取得
+   * 获取当前用户信息
    */
   public async getCurrentUser(): Promise<{
     name: string;
@@ -157,7 +157,7 @@ export class AuthService {
   }
 
   /**
-   * 現在のユーザーIDを取得
+   * 获取当前用户 ID
    */
   public async getUserId(): Promise<string | null> {
     if (!this.cachedUser) {
@@ -167,8 +167,8 @@ export class AuthService {
   }
 
   /**
-   * 現在のユーザーが管理者グループに所属しているかを判定する
-   * ローカル認証：register 時の isAdmin を使用。Cognito：IDトークンの cognito:groups を確認。
+   * 判断当前用户是否属于管理员组
+   * 本地认证：使用注册时的 isAdmin。Cognito：检查 ID 令牌中的 cognito:groups。
    */
   public async isAdmin(): Promise<boolean> {
     const local = this.getLocalAuth();
@@ -176,7 +176,7 @@ export class AuthService {
       return local.isAdmin;
     }
 
-    // キャッシュが有効期間内ならそのまま返す
+    // 若缓存仍在有效期内则直接返回
     if (
       this.cachedIsAdmin !== null &&
       Date.now() - this.cachedIsAdminAt < AuthService.ADMIN_CACHE_TTL_MS
@@ -206,7 +206,7 @@ export class AuthService {
   }
 
   /**
-   * 認証トークンを取得
+   * 获取认证令牌
    */
   public async getAuthToken(): Promise<string> {
     try {
@@ -223,26 +223,26 @@ export class AuthService {
   }
 
   /**
-   * ユーザー名を更新する
-   * @param preferredUsername 新しいユーザー名
+   * 更新用户名
+   * @param preferredUsername 新的用户名
    */
   public async updatePreferredUsername(
     preferredUsername: string,
   ): Promise<void> {
     try {
-      // Cognitoのユーザー属性を更新
+      // 更新 Cognito 的用户属性
       await updateUserAttributes({
         userAttributes: {
           preferred_username: preferredUsername,
         },
       });
 
-      // キャッシュを更新
+      // 更新缓存
       if (this.cachedUser) {
         this.cachedUser.preferredUsername = preferredUsername;
       }
 
-      // 最新のユーザー情報を再取得
+      // 重新获取最新用户信息
       await this.fetchAndCacheUserInfo();
 
       console.log("已更新用户名:", preferredUsername);

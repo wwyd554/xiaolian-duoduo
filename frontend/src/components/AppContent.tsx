@@ -3,7 +3,7 @@ import { Routes, Route, useLocation } from "react-router-dom";
 import { Box } from "@mui/material";
 import { useTranslation } from "react-i18next";
 
-// コンポーネントのインポート
+// 组件的导入
 import Header from "./Header";
 import HomePage from "../pages/HomePage";
 import ScenarioSelectPage from "../pages/ScenarioSelectPage";
@@ -18,14 +18,14 @@ import ScenarioCreatePage from "../pages/scenarios/ScenarioCreatePage";
 import ScenarioEditPage from "../pages/scenarios/ScenarioEditPage";
 import ScenarioManagementPage from "../pages/scenarios/management/ScenarioManagementPage";
 /**
- * アプリケーションのメインコンテンツをレンダリングするコンポーネント
- * ヘッダータイトルの管理を担当し、ルーティングはrouter.tsxに委任
+ * 渲染应用主内容的组件
+ * 负责管理顶部栏标题，路由委托给 router.tsx
  */
 const AppContent: React.FC = () => {
   const { t } = useTranslation();
   const location = useLocation();
 
-  // 現在のパスに基づいてページタイトルを決定
+  // 根据当前路径决定页面标题
   const getPageTitle = () => {
     const path = location.pathname;
 
@@ -38,7 +38,7 @@ const AppContent: React.FC = () => {
     if (path === "/history") return t("history.title");
     if (path === "/rankings") return t("ranking.title");
     if (path === "/audio-analysis") return t("audioAnalysis.title");
-    if (path === "/avatar-test") return "VRM表情テスト";
+    if (path === "/avatar-test") return "VRM表情测试";
     if (path.startsWith("/conversation/")) return t("conversation.title");
     if (path.startsWith("/results/")) return t("results.title");
     if (path.startsWith("/history/session/")) return t("history.sessionDetail");

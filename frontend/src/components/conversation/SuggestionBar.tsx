@@ -4,20 +4,20 @@ import { Lightbulb as LightbulbIcon } from "@mui/icons-material";
 import { useTranslation } from "react-i18next";
 
 interface SuggestionBarProps {
-  /** AIが生成した返答候補のリスト */
+  /** AI 生成的应答候选列表 */
   suggestions: string[];
-  /** 候補が選択されたときのコールバック（選択テキストを渡す） */
+  /** 选择候选时的回调（传入所选文本） */
   onSelect: (text: string) => void;
-  /** 無効状態（処理中・発話中など） */
+  /** 无效状态（处理中、发言中等） */
   disabled: boolean;
 }
 
 /**
- * サジェスト返答ボタンコンポーネント
+ * 建议应答按钮组件
  *
- * NPCの直前発言を踏まえてAIが生成した返答候補を、タップ/クリックで
- * 選択できるボタン群として表示する。候補が空、または無効状態のときは
- * 何も表示しない。
+ * 根据 NPC 上一句发言由 AI 生成的应答候选，可通过点按/点击
+ * 以可选择的按钮组显示。当候选为空或处于无效状态时，
+ * 不显示任何内容。
  */
 const SuggestionBar: React.FC<SuggestionBarProps> = ({
   suggestions,
@@ -26,7 +26,7 @@ const SuggestionBar: React.FC<SuggestionBarProps> = ({
 }) => {
   const { t } = useTranslation();
 
-  // 候補がない、または無効状態のときは何も表示しない
+  // 无候选或处于无效状态时不显示任何内容
   if (disabled || !suggestions || suggestions.length === 0) {
     return null;
   }

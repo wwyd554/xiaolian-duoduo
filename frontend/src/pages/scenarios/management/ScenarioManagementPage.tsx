@@ -40,7 +40,7 @@ const ScenarioManagementPage: React.FC = () => {
   const navigate = useNavigate();
   const apiService = ApiService.getInstance();
 
-  // ステート
+  // 状态
   const [scenarios, setScenarios] = useState<ScenarioInfo[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -54,7 +54,7 @@ const ScenarioManagementPage: React.FC = () => {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
 
-  // シナリオ一覧を取得
+  // 获取场景列表
   const fetchScenarios = useCallback(async () => {
     try {
       setLoading(true);
@@ -71,19 +71,19 @@ const ScenarioManagementPage: React.FC = () => {
     }
   }, [apiService]);
 
-  // 現在のユーザー情報を取得
+  // 获取当前用户信息
   const fetchCurrentUser = useCallback(async () => {
     try {
-      // AWS Cognitoから現在のユーザー情報を取得
+      // 从 AWS Cognito 获取当前用户信息
       const { getCurrentUser } = await import("aws-amplify/auth");
       const user = await getCurrentUser();
 
-      // ユーザーIDを設定（Cognitoのsub属性を使用）
+      // 设置用户 ID（使用 Cognito 的 sub 属性）
       if (user && user.userId) {
         setCurrentUserId(user.userId);
       }
 
-      // 管理者グループ所属を確認
+      // 确认是否属于管理员组
       const authService = AuthService.getInstance();
       const adminStatus = await authService.isAdmin();
       setIsAdmin(adminStatus);
@@ -92,7 +92,7 @@ const ScenarioManagementPage: React.FC = () => {
     }
   }, []);
 
-  // 初期ロード
+  // 初始加载
   useEffect(() => {
     const initializeData = async () => {
       await Promise.all([fetchCurrentUser(), fetchScenarios()]);
@@ -100,7 +100,7 @@ const ScenarioManagementPage: React.FC = () => {
     initializeData();
   }, [fetchCurrentUser, fetchScenarios]);
 
-  // シナリオの削除
+  // 删除场景
   const handleDelete = async () => {
     if (!selectedScenarioId) return;
 
@@ -108,11 +108,11 @@ const ScenarioManagementPage: React.FC = () => {
       setLoading(true);
       await apiService.deleteScenario(selectedScenarioId);
       setSuccessMessage(t("scenarios.management.deleteSuccess"));
-      // 削除後に一覧を更新
+      // 删除后刷新列表
       await fetchScenarios();
     } catch (err) {
       console.error("场景删除失败:", err);
-      setError("シナリオの削除に失敗しました");
+      setError("场景删除失败");
     } finally {
       setLoading(false);
       setDeleteDialogOpen(false);
@@ -120,23 +120,23 @@ const ScenarioManagementPage: React.FC = () => {
     }
   };
 
-  // シナリオの編集
+  // 编辑场景
   const handleEdit = (scenarioId: string) => {
     navigate(`/scenarios/edit/${scenarioId}`);
   };
 
-  // シナリオのエクスポート
+  // 导出场景
   const handleExport = async (scenarioId: string) => {
     try {
       setExporting(scenarioId);
 
-      // APIを使って単一シナリオをエクスポート
+      // 使用 API 导出单个场景
       const data = await apiService.exportScenario(scenarioId);
 
-      // JSONデータに変換
+      // 转换为 JSON 数据
       const jsonData = JSON.stringify(data, null, 2);
 
-      // Blobを作成してダウンロード
+      // 创建 Blob 并下载
       const blob = new Blob([jsonData], { type: "application/json" });
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
@@ -156,7 +156,7 @@ const ScenarioManagementPage: React.FC = () => {
     }
   };
 
-  // シナリオのインポート
+  // 导入场景
   const handleFileSelect = async (
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
@@ -167,32 +167,32 @@ const ScenarioManagementPage: React.FC = () => {
       setImporting(true);
       setError(null);
 
-      // ファイルを読み込み
+      // 读取文件
       const reader = new FileReader();
       reader.onload = async (e) => {
         const content = e.target?.result as string;
 
         try {
-          // JSONをパース
+          // 解析 JSON
           const jsonData = JSON.parse(content);
 
-          // APIを使ってインポート
+          // 使用 API 导入
           await apiService.importScenarios(jsonData);
 
           setSuccessMessage(t("scenarios.management.importSuccess"));
 
-          // インポート後に一覧を更新
+          // 导入后刷新列表
           await fetchScenarios();
         } catch (parseErr) {
           console.error("JSON解析失败:", parseErr);
-          setError("無効なJSONファイルです");
+          setError("无效的 JSON 文件");
         }
 
         setImporting(false);
       };
 
       reader.onerror = () => {
-        setError("ファイルの読み込みに失敗しました");
+        setError("文件读取失败");
         setImporting(false);
       };
 
@@ -246,35 +246,34 @@ const ScenarioManagementPage: React.FC = () => {
   };
 
   const getLanguageLabel = (language?: string) => {
-    return language === "en" ? "English" : "日本語";
-  };
+    return language === "en" ? "English" : "日语";  };
 
-  // シナリオの編集権限をチェック
+  // 检查场景编辑权限
   const canEditScenario = (scenario: ScenarioInfo): boolean => {
-    // 現在のユーザーIDが取得できていない場合は権限なし
+    // 未获取到当前用户 ID 时无权限
     if (!currentUserId) return false;
 
-    // システム作成のデフォルトシナリオは管理者のみ編集可能
+    // 系统创建的默认场景仅管理员可编辑
     if (scenario.createdBy === "system") return isAdmin;
 
-    // 作成者と現在のユーザーが一致する場合のみ権限あり
+    // 仅当创建者与当前用户一致时有权限
     return scenario.createdBy === currentUserId;
   };
 
-  // シナリオの削除権限をチェック
+  // 检查场景删除权限
   const canDeleteScenario = (scenario: ScenarioInfo): boolean => {
-    // 現在のユーザーIDが取得できていない場合は権限なし
+    // 未获取到当前用户 ID 时无权限
     if (!currentUserId) return false;
 
-    // システム作成のデフォルトシナリオは削除不可
+    // 系统创建的默认场景不可删除
     if (scenario.createdBy === "system") return false;
 
-    // 作成者と現在のユーザーが一致する場合のみ権限あり
+    // 仅当创建者与当前用户一致时有权限
     return scenario.createdBy === currentUserId;
   };
   return (
     <Container maxWidth="lg">
-      {/* ヘッダー */}
+      {/* 页头 */}
       <Box
         sx={{
           display: "flex",
@@ -292,7 +291,7 @@ const ScenarioManagementPage: React.FC = () => {
           </Typography>
         </Box>
 
-        {/* インポートボタン */}
+        {/* 导入按钮 */}
         <Box>
           <input
             accept=".json"
@@ -318,14 +317,14 @@ const ScenarioManagementPage: React.FC = () => {
         </Box>
       </Box>
 
-      {/* エラー表示 */}
+      {/* 错误提示 */}
       {error && (
         <Alert severity="error" sx={{ mb: 2 }}>
           {error}
         </Alert>
       )}
 
-      {/* データテーブル */}
+      {/* 数据表 */}
       <TableContainer component={Paper} sx={{ mb: 4 }}>
         <Table>
           <TableHead>
@@ -334,7 +333,7 @@ const ScenarioManagementPage: React.FC = () => {
               <TableCell>{t("scenarios.management.difficulty")}</TableCell>
               <TableCell>{t("scenarios.management.category")}</TableCell>
               <TableCell>{t("scenarios.management.language")}</TableCell>
-              <TableCell>作成者</TableCell>
+              <TableCell>创建者</TableCell>
               <TableCell align="right">
                 {t("scenarios.management.actions")}
               </TableCell>
@@ -378,13 +377,13 @@ const ScenarioManagementPage: React.FC = () => {
                       </Box>
                     ) : (
                       <Typography variant="body2" color="text.secondary">
-                        システム
+                        系统
                       </Typography>
                     )}
                   </TableCell>
                   <TableCell align="right">
                     <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
-                      {/* 編集ボタン - 権限がある場合のみ表示 */}
+                      {/* 编辑按钮 - 仅有权限时显示 */}
                       {canEditScenario(scenario) && (
                         <Tooltip title={t("scenarios.management.edit")}>
                           <IconButton
@@ -397,7 +396,7 @@ const ScenarioManagementPage: React.FC = () => {
                         </Tooltip>
                       )}
 
-                      {/* 削除ボタン - 権限がある場合のみ表示 */}
+                      {/* 删除按钮 - 仅有权限时显示 */}
                       {canDeleteScenario(scenario) && (
                         <Tooltip title={t("scenarios.management.delete")}>
                           <IconButton
@@ -414,7 +413,7 @@ const ScenarioManagementPage: React.FC = () => {
                         </Tooltip>
                       )}
 
-                      {/* エクスポートボタン - 全てのシナリオで表示 */}
+                      {/* 导出按钮 - 所有场景均显示 */}
                       <Tooltip title={t("scenarios.management.export")}>
                         <IconButton
                           size="small"
@@ -439,7 +438,7 @@ const ScenarioManagementPage: React.FC = () => {
         </Table>
       </TableContainer>
 
-      {/* 削除確認ダイアログ */}
+      {/* 删除确认对话框 */}
       <Dialog
         open={deleteDialogOpen}
         onClose={() => setDeleteDialogOpen(false)}
@@ -465,7 +464,7 @@ const ScenarioManagementPage: React.FC = () => {
         </DialogActions>
       </Dialog>
 
-      {/* 成功メッセージSnackbar */}
+      {/* 成功消息 Snackbar */}
       <Snackbar
         open={!!successMessage}
         autoHideDuration={6000}

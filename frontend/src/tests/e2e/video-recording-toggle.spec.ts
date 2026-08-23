@@ -1,64 +1,64 @@
 /**
- * E2Eテスト: ビデオ録画機能のオン/オフ設定
+ * E2E 测试: 视频录制功能的开/关设置
  *
- * GitHub Issue #54「ビデオ録画機能のオン/オフ設定の追加」のE2Eテスト
- * dev環境（CloudFront）への接続を伴う統合テスト
+ * GitHub Issue #54「视频录制功能开/关设置的追加」的 E2E 测试
+ * 涉及 dev 环境（CloudFront）连接的集成测试
  *
- * 検証観点:
- * 1. 設定モーダルに録画トグルが表示されること
- * 2. 録画オフ時にカメラプレビュー（VideoManager の video 要素）が非表示になること
- * 3. 録画オフ時に開始ボタンがカメラ初期化を待たず即有効化されること
- * 4. 録画設定がlocalStorageに永続化されること（リロード後も保持）
- * 5. セッション開始後は録画設定がロックされること
+ * 验证要点:
+ * 1. 设置弹窗中显示录制切换开关
+ * 2. 录制关闭时摄像头预览（VideoManager 的 video 元素）隐藏
+ * 3. 录制关闭时开始按钮无需等待摄像头初始化即可立即启用
+ * 4. 录制设置持久化到 localStorage（刷新后仍保留）
+ * 5. 会话开始后录制设置被锁定
  *
- * 注意: セレクターはデプロイ済み環境で安定的に動作する aria-label / role ベースを使用する
- * （data-testid はビルド・デプロイ後にのみ反映されるため、ここでは依存しない）
+ * 注意: 选择器使用在已部署环境中稳定运行的 aria-label / role 方案
+ * （data-testid 仅在构建、部署后生效，因此这里不依赖它）
  */
 import { test, expect, Page, Locator } from "@playwright/test";
 import { login, navigateToScenarioSelect } from "./helpers";
 
-// 設定モーダルを開くボタン（i18n: ⚙️アイコン、日英のaria-labelに対応）
+// 打开设置弹窗的按钮（i18n: ⚙️ 图标，兼容日英文 aria-label）
 const SETTINGS_BUTTON_SELECTOR =
-  'button[aria-label="設定を開く"], button[aria-label="Open settings"]';
+  'button[aria-label="打开设置"], button[aria-label="Open settings"]';
 
 /**
- * 録画トグルスイッチを取得
- * MUIのSwitchは role="switch" の input 要素としてレンダリングされ、
- * FormControlLabel のラベルテキストからアクセシブル名が算出される。
- * ラベルはi18nでON/OFF・日英により変化するため、すべてのパターンに対応する。
+ * 获取录制切换开关
+ * MUI 的 Switch 以 role="switch" 的 input 元素渲染，
+ * 从 FormControlLabel 的标签文本计算无障碍名称。
+ * 标签随 i18n 的 ON/OFF 及日英文而变化，因此兼容所有模式。
  *
- * @param page Playwrightのページオブジェクト
+ * @param page Playwright 的页面对象
  */
 function getRecordingToggle(page: Page): Locator {
   return page.getByRole("switch", {
-    name: /ビデオ録画 (ON|OFF)|Video Recording (ON|OFF)/,
+    name: /视频录制 (ON|OFF)|Video Recording (ON|OFF)/,
   });
 }
 
 /**
- * カメラプレビュー（VideoManager がレンダリングする video 要素）を取得
- * 録画オン時のみ会話画面に video 要素が表示される。
+ * 获取摄像头预览（VideoManager 渲染的 video 元素）
+ * 仅录制开启时会话画面显示 video 元素。
  *
- * @param page Playwrightのページオブジェクト
+ * @param page Playwright 的页面对象
  */
 function getCameraPreview(page: Page): Locator {
   return page.locator("main video");
 }
 
-// テスト実行前の共通セットアップ
+// 测试执行前的通用设置
 test.beforeEach(async ({ page }) => {
   await login(page);
 });
 
 /**
- * シナリオ選択から会話ページへ遷移するヘルパー
+ * 从场景选择跳转到会话页面的辅助函数
  *
- * @param page Playwrightのページオブジェクト
+ * @param page Playwright 的页面对象
  */
 async function navigateToConversationPage(page: Page): Promise<void> {
   await navigateToScenarioSelect(page);
   const startButton = page
-    .locator('button:has-text("このシナリオで開始")')
+    .locator('button:has-text("从该场景开始")')
     .first();
   await expect(startButton).toBeVisible();
   await startButton.click();
@@ -66,27 +66,27 @@ async function navigateToConversationPage(page: Page): Promise<void> {
 }
 
 /**
- * 設定モーダルを開くヘルパー
+ * 打开设置弹窗的辅助函数
  *
- * @param page Playwrightのページオブジェクト
+ * @param page Playwright 的页面对象
  */
 async function openSettingsModal(page: Page): Promise<void> {
   const settingsButton = page.locator(SETTINGS_BUTTON_SELECTOR).first();
   await expect(settingsButton).toBeVisible({ timeout: 15000 });
   await settingsButton.click();
 
-  // 設定ダイアログが表示されるまで待機
+  // 等待设置对话框显示
   const settingsDialog = page.locator('[role="dialog"]');
   await expect(settingsDialog.first()).toBeVisible({ timeout: 10000 });
 
-  // 録画トグルが表示されるまで待機
+  // 等待录制切换开关显示
   await expect(getRecordingToggle(page)).toBeVisible({ timeout: 10000 });
 }
 
-test.describe("ビデオ録画オン/オフ設定", () => {
-  test.describe("設定パネルの表示", () => {
-    test("設定モーダルに録画トグルが表示されること", async ({ page }) => {
-      // 既定状態（録画オン）から開始するため設定をクリア
+test.describe("视频录制开/关设置", () => {
+  test.describe("设置面板的显示", () => {
+    test("设置弹窗中显示录制切换开关", async ({ page }) => {
+      // 为从默认状态（录制开启）开始，清除设置
       await navigateToScenarioSelect(page);
       await page.evaluate(() =>
         window.localStorage.removeItem("videoRecordingEnabled"),
@@ -95,20 +95,20 @@ test.describe("ビデオ録画オン/オフ設定", () => {
       await navigateToConversationPage(page);
       await openSettingsModal(page);
 
-      // 録画トグルスイッチが表示されていることを確認
+      // 确认录制切换开关显示
       const recordingToggle = getRecordingToggle(page);
       await expect(recordingToggle).toBeVisible();
 
-      // 既定では録画オン（チェック済み）であることを確認
+      // 确认默认已开启录制（已勾选）
       await expect(recordingToggle).toBeChecked();
     });
   });
 
-  test.describe("録画オフ時の挙動", () => {
-    test("録画をオフにするとカメラプレビューが非表示になること", async ({
+  test.describe("录制关闭时的行为", () => {
+    test("关闭录制后摄像头预览隐藏", async ({
       page,
     }) => {
-      // 既定状態（録画オン）から開始するため設定をクリア
+      // 为从默认状态（录制开启）开始，清除设置
       await navigateToScenarioSelect(page);
       await page.evaluate(() =>
         window.localStorage.removeItem("videoRecordingEnabled"),
@@ -116,55 +116,55 @@ test.describe("ビデオ録画オン/オフ設定", () => {
 
       await navigateToConversationPage(page);
 
-      // 既定（録画オン）ではカメラプレビュー（video要素）が存在する
+      // 默认（录制开启）时存在摄像头预览（video 元素）
       const cameraPreview = getCameraPreview(page);
       await expect(cameraPreview).toHaveCount(1, { timeout: 10000 });
 
-      // 設定モーダルを開いて録画をオフに切り替え
+      // 打开设置弹窗并关闭录制
       await openSettingsModal(page);
       const recordingToggle = getRecordingToggle(page);
       await recordingToggle.uncheck();
       await expect(recordingToggle).not.toBeChecked();
 
-      // モーダルを閉じる（Escapeキー）
+      // 关闭弹窗（Escape 键）
       await page.keyboard.press("Escape");
 
-      // カメラプレビュー（video要素）がDOMから消えることを確認
+      // 确认摄像头预览（video 元素）从 DOM 中消失
       await expect(cameraPreview).toHaveCount(0, { timeout: 10000 });
     });
 
-    test("録画オフ時は開始ボタンがカメラ初期化を待たず即有効になること", async ({
+    test("录制关闭时开始按钮无需等待摄像头初始化即立即启用", async ({
       page,
     }) => {
-      // 事前にlocalStorageで録画オフを設定（カメラ初期化を一切待たない状態を作る）
+      // 事先在 localStorage 中设置录制关闭（制造完全不等待摄像头初始化的状态）
       await page.addInitScript(() => {
         window.localStorage.setItem("videoRecordingEnabled", "false");
       });
 
       await navigateToConversationPage(page);
 
-      // 開始ボタンが即座に有効化されることを確認（カメラ初期化待ちが発生しない）
+      // 确认开始按钮立即启用（不会等待摄像头初始化）
       const startButton = page.locator(
         '[data-testid="start-conversation-button"]',
       );
       await expect(startButton).toBeVisible({ timeout: 15000 });
       await expect(startButton).toBeEnabled({ timeout: 5000 });
 
-      // ボタンラベルが「録画なし」表記になっていることを確認（日英対応）
+      // 确认按钮标签为「无录制」标识（兼容日英文）
       const buttonText = (await startButton.textContent()) || "";
       expect(
-        buttonText.includes("録画なし") ||
+        buttonText.includes("不录制") ||
         buttonText.includes("No Recording"),
       ).toBeTruthy();
 
-      // カメラプレビュー（video要素）が表示されていないことを確認
+      // 确认摄像头预览（video 元素）未显示
       await expect(getCameraPreview(page)).toHaveCount(0);
     });
   });
 
-  test.describe("設定の永続化", () => {
-    test("録画オフ設定がリロード後も保持されること", async ({ page }) => {
-      // 既定状態（録画オン）から開始するため設定をクリア
+  test.describe("设置的持久化", () => {
+    test("录制关闭设置刷新后仍保留", async ({ page }) => {
+      // 为从默认状态（录制开启）开始，清除设置
       await navigateToScenarioSelect(page);
       await page.evaluate(() =>
         window.localStorage.removeItem("videoRecordingEnabled"),
@@ -172,59 +172,59 @@ test.describe("ビデオ録画オン/オフ設定", () => {
 
       await navigateToConversationPage(page);
 
-      // 録画をオフに切り替え
+      // 切换为关闭录制
       await openSettingsModal(page);
       const recordingToggle = getRecordingToggle(page);
       await recordingToggle.uncheck();
       await expect(recordingToggle).not.toBeChecked();
 
-      // localStorageに永続化されていることを確認
+      // 确认已持久化到 localStorage
       const storedValue = await page.evaluate(() =>
         window.localStorage.getItem("videoRecordingEnabled"),
       );
       expect(storedValue).toBe("false");
 
-      // ページをリロード（addInitScriptを使わないため設定は保持される）
+      // 刷新页面（不使用 addInitScript，因此设置会被保留）
       await page.reload();
       await page.waitForURL(/\/conversation\//);
 
-      // リロード後、カメラプレビュー（video要素）が非表示のままであることを確認
+      // 刷新后，确认摄像头预览（video 元素）仍然隐藏
       await expect(getCameraPreview(page)).toHaveCount(0, { timeout: 10000 });
 
-      // 設定モーダルを再度開き、トグルがオフのままであることを確認
+      // 再次打开设置弹窗，确认切换仍处于关闭状态
       await openSettingsModal(page);
       await expect(getRecordingToggle(page)).not.toBeChecked();
     });
   });
 
-  test.describe("セッション開始後の設定ロック", () => {
-    test("セッション開始後は録画トグルが無効化されること", async ({ page }) => {
-      // 録画オフにして、カメラ初期化を待たず即座にセッション開始できる状態にする
+  test.describe("会话开始后的设置锁定", () => {
+    test("会话开始后录制切换被禁用", async ({ page }) => {
+      // 关闭录制，制造无需等待摄像头初始化即可立即开始会话的状态
       await page.addInitScript(() => {
         window.localStorage.setItem("videoRecordingEnabled", "false");
       });
 
       await navigateToConversationPage(page);
 
-      // セッションを開始
+      // 开始会话
       const startButton = page.locator(
         '[data-testid="start-conversation-button"]',
       );
       await expect(startButton).toBeEnabled({ timeout: 15000 });
       await startButton.click();
 
-      // セッション開始を確認（セッション終了ボタンの表示）
+      // 确认会话已开始（结束会话按钮显示）
       const endButton = page
         .locator(
-          'button:has-text("セッション終了"), button:has-text("商談終了"), button:has-text("End Conversation")',
+          'button:has-text("结束会话"), button:has-text("结束商谈"), button:has-text("End Conversation")',
         )
         .first();
       await expect(endButton).toBeVisible({ timeout: 30000 });
 
-      // 設定モーダルを開く
+      // 打开设置弹窗
       await openSettingsModal(page);
 
-      // セッション開始後は録画トグルが無効化（disabled）されていることを確認
+      // 确认会话开始后录制切换已被禁用（disabled）
       await expect(getRecordingToggle(page)).toBeDisabled();
     });
   });

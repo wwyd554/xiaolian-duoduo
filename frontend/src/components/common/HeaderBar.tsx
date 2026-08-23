@@ -19,8 +19,8 @@ interface HeaderBarProps {
 }
 
 /**
- * シンプルなヘッダーバーコンポーネント
- * 主にサブページで使用します
+ * 简洁顶部栏组件
+ * 主要在子页面使用
  */
 const HeaderBar: React.FC<HeaderBarProps> = ({
   title,

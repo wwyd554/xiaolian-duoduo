@@ -1,16 +1,16 @@
 /**
- * 無音検出処理クラス
+ * 静音检测处理类
  * 
- * 音声ストリームの無音区間を検出し、一定時間以上の無音が続いた場合に
- * イベントを発火するためのヘルパークラスです。
- * Amazon Transcribeストリーミング統合において、発話の終了を自動的に検出するために使用します。
+ * 检测语音流中的静音区间，当静音持续超过一定时间时
+ * 触发事件的辅助类。
+ * 在 Amazon Transcribe 流式集成中，用于自动检测发言结束。
  */
 
 export interface SilenceDetectorOptions {
-  /** 無音判定の閾値 (0.0-1.0) - デフォルト: 0.05 */
+  /** 静音判定阈值（0.0-1.0）- 默认值：0.05 */
   threshold?: number;
   
-  /** 無音判定までの時間 (ミリ秒) - デフォルト: 1500ms */
+  /** 判定为静音前的时间（毫秒）- 默认值：1500ms */
   timeoutMs?: number;
 }
 
@@ -23,8 +23,8 @@ export class SilenceDetector {
   private isActive: boolean = false;
   
   /**
-   * コンストラクタ
-   * @param options 設定オプション
+   * 构造函数
+   * @param options 配置选项
    */
   constructor(options?: SilenceDetectorOptions) {
     this.threshold = options?.threshold ?? 0.05;
@@ -32,8 +32,8 @@ export class SilenceDetector {
   }
   
   /**
-   * 無音検出処理を開始
-   * @param onSilenceDetected 無音検出時のコールバック関数
+   * 开始静音检测处理
+   * @param onSilenceDetected 静音检测时的回调函数
    */
   public start(onSilenceDetected: () => void): void {
     this.onSilenceDetectedCallback = onSilenceDetected;
@@ -43,7 +43,7 @@ export class SilenceDetector {
   }
   
   /**
-   * 無音検出処理を停止
+   * 停止静音检测处理
    */
   public stop(): void {
     this.isActive = false;
@@ -52,21 +52,21 @@ export class SilenceDetector {
   }
   
   /**
-   * 音量レベルを処理し、閾値を下回る場合は無音として判定
-   * @param soundLevel 音量レベル (0.0-1.0)
+   * 处理音量电平，低于阈值时判定为静音
+   * @param soundLevel 音量电平（0.0-1.0）
    */
   public processSoundLevel(soundLevel: number): void {
     if (!this.isActive) return;
     
     if (soundLevel > this.threshold) {
-      // 音声を検出
+      // 检测到语音
       this.lastSoundTimestamp = Date.now();
       this.resetTimer();
     }
   }
   
   /**
-   * 無音タイマーをリセット
+   * 重置静音定时器
    */
   public resetTimer(): void {
     this.clearTimer();
@@ -81,7 +81,7 @@ export class SilenceDetector {
   }
   
   /**
-   * タイマーをクリア
+   * 清除定时器
    */
   private clearTimer(): void {
     if (this.silenceTimer) {

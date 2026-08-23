@@ -18,7 +18,7 @@ const LoadingButton: React.FC<LoadingButtonProps> = ({
 }) => {
   const { t } = useTranslation();
 
-  // デフォルトのローディングテキストは翻訳キーから取得
+  // 默认的加载文本从翻译键获取
   const finalLoadingText = loadingText || t("common.loading");
   return (
     <Button

@@ -17,7 +17,7 @@ import { ApiService } from "../../services/ApiService";
 import { AvatarService } from "../../services/AvatarService";
 import { useTranslation } from "react-i18next";
 
-// ステップコンポーネントをインポート
+// 导入步骤组件
 import BasicInfoStep from "./creation/BasicInfoStep";
 import NPCInfoStep from "./creation/NPCInfoStep";
 import GoalsStep from "./creation/GoalsStep";
@@ -27,14 +27,14 @@ import SharingStep from "./creation/SharingStep";
 import PreviewStep from "./creation/PreviewStep";
 import { DifficultyLevel, PresentationFileInfo } from "../../types/api";
 
-// シナリオ編集ページ
+// 场景编辑页面
 const ScenarioEditPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { scenarioId } = useParams<{ scenarioId: string }>();
   const apiService = ApiService.getInstance();
 
-  // ステップ管理
+  // 步骤管理
   const [activeStep, setActiveStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -48,25 +48,25 @@ const ScenarioEditPage: React.FC = () => {
     }>
   >([]);
 
-  // アバター・音声モデル管理
+  // 头像、语音模型管理
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [voiceId, setVoiceId] = useState<string>("");
   const [enableAvatar, setEnableAvatar] = useState<boolean>(false);
   const [existingAvatarId, setExistingAvatarId] = useState<string | undefined>(undefined);
   const [existingAvatarFileName, setExistingAvatarFileName] = useState<string | undefined>(undefined);
-  // CR-010: フィールドレベルバリデーションエラー
+  // CR-010: 字段级校验错误
   const [validationErrors, setValidationErrors] = useState<Record<string, string | null>>({});
 
-  // フォームデータ
+  // 表单数据
   const [formData, setFormData] = useState({
-    // 基本情報
+    // 基本信息
     scenarioId: "",
     title: "",
     description: "",
     difficulty: "normal" as DifficultyLevel,
     category: "",
     language: "zh", // 默认中文
-    maxTurns: 10, // デフォルト値を設定
+    maxTurns: 10, // 设置默认值
 
     // NPC情報
     npc: {
@@ -77,7 +77,7 @@ const ScenarioEditPage: React.FC = () => {
       description: "",
     },
 
-    // メトリクス
+    // 指标
     initialMetrics: {
       angerLevel: 1,
       trustLevel: 3,
@@ -117,20 +117,20 @@ const ScenarioEditPage: React.FC = () => {
       return;
     }
 
-    // シナリオデータとGuardrailsを読み込む
+    // 加载场景数据和护栏
     const loadData = async () => {
       try {
         setIsLoading(true);
         setError(null);
 
-        // Guardrailsのロード
+        // 加载护栏
         const guardrails = await apiService.getGuardrails();
         setGuardrailsList(guardrails);
 
-        // シナリオデータのロード
+        // 加载场景数据
         const scenarioData = await apiService.getScenarioDetail(scenarioId);
 
-        // フォームデータを設定
+        // 设置表单数据
         setFormData({
           scenarioId: scenarioData.scenarioId,
           title: scenarioData.title || "",
@@ -181,14 +181,14 @@ const ScenarioEditPage: React.FC = () => {
           initialMessage: scenarioData.initialMessage || "",
         });
 
-        // voiceIdとavatarIdを復元
+        // 恢复 voiceId 和 avatarId
         const loadedVoiceId = scenarioData.npc?.voiceId || scenarioData.npcInfo?.voiceId || "";
         setVoiceId(loadedVoiceId);
-        // enableAvatar値を復元（未設定時はfalse）
+        // 恢复 enableAvatar 值（未设置时默认为 false）
         setEnableAvatar(scenarioData.enableAvatar ?? false);
         if (scenarioData.avatarId) {
           setExistingAvatarId(scenarioData.avatarId);
-          // ファイル名はアバターIDから推定（表示用）
+          // 文件名从头像 ID 推断（用于显示）
           setExistingAvatarFileName(scenarioData.avatarId);
         }
 
@@ -207,7 +207,7 @@ const ScenarioEditPage: React.FC = () => {
     loadData();
   }, [scenarioId, t, apiService]);
 
-  // ステップの定義
+  // 步骤的定义
   const steps = [
     {
       label: t("scenarios.create.steps.basicInfo"),
@@ -225,15 +225,15 @@ const ScenarioEditPage: React.FC = () => {
         <NPCInfoStep
           formData={{ ...formData, npc: formData.npc, language: formData.language }}
           updateFormData={(npcData) => {
-            // initialMessageが単独で更新される場合と、NPCフィールドが更新される場合を適切に処理
+            // 分别处理 initialMessage 单独更新和 NPC 字段更新的情况
             if ('initialMessage' in npcData && Object.keys(npcData).length === 1) {
-              // initialMessageのみの更新の場合
+              // 仅更新 initialMessage 时
               setFormData({
                 ...formData,
                 initialMessage: npcData.initialMessage || "",
               });
             } else {
-              // NPCフィールドが含まれている場合（従来の処理）
+              // 包含 NPC 字段时（原有处理）
               const { initialMessage, ...npcFields } = npcData;
               setFormData({
                 ...formData,
@@ -248,7 +248,7 @@ const ScenarioEditPage: React.FC = () => {
           onAvatarFileChange={(file) => {
             setAvatarFile(file);
             if (file === null) {
-              // ファイル削除時は既存アバター情報もクリア
+              // 删除文件时同时清除既有头像信息
               setExistingAvatarFileName(undefined);
             }
           }}
@@ -257,7 +257,7 @@ const ScenarioEditPage: React.FC = () => {
           enableAvatar={enableAvatar}
           onEnableAvatarChange={(enabled) => {
             setEnableAvatar(enabled);
-            // アバターOFF時はアバターファイル情報をクリア
+            // 头像关闭时清除头像文件信息
             if (!enabled) {
               setAvatarFile(null);
               setExistingAvatarFileName(undefined);
@@ -325,10 +325,10 @@ const ScenarioEditPage: React.FC = () => {
     },
   ];
 
-  // 次のステップへ
+  // 进入下一步
   const handleNext = () => {
-    // NPC情報ステップ（ステップ1）でvoiceIdの必須バリデーション
-    // CR-010: Create画面と同じフィールドレベルバリデーションに統一
+    // 在 NPC 信息步骤（步骤 1）中对 voiceId 进行必填校验
+    // CR-010: 与 Create 页面统一为相同的字段级校验
     if (activeStep === 1) {
       if (!voiceId) {
         setValidationErrors({ voiceId: "scenarios.validation.voiceIdRequired" });
@@ -341,12 +341,12 @@ const ScenarioEditPage: React.FC = () => {
     setActiveStep((prevStep) => prevStep + 1);
   };
 
-  // 前のステップへ
+  // 返回上一步
   const handleBack = () => {
     setActiveStep((prevStep) => prevStep - 1);
   };
 
-  // シナリオの更新
+  // 更新场景
   const handleSubmit = async () => {
     if (!scenarioId) return;
 
@@ -354,12 +354,12 @@ const ScenarioEditPage: React.FC = () => {
     setError(null);
 
     try {
-      // アバターアップロード/置き換え処理
+      // 头像上传/替换处理
       let avatarId: string | undefined = existingAvatarId;
       const avatarService = AvatarService.getInstance();
 
       if (avatarFile) {
-        // 新しいファイルがある場合：先に新アバターをアップロード → 成功後に旧アバターを削除
+        // 有新文件时：先上传新头像 → 成功后再删除旧头像
         const createResult = await avatarService.createAvatar(
           avatarFile.name,
           avatarFile.name.replace(/\.vrm$/i, ""),
@@ -373,7 +373,7 @@ const ScenarioEditPage: React.FC = () => {
         await avatarService.confirmUpload(createResult.avatarId);
         avatarId = createResult.avatarId;
 
-        // 新アバターが確定してから旧アバターを削除
+        // 新头像确认后再删除旧头像
         if (existingAvatarId) {
           try {
             await avatarService.deleteAvatar(existingAvatarId);
@@ -382,7 +382,7 @@ const ScenarioEditPage: React.FC = () => {
           }
         }
       } else if (!avatarFile && !existingAvatarFileName && existingAvatarId) {
-        // ファイルが削除された場合：旧アバターを削除
+        // 文件被删除时：删除旧头像
         try {
           await avatarService.deleteAvatar(existingAvatarId);
         } catch (deleteError) {
@@ -391,7 +391,7 @@ const ScenarioEditPage: React.FC = () => {
         avatarId = undefined;
       }
 
-      // APIリクエスト用にデータを整形
+      // 为 API 请求整理数据
       const scenarioData = {
         title: formData.title,
         description: formData.description,
@@ -401,7 +401,7 @@ const ScenarioEditPage: React.FC = () => {
         npc: { ...formData.npc, voiceId },
         initialMetrics: formData.initialMetrics,
         goals: formData.goals,
-        // undefinedを送信してバックエンドで「フィールド未更新」と解釈させる（[]は全PDF削除を意味する）
+        // 发送 undefined 让后端将其解释为「字段未更新」（[] 表示删除全部 PDF）
         pdfFiles: formData.pdfFiles?.length > 0 ? formData.pdfFiles : undefined,
         presentationFile: formData.presentationFile || undefined,
         visibility: formData.visibility,
@@ -414,10 +414,10 @@ const ScenarioEditPage: React.FC = () => {
           : {}),
       };
 
-      // APIでシナリオを更新
+      // 通过 API 更新场景
       await apiService.updateScenario(scenarioId, scenarioData);
 
-      // 成功した場合
+      // 成功时
       navigate("/scenarios", {
         state: {
           success: true,
@@ -437,14 +437,14 @@ const ScenarioEditPage: React.FC = () => {
     }
   };
 
-  // キャンセル処理
+  // 取消处理
   const handleCancel = () => {
     if (window.confirm(t("scenarios.edit.confirmCancel"))) {
       navigate("/scenarios");
     }
   };
 
-  // ローディング表示
+  // 加载提示
   if (isLoading) {
     return (
       <Container maxWidth="lg" sx={{ mt: 4, textAlign: "center" }}>
@@ -469,7 +469,7 @@ const ScenarioEditPage: React.FC = () => {
           {t("scenarios.edit.title")}
         </Typography>
 
-        {/* エラーメッセージ */}
+        {/* 错误消息 */}
         {error && (
           <Alert severity="error" sx={{ mb: 3 }}>
             <AlertTitle>{t("common.error")}</AlertTitle>
@@ -477,7 +477,7 @@ const ScenarioEditPage: React.FC = () => {
           </Alert>
         )}
 
-        {/* ステッパー */}
+        {/* 步骤条 */}
         <Stepper activeStep={activeStep} sx={{ mb: 4 }} alternativeLabel>
           {steps.map((step, index) => (
             <Step key={index}>
@@ -486,10 +486,10 @@ const ScenarioEditPage: React.FC = () => {
           ))}
         </Stepper>
 
-        {/* 現在のステップのコンテンツ */}
+        {/* 当前步骤的内容 */}
         <Box sx={{ mt: 2, mb: 4 }}>{steps[activeStep].component}</Box>
 
-        {/* ナビゲーションボタン */}
+        {/* 导航按钮 */}
         <Box sx={{ display: "flex", justifyContent: "space-between", mt: 4 }}>
           <Button
             variant="outlined"

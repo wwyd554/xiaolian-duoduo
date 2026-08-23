@@ -14,7 +14,7 @@ import { ReferenceCheckResult } from "../../types/api";
 import MessageAccordion from "./MessageAccordion";
 
 /**
- * 結果表示コンポーネントのプロパティ
+ * 结果展示组件的属性
  */
 interface ReferenceCheckResultsProps {
   data: ReferenceCheckResult;
@@ -22,18 +22,18 @@ interface ReferenceCheckResultsProps {
 }
 
 /**
- * 問題があるメッセージかどうかを判定
- * 「問題あり (issue)」のみを問題として扱う。
- * 「対象外 (not_applicable)」（挨拶・一般的な進行など）は問題としない。
- * @param msg メッセージオブジェクト
- * @returns 問題がある場合true
+ * 判断消息是否有问题
+ * 仅将「有问题 (issue)」视为问题。
+ * 「不适用 (not_applicable)」（问候、常规进行等）不视为问题。
+ * @param msg 消息对象
+ * @returns 有问题时返回 true
  */
 const hasIssue = (msg: { evaluation: string }): boolean => {
   return msg.evaluation === "issue";
 };
 
 /**
- * リファレンスチェック結果表示コンポーネント
+ * 引用检查结果展示组件
  */
 const ReferenceCheckResults: React.FC<ReferenceCheckResultsProps> = ({
   data,
@@ -43,34 +43,34 @@ const ReferenceCheckResults: React.FC<ReferenceCheckResultsProps> = ({
 
   return (
     <Box>
-      {/* 問題がない場合の表示 */}
+      {/* 无问题时的显示 */}
       {issuesCount === 0 ? (
         <Alert severity="success" sx={{ mb: 3 }}>
           <AlertTitle>
-            {t("referenceCheck.noIssuesTitle", "問題なし")}
+            {t("referenceCheck.noIssuesTitle", "无问题")}
           </AlertTitle>
           {t(
             "referenceCheck.noIssues",
-            "ドキュメントとの整合性に問題は見つかりませんでした。適切な情報提供ができています。",
+            "未发现与文档一致性问题，已能够提供恰当的信息。",
           )}
         </Alert>
       ) : (
         <>
-          {/* 問題がある場合の警告 */}
+          {/* 有问题时的警告 */}
           <Alert severity="warning" sx={{ mb: 3 }}>
             <AlertTitle>
-              {t("referenceCheck.issuesFoundTitle", "問題が発見されました")} (
+              {t("referenceCheck.issuesFoundTitle", "已发现问题")} (
               {issuesCount}件)
             </AlertTitle>
             {t(
               "referenceCheck.issuesFoundDescription",
-              "ドキュメントとの整合性に問題が見つかりました。以下の詳細を確認してください。",
+              "发现与文档一致性存在问题，请确认以下详情。",
             )}
           </Alert>
 
-          {/* 問題のあるメッセージ詳細 */}
+          {/* 有问题的消息详情 */}
           <Typography variant="h6" gutterBottom sx={{ mt: 3, mb: 2 }}>
-            {t("referenceCheck.problemMessages", "問題のあるメッセージ")}
+            {t("referenceCheck.problemMessages", "有问题的消息")}
           </Typography>
 
           {data.messages &&
@@ -87,12 +87,12 @@ const ReferenceCheckResults: React.FC<ReferenceCheckResultsProps> = ({
         </>
       )}
 
-      {/* 全メッセージ詳細（折りたたみ式） */}
+      {/* 全部消息详情（可折叠） */}
       {data.messages && data.messages.length > 0 && (
         <Accordion sx={{ mt: 4 }}>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography variant="h6">
-              {t("referenceCheck.allMessages", "全メッセージの詳細")} (
+              {t("referenceCheck.allMessages", "全部消息的详情")} (
               {data.messages.length}件)
             </Typography>
           </AccordionSummary>
@@ -110,21 +110,21 @@ const ReferenceCheckResults: React.FC<ReferenceCheckResultsProps> = ({
         </Accordion>
       )}
 
-      {/* 説明セクション */}
+      {/* 说明区域 */}
       <Box sx={{ mt: 4, p: 3, bgcolor: "background.default", borderRadius: 2 }}>
         <Typography variant="subtitle1" gutterBottom fontWeight="medium">
-          {t("referenceCheck.explanationTitle", "リファレンスチェックについて")}
+          {t("referenceCheck.explanationTitle", "关于引用检查")}
         </Typography>
         <Typography variant="body2" sx={{ mb: 2 }}>
           {t(
             "referenceCheck.explanation1",
-            "リファレンスチェックは、営業担当者の発言がシナリオに設定されたドキュメントの内容と整合性があるかを確認する機能です。",
+            "引用检查用于确认销售人员的发言是否与场景中设定的文档内容保持一致。",
           )}
         </Typography>
         <Typography variant="body2">
           {t(
             "referenceCheck.explanation2",
-            "正確な情報提供により、顧客との信頼関係を構築し、営業効果を高めることができます。問題が発見された場合は、ドキュメントの内容を再確認し、正確な情報を提供するよう心がけましょう。",
+            "通过提供准确的信息，可以建立与客户的信任关系并提升销售效果。如果发现问题，请重新确认文档内容，努力提供准确的信息。",
           )}
         </Typography>
       </Box>

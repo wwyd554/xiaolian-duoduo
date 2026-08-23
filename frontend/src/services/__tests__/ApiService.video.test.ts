@@ -1,10 +1,10 @@
-// APIのモック
+// API 的模拟
 jest.mock("aws-amplify/api", () => ({
   get: jest.fn(),
   post: jest.fn(),
 }));
 
-// ApiServiceのモック
+// ApiService 的模拟
 jest.mock("../ApiService", () => ({
   ApiService: {
     getInstance: jest.fn(() => ({
@@ -17,7 +17,7 @@ jest.mock("../ApiService", () => ({
 
 import { ApiService } from "../ApiService";
 
-describe("ApiService - ビデオ関連機能のテスト", () => {
+describe("ApiService - 视频相关功能的测试", () => {
   let apiService: {
     createMultipartUpload: jest.Mock;
     completeMultipartUpload: jest.Mock;
@@ -30,8 +30,8 @@ describe("ApiService - ビデオ関連機能のテスト", () => {
   });
 
   describe("createMultipartUpload", () => {
-    it("マルチパートアップロード開始に成功するとき", async () => {
-      // モックレスポンスの設定（25パート分のURLを想定）
+    it("分片上传启动成功时", async () => {
+      // 设置模拟响应（假设 25 个分片的 URL）
       const mockResponse = {
         uploadId: "test-upload-id",
         videoKey: "videos/test-session-id/recording.mp4",
@@ -51,7 +51,7 @@ describe("ApiService - ビデオ関連機能のテスト", () => {
         "recording.mp4",
       );
 
-      // 引数の順序が正しいことの検証（sessionId, contentType, partCount, fileName）
+      // 验证参数顺序正确（sessionId, contentType, partCount, fileName）
       expect(apiService.createMultipartUpload).toHaveBeenCalledWith(
         "test-session-id",
         "video/mp4",
@@ -62,19 +62,19 @@ describe("ApiService - ビデオ関連機能のテスト", () => {
       expect(result.partUrls).toHaveLength(2);
     });
 
-    it("エラーが発生するとき", async () => {
+    it("发生错误时", async () => {
       apiService.createMultipartUpload.mockRejectedValue(
-        new Error("マルチパート開始エラー"),
+        new Error("分片上传启动错误"),
       );
 
       await expect(
         apiService.createMultipartUpload("test-session-id", "video/mp4", 2),
-      ).rejects.toThrow("マルチパート開始エラー");
+      ).rejects.toThrow("分片上传启动错误");
     });
   });
 
   describe("completeMultipartUpload", () => {
-    it("マルチパートアップロード完了に成功するとき", async () => {
+    it("分片上传完成成功时", async () => {
       const mockResponse = {
         videoKey: "videos/test-session-id/recording.mp4",
         location: "https://example-bucket.s3.amazonaws.com/recording.mp4",
@@ -102,7 +102,7 @@ describe("ApiService - ビデオ関連機能のテスト", () => {
   });
 
   describe("abortMultipartUpload", () => {
-    it("マルチパートアップロード中断に成功するとき", async () => {
+    it("分片上传中断成功时", async () => {
       apiService.abortMultipartUpload.mockResolvedValue({ aborted: true });
 
       const result = await apiService.abortMultipartUpload(

@@ -7,7 +7,7 @@ import { dialogueConfig } from "../../config/dialogueConfig";
 import type { Metrics, Goal, GoalStatus, Scenario } from "../../types/index";
 
 describe("dialogueEngine", () => {
-  // テスト用の基本データ
+  // 测试用的基础数据
   const baseMetrics: Metrics = {
     angerLevel: 3,
     trustLevel: 5,
@@ -58,19 +58,19 @@ describe("dialogueEngine", () => {
   };
 
   describe("calculateCurrentTurns", () => {
-    it("正しいターン数を計算する - 偶数の場合", () => {
-      expect(calculateCurrentTurns(4)).toBe(2); // 4メッセージ = 2ターン
-      expect(calculateCurrentTurns(6)).toBe(3); // 6メッセージ = 3ターン
+    it("计算正确的轮次数 - 偶数情况", () => {
+      expect(calculateCurrentTurns(4)).toBe(2); // 4条消息 = 2轮
+      expect(calculateCurrentTurns(6)).toBe(3); // 6条消息 = 3轮
     });
 
-    it("正しいターン数を計算する - 奇数の場合", () => {
-      expect(calculateCurrentTurns(3)).toBe(2); // 3メッセージ = 2ターン（切り上げ）
-      expect(calculateCurrentTurns(5)).toBe(3); // 5メッセージ = 3ターン（切り上げ）
+    it("计算正确的轮次数 - 奇数情况", () => {
+      expect(calculateCurrentTurns(3)).toBe(2); // 3条消息 = 2轮（向上取整）
+      expect(calculateCurrentTurns(5)).toBe(3); // 5条消息 = 3轮（向上取整）
     });
   });
 
   describe("shouldEndSession", () => {
-    it("怒りが最大値に達した場合はtrueを返す", () => {
+    it("愤怒值达到最大值时返回 true", () => {
       const angryMetrics = {
         ...baseMetrics,
         angerLevel: dialogueConfig.METRICS_MAX,
@@ -86,7 +86,7 @@ describe("dialogueEngine", () => {
       ).toBe(true);
     });
 
-    it("すべてのゴールが達成された場合はtrueを返す", () => {
+    it("所有目标都达成时返回 true", () => {
       const allGoalsAchieved = [
         { goalId: "goal1", achieved: true, progress: 100 },
         { goalId: "goal2", achieved: true, progress: 100 },
@@ -102,9 +102,9 @@ describe("dialogueEngine", () => {
       ).toBe(true);
     });
 
-    it("メッセージ数がシナリオで指定された最大ターン数を超えた場合はtrueを返す", () => {
-      // シナリオでmaxTurns: 5を指定
-      // 12メッセージ = 6ターン > 5ターン
+    it("消息数超过场景指定的最大轮次数时返回 true", () => {
+      // 场景中指定 maxTurns: 5
+      // 12条消息 = 6轮 > 5轮
       expect(
         shouldEndSession(
           baseMetrics,
@@ -114,7 +114,7 @@ describe("dialogueEngine", () => {
           baseScenario,
         ),
       ).toBe(true);
-      // 11メッセージ = 6ターン（切り上げ） > 5ターン
+      // 11条消息 = 6轮（向上取整） > 5轮
       expect(
         shouldEndSession(
           baseMetrics,
@@ -124,7 +124,7 @@ describe("dialogueEngine", () => {
           baseScenario,
         ),
       ).toBe(true);
-      // 10メッセージ = 5ターン = 5ターン
+      // 10条消息 = 5轮 = 5轮
       expect(
         shouldEndSession(
           baseMetrics,
@@ -134,7 +134,7 @@ describe("dialogueEngine", () => {
           baseScenario,
         ),
       ).toBe(false);
-      // 9メッセージ = 5ターン（切り上げ） = 5ターン
+      // 9条消息 = 5轮（向上取整） = 5轮
       expect(
         shouldEndSession(
           baseMetrics,
@@ -146,12 +146,12 @@ describe("dialogueEngine", () => {
       ).toBe(false);
     });
 
-    it("シナリオにmaxTurnsが指定されていない場合はデフォルト値を使用する", () => {
+    it("场景未指定 maxTurns 时使用默认值", () => {
       const scenarioWithoutMaxTurns = { ...baseScenario };
       delete scenarioWithoutMaxTurns.maxTurns;
 
-      // デフォルト値は dialogueConfig.MAX_MESSAGE_COUNT = 20
-      // 42メッセージ = 21ターン > 20ターン
+      // 默认值为 dialogueConfig.MAX_MESSAGE_COUNT = 20
+      // 42条消息 = 21轮 > 20轮
       expect(
         shouldEndSession(
           baseMetrics,
@@ -161,7 +161,7 @@ describe("dialogueEngine", () => {
           scenarioWithoutMaxTurns,
         ),
       ).toBe(true);
-      // 41メッセージ = 21ターン（切り上げ） > 20ターン
+      // 41条消息 = 21轮（向上取整） > 20轮
       expect(
         shouldEndSession(
           baseMetrics,
@@ -171,7 +171,7 @@ describe("dialogueEngine", () => {
           scenarioWithoutMaxTurns,
         ),
       ).toBe(true);
-      // 40メッセージ = 20ターン = 20ターン
+      // 40条消息 = 20轮 = 20轮
       expect(
         shouldEndSession(
           baseMetrics,
@@ -183,8 +183,8 @@ describe("dialogueEngine", () => {
       ).toBe(false);
     });
 
-    it("他の条件が満たされていない場合はfalseを返す", () => {
-      // シナリオmaxTurns: 5、現在3ターン（6メッセージ）
+    it("其他条件未满足时返回 false", () => {
+      // 场景 maxTurns: 5，当前 3 轮（6条消息）
       expect(
         shouldEndSession(
           baseMetrics,
@@ -198,7 +198,7 @@ describe("dialogueEngine", () => {
   });
 
   describe("getSessionEndReason", () => {
-    it("怒りが最大値に達した場合は怒りに関するメッセージを返す", () => {
+    it("愤怒值达到最大值时返回关于愤怒的消息", () => {
       const angryMetrics = {
         ...baseMetrics,
         angerLevel: dialogueConfig.METRICS_MAX,
@@ -213,7 +213,7 @@ describe("dialogueEngine", () => {
       expect(reason).toContain("不满");
     });
 
-    it("すべてのゴールが達成された場合はゴール達成に関するメッセージを返す", () => {
+    it("所有目标达成时返回关于目标达成的消息", () => {
       const allGoalsAchieved = [
         { goalId: "goal1", achieved: true, progress: 100 },
         { goalId: "goal2", achieved: true, progress: 100 },
@@ -228,8 +228,8 @@ describe("dialogueEngine", () => {
       expect(reason).toContain("已达成所有商谈目标");
     });
 
-    it("メッセージ数がシナリオで指定された最大ターン数に達した場合は時間終了に関するメッセージを返す", () => {
-      // 10メッセージ = 5ターン
+    it("消息数达到场景指定的最大轮次数时返回关于时间结束的消息", () => {
+      // 10条消息 = 5轮
       const reason = getSessionEndReason(
         baseMetrics,
         10,
@@ -240,12 +240,12 @@ describe("dialogueEngine", () => {
       expect(reason).toContain("预定的商谈时间已结束");
     });
 
-    it("シナリオにmaxTurnsが指定されていない場合はデフォルト値を使用する", () => {
+    it("场景未指定 maxTurns 时使用默认值", () => {
       const scenarioWithoutMaxTurns = { ...baseScenario };
       delete scenarioWithoutMaxTurns.maxTurns;
 
-      // デフォルト値は dialogueConfig.MAX_MESSAGE_COUNT = 20
-      // 40メッセージ = 20ターン
+      // 默认值为 dialogueConfig.MAX_MESSAGE_COUNT = 20
+      // 40条消息 = 20轮
       const reason = getSessionEndReason(
         baseMetrics,
         40,
@@ -256,8 +256,8 @@ describe("dialogueEngine", () => {
       expect(reason).toContain("预定的商谈时间已结束");
     });
 
-    it("他の条件が満たされていない場合は一般的なメッセージを返す", () => {
-      // 他の条件が満たされていない場合（実際のコードではここには到達しないかも）
+    it("其他条件未满足时返回一般消息", () => {
+      // 其他条件未满足的情况（实际代码中可能不会到达这里）
       const reason = getSessionEndReason(
         baseMetrics,
         6,

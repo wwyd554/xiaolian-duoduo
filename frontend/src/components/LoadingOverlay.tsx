@@ -11,7 +11,7 @@ import {
 interface LoadingOverlayProps {
   open: boolean;
   message?: string;
-  progress?: number; // 0-100の範囲で進行状況を表す（オプション）
+  progress?: number; // 表示 0-100 范围内的进度（可选）
 }
 
 const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
@@ -21,7 +21,7 @@ const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
 }) => {
   const { t } = useTranslation();
 
-  // デフォルトのメッセージは翻訳キーから取得
+  // 默认的消息从翻译键获取
   const loadingMessage = message || t("common.loading");
   return (
     <Backdrop

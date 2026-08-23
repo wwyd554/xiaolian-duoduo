@@ -1,18 +1,18 @@
 /**
- * リップシンクコントローラー
- * Phase 2: Visemeベースの母音リップシンク（Polly Speech Marks連携）
- * Phase 1フォールバック: 音量ベースのリップシンク
+ * 口型同步控制器
+ * Phase 2：基于 Viseme 的元音口型同步（联动 Polly Speech Marks）
+ * Phase 1 回退：基于音量的口型同步
  */
 import { VRM } from '@pixiv/three-vrm';
 import { VisemeData, POLLY_VISEME_TO_VOWEL } from '../../types/avatar';
 
-// 口形状のトランジション速度
+// 嘴型的过渡速度
 const MOUTH_TRANSITION_SPEED = 12.0;
-// Phase 1フォールバック用設定
+// Phase 1 回退用设置
 const VOLUME_THRESHOLD = 0.01;
 const MAX_MOUTH_OPEN = 0.8;
 
-// VRM母音ブレンドシェイプ名
+// VRM 元音混合变形名称
 const VOWEL_BLEND_SHAPES: Record<VisemeData['value'], string> = {
   a: 'aa',
   i: 'ih',
@@ -24,16 +24,16 @@ const VOWEL_BLEND_SHAPES: Record<VisemeData['value'], string> = {
 
 export class LipSyncController {
   private vrm: VRM;
-  // Phase 2: Visemeベース
+  // Phase 2：基于 Viseme
   private visemeData: VisemeData[] = [];
   private visemeStartTime: number = 0;
   private isVisemePlaying: boolean = false;
   private currentVisemeIndex: number = 0;
-  // 現在の各母音の強度
+  // 当前各元音的强度
   private currentValues: Record<string, number> = { aa: 0, ih: 0, ou: 0, ee: 0, oh: 0 };
   private targetValues: Record<string, number> = { aa: 0, ih: 0, ou: 0, ee: 0, oh: 0 };
 
-  // Phase 1フォールバック: 音量ベース
+  // Phase 1 回退：基于音量
   private analyser: AnalyserNode | null = null;
   private audioContext: AudioContext | null = null;
   private dataArray: Uint8Array | null = null;
@@ -47,10 +47,10 @@ export class LipSyncController {
   }
 
   /**
-   * Visemeデータを設定してvisemeモードを有効化
+   * 设置 Viseme 数据以启用 viseme 模式
    */
   setVisemeData(rawVisemes: Array<{ time: number; type: string; value: string }>): void {
-    // Polly visemeを日本語母音に変換
+    // 将 Polly viseme 转换为日语元音
     this.visemeData = rawVisemes.map(v => ({
       time: v.time,
       value: POLLY_VISEME_TO_VOWEL[v.value] || 'sil',
@@ -60,7 +60,7 @@ export class LipSyncController {
   }
 
   /**
-   * Viseme再生を開始（音声再生開始と同時に呼び出す）
+   * 开始 Viseme 播放（与音频播放开始同时调用）
    */
   startVisemePlayback(): void {
     if (this.visemeData.length === 0) return;
@@ -70,18 +70,18 @@ export class LipSyncController {
   }
 
   /**
-   * Viseme再生を停止
+   * 停止 Viseme 播放
    */
   stopVisemePlayback(): void {
     this.isVisemePlaying = false;
     this.visemeData = [];
     this.currentVisemeIndex = 0;
-    // すべての口形状をリセット
+    // 重置所有嘴型
     this.targetValues = { aa: 0, ih: 0, ou: 0, ee: 0, oh: 0 };
   }
 
   /**
-   * AudioServiceから音声要素を取得して接続（Phase 1フォールバック）
+   * 从 AudioService 获取音频元素并连接（Phase 1 回退）
    */
   connectToAudioService(): void {
     if (this.isConnected) return;
@@ -120,12 +120,12 @@ export class LipSyncController {
       source.connect(this.analyser);
       this.analyser.connect(this.audioContext.destination);
     } catch {
-      // 既に接続済みの場合はエラーになるが無視
+      // 已连接时会报错，但忽略
     }
   }
 
   /**
-   * 毎フレーム呼び出し、口形状を更新
+   * 每帧调用，更新嘴型
    */
   update(deltaTime: number): void {
     if (!this.vrm.expressionManager) return;
@@ -138,14 +138,14 @@ export class LipSyncController {
   }
 
   /**
-   * Phase 2: Visemeベースの口形状更新
+   * Phase 2：基于 Viseme 的嘴型更新
    */
   private updateVisemeMode(deltaTime: number): void {
     if (!this.vrm.expressionManager) return;
 
     const elapsed = performance.now() - this.visemeStartTime;
 
-    // 現在のvisemeを特定
+    // 确定当前 viseme
     while (
       this.currentVisemeIndex < this.visemeData.length - 1 &&
       this.visemeData[this.currentVisemeIndex + 1].time <= elapsed
@@ -153,7 +153,7 @@ export class LipSyncController {
       this.currentVisemeIndex++;
     }
 
-    // 再生完了チェック: 最後のvisemeから一定時間経過したら終了
+    // 播放完成检查：距最后一个 viseme 超过一定时间后结束
     const lastViseme = this.visemeData[this.visemeData.length - 1];
     if (this.currentVisemeIndex >= this.visemeData.length - 1 && elapsed > lastViseme.time + 200) {
       this.stopVisemePlayback();
@@ -162,10 +162,10 @@ export class LipSyncController {
 
     const currentViseme = this.visemeData[this.currentVisemeIndex];
 
-    // ターゲット値をリセット
+    // 重置目标值
     this.targetValues = { aa: 0, ih: 0, ou: 0, ee: 0, oh: 0 };
 
-    // 現在のvisemeに対応するブレンドシェイプをターゲットに設定
+    // 将当前 viseme 对应的混合变形设为目标
     if (currentViseme.value !== 'sil') {
       const blendShape = VOWEL_BLEND_SHAPES[currentViseme.value];
       if (blendShape) {
@@ -173,7 +173,7 @@ export class LipSyncController {
       }
     }
 
-    // スムーズにトランジション
+    // 平滑过渡
     const step = MOUTH_TRANSITION_SPEED * deltaTime;
     for (const key of Object.keys(this.currentValues)) {
       const target = this.targetValues[key] || 0;
@@ -187,7 +187,7 @@ export class LipSyncController {
   }
 
   /**
-   * Phase 1フォールバック: 音量ベースの口形状更新
+   * Phase 1 回退：基于音量的嘴型更新
    */
   private updateVolumeMode(deltaTime: number): void {
     if (!this.vrm.expressionManager) return;
@@ -215,15 +215,15 @@ export class LipSyncController {
   }
 
   /**
-   * 音声接続を解除
+   * 断开音频连接
    */
   disconnect(): void {
     this.stopVisemePlayback();
-    // 口形状を即座にリセット
+    // 立即重置嘴型
     this.currentMouthOpen = 0;
     this.currentValues = { aa: 0, ih: 0, ou: 0, ee: 0, oh: 0 };
     this.useVisemeMode = false;
-    // VRM表情を直接リセット（update()が呼ばれなくても口が閉じるように）
+    // 直接重置 VRM 表情（即使不调用 update() 也能闭嘴）
     if (this.vrm.expressionManager) {
       this.vrm.expressionManager.setValue('aa', 0);
       this.vrm.expressionManager.setValue('ih', 0);
@@ -241,7 +241,7 @@ export class LipSyncController {
   }
 
   /**
-   * リソース解放
+   * 资源释放
    */
   dispose(): void {
     this.mutationObserver?.disconnect();

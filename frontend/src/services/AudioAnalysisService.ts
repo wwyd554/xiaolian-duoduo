@@ -9,17 +9,17 @@ import {
 } from '../types/audioAnalysis';
 
 /**
- * 音声分析サービス
+ * 语音分析服务
  * 
- * 音声ファイルのアップロード、分析処理、結果取得を管理します。
- * ApiServiceを使用してAPI呼び出しを行います。
+ * 管理音频文件的上传、分析处理和结果获取。
+ * 使用 ApiService 进行 API 调用。
  */
 export class AudioAnalysisService {
   private static instance: AudioAnalysisService;
   private apiService: ApiService;
 
   /**
-   * コンストラクタ - シングルトンパターン
+   * 构造函数 - 单例模式
    */
   private constructor() {
     console.log("=== 音频分析服务初始化 ===");
@@ -27,7 +27,7 @@ export class AudioAnalysisService {
   }
 
   /**
-   * シングルトンインスタンスを取得
+   * 获取单例实例
    */
   public static getInstance(): AudioAnalysisService {
     if (!AudioAnalysisService.instance) {
@@ -37,12 +37,12 @@ export class AudioAnalysisService {
   }
 
   /**
-   * 音声ファイルアップロード用の署名付きURLを生成
+   * 生成音频文件上传用的签名 URL
    * 
-   * @param fileName ファイル名
-   * @param contentType 音声ファイルの形式
-   * @param language 言語設定
-   * @returns 署名付きURLとセッション情報
+   * @param fileName 文件名
+   * @param contentType 音频文件的格式
+   * @param language 语言设置
+   * @returns 签名 URL 与会话信息
    */
   async generateUploadUrl(
     fileName: string,
@@ -69,12 +69,12 @@ export class AudioAnalysisService {
   }
 
   /**
-   * 音声ファイルをS3にアップロード（POSTフォーム方式）
+   * 将音频文件上传到 S3（POST 表单方式）
    * 
-   * @param file 音声ファイル
-   * @param uploadUrl 署名付きURL
-   * @param formData POSTフォーム用データ
-   * @param onProgress アップロード進行状況コールバック
+   * @param file 音频文件
+   * @param uploadUrl 签名 URL
+   * @param formData POST 表单用数据
+   * @param onProgress 上传进度回调
    */
   async uploadAudioFile(
     file: File,
@@ -102,28 +102,28 @@ export class AudioAnalysisService {
             resolve();
           } else {
             console.error(`上传失败: ${xhr.status} - ${xhr.statusText}`);
-            reject(new Error(`アップロードに失敗しました: ${xhr.statusText}`));
+            reject(new Error(`上传失败: ${xhr.statusText}`));
           }
         });
 
         xhr.addEventListener('error', () => {
           console.error('上传时发生错误');
-          reject(new Error('アップロード中にエラーが発生しました'));
+          reject(new Error('上传过程中发生错误'));
         });
 
-        // FormDataオブジェクトを作成
+        // 创建 FormData 对象
         const formDataObj = new FormData();
 
-        // 署名付きフォームデータのフィールドを追加
+        // 添加签名表单数据的字段
         Object.entries(formData).forEach(([key, value]) => {
           formDataObj.append(key, value);
         });
 
-        // ファイルを最後に追加（S3の要求に従い、fileフィールドは最後）
+        // 最后添加文件（按 S3 的要求，file 字段放在最后）
         formDataObj.append("file", file);
 
         xhr.open('POST', uploadUrl);
-        // Content-Typeヘッダーは設定しない（FormDataが自動的に適切な値を設定）
+        // 不设置 Content-Type 头（FormData 会自动设置合适的值）
         xhr.send(formDataObj);
       });
     } catch (error) {
@@ -134,13 +134,13 @@ export class AudioAnalysisService {
   }
 
   /**
-   * 音声分析を開始
+   * 开始语音分析
    * 
-   * @param sessionId セッションID
-   * @param audioKey 音声ファイルのS3キー
-   * @param scenarioId シナリオID
-   * @param language 言語設定
-   * @returns 分析開始結果
+   * @param sessionId 会话 ID
+   * @param audioKey 音频文件的 S3 键
+   * @param scenarioId 场景 ID
+   * @param language 语言设置
+   * @returns 分析开始结果
    */
   async startAnalysis(
     sessionId: string,
@@ -149,7 +149,7 @@ export class AudioAnalysisService {
     language: AudioAnalysisLanguage
   ): Promise<AudioAnalysisStartResponse> {
     try {
-      console.log('=== 音声分析開始 ===');
+      console.log('=== 语音分析开始 ===');
       console.log(`会话ID: ${sessionId}, 场景ID: ${scenarioId}, 语言: ${language}`);
 
       const response = await this.apiService.startAudioAnalysis(
@@ -159,9 +159,9 @@ export class AudioAnalysisService {
         language
       );
 
-      console.log('音声分析開始完了:', response);
+      console.log('语音分析开始完成:', response);
 
-      // 型を適合させる
+      // 使类型匹配
       return {
         success: response.success,
         sessionId: response.sessionId,
@@ -177,16 +177,16 @@ export class AudioAnalysisService {
   }
 
   /**
-   * 音声分析の状況を確認
+   * 确认语音分析状态
    * 
-   * @param sessionId セッションID
-   * @returns 分析状況
+   * @param sessionId 会话 ID
+   * @returns 分析状态
    */
   async getAnalysisStatus(sessionId: string): Promise<AudioAnalysisStatusResponse> {
     try {
       const response = await this.apiService.getAudioAnalysisStatus(sessionId);
 
-      // 型を適合させる
+      // 使类型匹配
       return {
         success: response.success,
         sessionId: response.sessionId,
@@ -202,21 +202,21 @@ export class AudioAnalysisService {
   }
 
   /**
-   * 音声分析結果を取得
+   * 获取语音分析结果
    * 
-   * @param sessionId セッションID
-   * @returns 分析結果
+   * @param sessionId 会话 ID
+   * @returns 分析结果
    */
   async getAnalysisResults(sessionId: string): Promise<AudioAnalysisApiResponse> {
     try {
-      console.log('=== 音声分析結果取得開始 ===');
+      console.log('=== 语音分析结果获取开始 ===');
       console.log(`会话ID: ${sessionId}`);
 
       const response = await this.apiService.getAudioAnalysisResults(sessionId);
 
-      console.log('音声分析結果取得完了:', response);
+      console.log('语音分析结果获取完成:', response);
 
-      // 型を適合させる
+      // 使类型匹配
       return {
         success: response.success,
         sessionId: response.sessionId,
@@ -233,11 +233,11 @@ export class AudioAnalysisService {
   }
 
   /**
-   * 音声ファイルのバリデーション
+   * 音频文件的校验
    * 
-   * @param file 音声ファイル
-   * @param maxSizeInMB 最大ファイルサイズ（MB）
-   * @returns バリデーション結果
+   * @param file 音频文件
+   * @param maxSizeInMB 最大文件大小（MB）
+   * @returns 校验结果
    */
   validateAudioFile(file: File, maxSizeInMB: number = 100): {
     isValid: boolean;
@@ -247,17 +247,17 @@ export class AudioAnalysisService {
     console.log('=== 音频文件校验开始 ===');
     console.log(`文件名: ${file.name}, 大小: ${file.size}, 类型: ${file.type}`);
 
-    // ファイルサイズチェック
+    // 文件大小检查
     const maxSize = maxSizeInMB * 1024 * 1024;
     if (file.size > maxSize) {
       console.error(`文件大小超出限制: ${file.size} > ${maxSize}`);
       return {
         isValid: false,
-        error: `ファイルサイズは${maxSizeInMB}MB以下にしてください`
+        error: `文件大小请在 ${maxSizeInMB}MB 以下`
       };
     }
 
-    // 音声形式チェック
+    // 音频格式检查
     const supportedTypes: SupportedAudioFormat[] = [
       'audio/mpeg',
       'audio/mp3',
@@ -268,11 +268,11 @@ export class AudioAnalysisService {
 
     let contentType: SupportedAudioFormat = 'audio/mpeg';
 
-    // MIMEタイプによる判定
+    // 根据 MIME 类型判断
     if (supportedTypes.includes(file.type as SupportedAudioFormat)) {
       contentType = file.type as SupportedAudioFormat;
     } else {
-      // 拡張子による判定
+      // 根据扩展名判断
       const extension = file.name.toLowerCase().split('.').pop();
       const extensionMap: Record<string, SupportedAudioFormat> = {
         'mp3': 'audio/mpeg',
@@ -288,7 +288,7 @@ export class AudioAnalysisService {
         console.error(`不支持的音频格式: ${file.type}, 扩展名: ${extension}`);
         return {
           isValid: false,
-          error: '対応していない音声形式です。MP3、WAV、FLAC、OGG形式をご利用ください'
+          error: '不支持的音频格式。请使用 MP3、WAV、FLAC、OGG 格式'
         };
       }
     }
@@ -301,19 +301,19 @@ export class AudioAnalysisService {
   }
 
   /**
-   * 分析進行状況をポーリングで監視
+   * 通过轮询监控分析进度
    * 
-   * @param sessionId セッションID
-   * @param onProgress 進行状況更新コールバック
-   * @param maxAttempts 最大試行回数
-   * @param intervalMs ポーリング間隔（ミリ秒）
-   * @returns 最終分析結果
+   * @param sessionId 会话 ID
+   * @param onProgress 进度更新回调
+   * @param maxAttempts 最大尝试次数
+   * @param intervalMs 轮询间隔（毫秒）
+   * @returns 最终分析结果
    */
   async pollAnalysisStatus(
     sessionId: string,
     onProgress: (status: AudioAnalysisStatusResponse) => void,
-    maxAttempts: number = 120, // 最大20分（10秒間隔 × 120回）
-    intervalMs: number = 10000 // 10秒間隔
+    maxAttempts: number = 120, // 最长 20 分钟（10 秒间隔 × 120 次）
+    intervalMs: number = 10000 // 10 秒间隔
   ): Promise<AudioAnalysisApiResponse> {
     let attempts = 0;
 
@@ -331,22 +331,22 @@ export class AudioAnalysisService {
 
           if (status.status === 'COMPLETED') {
             console.log('音频分析完成 - 正在获取结果');
-            // 完了時は結果を取得して返す
+            // 完成时获取结果并返回
             const result = await this.getAnalysisResults(sessionId);
-            console.log('音声分析結果取得完了');
+            console.log('语音分析结果获取完成');
             resolve(result);
             return;
           } else if (status.status === 'FAILED' || status.currentStep === 'ERROR') {
-            console.error('音声分析失敗:', status.progress?.error);
-            reject(new Error(`分析に失敗しました: ${status.progress?.error || '詳細不明'}`));
+            console.error('语音分析失败:', status.progress?.error);
+            reject(new Error(`分析失败: ${status.progress?.error || '详情未知'}`));
             return;
           } else if (attempts >= maxAttempts) {
             console.error('音频分析轮询超时');
-            reject(new Error('分析がタイムアウトしました'));
+            reject(new Error('分析超时'));
             return;
           }
 
-          // まだ完了していない場合は次のポーリングをスケジュール
+          // 若尚未完成，则安排下一次轮询
           setTimeout(poll, intervalMs);
 
         } catch (error) {
@@ -360,14 +360,14 @@ export class AudioAnalysisService {
   }
 
   /**
-   * 音声分析を実行（アップロード～結果取得までの統合処理）
+   * 执行语音分析（从上传到获取结果的集成处理）
    * 
-   * @param file 音声ファイル
-   * @param scenarioId シナリオID
-   * @param language 言語設定
-   * @param onUploadProgress アップロード進行状況コールバック
-   * @param onAnalysisProgress 分析進行状況コールバック
-   * @returns 分析結果
+   * @param file 音频文件
+   * @param scenarioId 场景 ID
+   * @param language 语言设置
+   * @param onUploadProgress 上传进度回调
+   * @param onAnalysisProgress 分析进度回调
+   * @returns 分析结果
    */
   async executeFullAnalysis(
     file: File,
@@ -377,30 +377,30 @@ export class AudioAnalysisService {
     onAnalysisProgress?: (status: AudioAnalysisStatusResponse) => void
   ): Promise<AudioAnalysisApiResponse> {
     try {
-      console.log('=== 音声分析統合処理開始 ===');
+      console.log('=== 语音分析集成处理开始 ===');
 
-      // 1. ファイルバリデーション
+      // 1. 文件校验
       const validation = this.validateAudioFile(file);
       if (!validation.isValid) {
         throw new Error(validation.error || '文件校验失败');
       }
 
-      // 2. アップロードURL生成
+      // 2. 生成上传 URL
       const uploadInfo = await this.generateUploadUrl(
         file.name,
         validation.contentType!,
         language
       );
 
-      // 3. ファイルアップロード（POSTフォーム方式）
+      // 3. 文件上传（POST 表单方式）
       await this.uploadAudioFile(
         file,
         uploadInfo.uploadUrl,
-        (uploadInfo as AudioUploadUrlResponse & { formData: Record<string, string> }).formData, // POSTフォーム用データ
+        (uploadInfo as AudioUploadUrlResponse & { formData: Record<string, string> }).formData, // POST 表单用数据
         onUploadProgress
       );
 
-      // 4. 分析開始
+      // 4. 开始分析
       const analysisStart = await this.startAnalysis(
         uploadInfo.sessionId,
         uploadInfo.audioKey,
@@ -412,13 +412,13 @@ export class AudioAnalysisService {
         throw new Error(analysisStart.message || '开始分析失败');
       }
 
-      // 5. ポーリングで結果を監視
+      // 5. 通过轮询监控结果
       const result = await this.pollAnalysisStatus(
         uploadInfo.sessionId,
         onAnalysisProgress || (() => { })
       );
 
-      console.log('=== 音声分析統合処理完了 ===');
+      console.log('=== 语音分析集成处理完成 ===');
       return result;
 
     } catch (error) {

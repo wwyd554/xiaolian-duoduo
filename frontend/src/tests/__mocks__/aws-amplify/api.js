@@ -1,4 +1,4 @@
-// APIモック
+// API mock
 export const get = jest.fn().mockResolvedValue({
   body: {
     json: () => Promise.resolve({ settings: { language: "en" } }),

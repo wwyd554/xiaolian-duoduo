@@ -15,7 +15,7 @@ interface ConversationHeaderProps {
   sessionEnded: boolean;
   onManualEnd: () => void;
   messageCount: number;
-  // 新規Props: ヘッダーアクションボタン
+  // 新增 Props：顶部栏操作按钮
   onToggleRightPanels?: () => void;
   onToggleMetrics?: () => void;
   onOpenSettings?: () => void;
@@ -24,8 +24,8 @@ interface ConversationHeaderProps {
 }
 
 /**
- * 会話ページのヘッダーコンポーネント
- * アクションボタン群（📋📊🔊）とセッション終了ボタンを含む
+ * 会话页面的顶部栏组件
+ * 包含操作按钮组（📋📊🔊）和会话结束按钮
  */
 const ConversationHeader: React.FC<ConversationHeaderProps> = ({
   scenario,
@@ -57,7 +57,7 @@ const ConversationHeader: React.FC<ConversationHeaderProps> = ({
         zIndex: 50,
       }}
     >
-      {/* 戻るボタン */}
+      {/* 返回按钮 */}
       <IconButton
         onClick={() => navigate("/scenarios")}
         aria-label={t("navigation.back")}
@@ -72,7 +72,7 @@ const ConversationHeader: React.FC<ConversationHeaderProps> = ({
         <ArrowBackIcon fontSize="small" />
       </IconButton>
 
-      {/* シナリオ情報 */}
+      {/* 场景信息 */}
       <Box sx={{ flex: 1 }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
           <Typography
@@ -99,7 +99,7 @@ const ConversationHeader: React.FC<ConversationHeaderProps> = ({
         </Typography>
       </Box>
 
-      {/* ターン数表示 */}
+      {/* 轮次计数显示 */}
       {sessionStarted && !sessionEnded && (
         <Chip
           label={`${t("conversation.turn")}: ${currentTurns} / ${maxTurns}`}
@@ -109,7 +109,7 @@ const ConversationHeader: React.FC<ConversationHeaderProps> = ({
         />
       )}
 
-      {/* アクションボタン群 */}
+      {/* 操作按钮组 */}
       <Box sx={{ display: "flex", gap: 0.5 }}>
         {onToggleRightPanels && (
           <Tooltip title={t("conversation.header.toggleRightPanels")}>
@@ -168,7 +168,7 @@ const ConversationHeader: React.FC<ConversationHeaderProps> = ({
         )}
       </Box>
 
-      {/* セッション終了ボタン - 常に表示 */}
+      {/* 会话结束按钮 - 始终显示 */}
       {sessionStarted && (
         <Button
           variant="outlined"

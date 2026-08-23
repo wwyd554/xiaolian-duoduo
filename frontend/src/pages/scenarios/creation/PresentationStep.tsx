@@ -21,7 +21,7 @@ const PresentationStep: React.FC<PresentationStepProps> = ({
   const { t } = useTranslation();
   const apiService = ApiService.getInstance();
 
-  // 提案資料をUploadedFileInfo[]形式に変換（PdfUploaderのインターフェースに合わせる）
+  // 将提案资料转换为 UploadedFileInfo[] 格式（与 PdfUploader 的接口对齐）
   const files: UploadedFileInfo[] = formData.presentationFile
     ? [{
       key: formData.presentationFile.key,
@@ -37,8 +37,8 @@ const PresentationStep: React.FC<PresentationStepProps> = ({
     const urlInfo = await apiService.getPresentationUploadUrl(sid, file.name, "application/pdf");
     await apiService.uploadPresentationFile(urlInfo.uploadUrl, urlInfo.formData, file);
 
-    // スライド変換はシナリオ作成後にScenarioCreatePage.handleSubmitで実行するため、
-    // ここではS3アップロードのみ行い、ステータスをuploadedに設定
+    // 幻灯片转换在场景创建后由 ScenarioCreatePage.handleSubmit 执行，
+    // 因此这里仅执行 S3 上传，并将状态设置为 uploaded
     updateFormData({
       presentationFile: {
         key: urlInfo.key,
@@ -63,10 +63,10 @@ const PresentationStep: React.FC<PresentationStepProps> = ({
     if (updatedFiles.length === 0) {
       updateFormData({ presentationFile: undefined });
     }
-    // アップロード時はhandleUpload内でupdateFormDataを直接呼ぶため、ここでは削除時のみ処理
+    // 上传时会在 handleUpload 内直接调用 updateFormData，因此这里仅处理删除
   }, [updateFormData]);
 
-  // ステータス表示用レンダラー
+  // 状态显示用渲染器
   const renderStatus = useCallback((file: UploadedFileInfo) => {
     if (!file.status) return null;
     const statusLabels: Record<string, string> = {

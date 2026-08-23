@@ -34,17 +34,17 @@ import {
   saveVideoRecordingEnabled,
 } from "../utils/videoRecordingSettings";
 
-// 分割したコンポーネントをインポート
+// 导入拆分的组件
 import ConversationHeader from "../components/conversation/ConversationHeader";
 import { AvatarProvider } from "../components/avatar";
 import type { GestureType } from "../types/avatar";
 import MessageList from "../components/conversation/MessageList";
 import MessageInput from "../components/conversation/MessageInput";
 import SuggestionBar from "../components/conversation/SuggestionBar";
-// クリーンアップ用のuseEffectを追加
+// 添加用于清理的 useEffect
 import { useEffect, useState, useCallback, useRef } from "react";
 import ComplianceAlert from "../components/compliance/ComplianceAlert";
-// 新規コンポーネント
+// 新组件
 import MetricsOverlay from "../components/conversation/MetricsOverlay";
 import RightPanelContainer from "../components/conversation/RightPanelContainer";
 import CoachingHintBar from "../components/conversation/CoachingHintBar";
@@ -56,20 +56,20 @@ import type { SlideImageInfo } from "../types/api";
 import { Dialog, DialogTitle, DialogContent } from "@mui/material";
 
 /**
- * 右パネル（ゴール・メトリクス等）の占有幅
- * RightPanelContainer の maxWidth(260px) + right(12px) + 余白(8px) = 280px
+ * 右面板（目标、指标等）的占用宽度
+ * RightPanelContainer 的 maxWidth(260px) + right(12px) + 边距(8px) = 280px
  */
 const RIGHT_PANEL_OFFSET = "280px";
 
 /**
- * 左側メトリクス・カメラ領域の占有幅
- * アバター非表示時にチャットログが重ならないための左パディング
+ * 左侧指标、相机区域的占用宽度
+ * 头像隐藏时避免聊天记录重叠的左内边距
  */
 const LEFT_METRICS_OFFSET = "200px";
 
 /**
- * NPC応答遅延設定（ミリ秒）
- * テスト環境では0に設定してテスタビリティを向上させる
+ * NPC 响应延迟设置（毫秒）
+ * 测试环境下设为 0 以提高可测试性
  */
 const NPC_RESPONSE_BASE_DELAY = import.meta.env.VITE_NPC_RESPONSE_DELAY
   ? Number(import.meta.env.VITE_NPC_RESPONSE_DELAY)
@@ -79,7 +79,7 @@ const NPC_RESPONSE_RANDOM_DELAY = import.meta.env.VITE_NPC_RESPONSE_DELAY
   : 1000;
 
 /**
- * 会話ページコンポーネント
+ * 会话页面组件
  */
 const ConversationPage: React.FC = () => {
   const { scenarioId } = useParams<{ scenarioId: string }>();
@@ -89,7 +89,7 @@ const ConversationPage: React.FC = () => {
   // 状態管理
   const [scenario, setScenario] = useState<Scenario | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
-  // メッセージ履歴を参照として保持し、非同期更新の問題を回避
+  // 以引用方式保持消息历史，避免异步更新的问题
   const messagesRef = useRef<Message[]>([]);
   const [currentMetrics, setCurrentMetrics] = useState<Metrics>({
     angerLevel: 0,
@@ -98,38 +98,38 @@ const ConversationPage: React.FC = () => {
   });
   const [prevMetrics, setPrevMetrics] = useState<Metrics | null>(null);
   const [userInput, setUserInput] = useState("");
-  // 音声認識の確定済みテキストを保持
+  // 保持语音识别已确定的文本
   const [, setConfirmedTranscripts] = useState<string[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [sessionStarted, setSessionStarted] = useState(false);
-  // セッション開始後、コンポーネントの再マウントを防止するためのRef
+  // 会话开始后用于防止组件重新挂载的 Ref
   const hasComponentMounted = useRef(false);
   const [sessionEnded, setSessionEnded] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [sessionId, setSessionId] = useState<string>("");
-  // アバターの表情状態管理用の状態変数
+  // 头像表情状态管理用的状态变量
   const [currentEmotion, setCurrentEmotion] = useState<string>("neutral");
-  // NPC感情状態（リアルタイム評価から取得、アバターに直接渡す）
+  // NPC 情绪状态（从实时评估获取，直接传给头像）
   const [npcDirectEmotion, setNpcDirectEmotion] = useState<EmotionState | undefined>(undefined);
-  // NPCジェスチャー状態（リアルタイム評価から取得、アバターに渡す）
+  // NPC 手势状态（从实时评估获取，传给头像）
   const [npcGesture, setNpcGesture] = useState<GestureType>('none');
-  // サジェスト返答候補（リアルタイム評価から取得、サジェストボタンに渡す）
+  // 建议回复候选项（从实时评估获取，传给建议按钮）
   const [suggestions, setSuggestions] = useState<string[]>([]);
-  // シナリオのサジェスト返答ボタン有効/無効
+  // 场景的建议回复按钮启用/禁用
   const [suggestionEnabled, setSuggestionEnabled] = useState<boolean>(false);
-  // シナリオの初回サジェスト返答候補（商談開始時に表示）
+  // 场景的初始建议回复候选项（洽谈开始时显示）
   const [initialSuggestions, setInitialSuggestions] = useState<string[]>([]);
-  // シナリオに紐づくアバターID
+  // 与场景关联的头像 ID
   const [scenarioAvatarId, setScenarioAvatarId] = useState<string | undefined>(undefined);
-  // シナリオに紐づくアバターS3キー
+  // 与场景关联的头像 S3 key
   const [scenarioAvatarS3Key, setScenarioAvatarS3Key] = useState<string | undefined>(undefined);
-  // シナリオNPCの音声モデルID
+  // 场景 NPC 的语音模型 ID
   const [scenarioVoiceId, setScenarioVoiceId] = useState<string | undefined>(undefined);
-  // シナリオのアバター表示On/Off
+  // 场景的头像显示开/关
   const [enableAvatar, setEnableAvatar] = useState<boolean>(false);
-  // セッション中のアバター表示切替（ランタイムトグル）
+  // 会话中的头像显示切换（运行时开关）
   const [avatarVisible, setAvatarVisible] = useState<boolean>(false);
-  // スライド関連state
+  // 幻灯片相关 state
   const [slideImages, setSlideImages] = useState<SlideImageInfo[]>([]);
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [presentedSlidePages, setPresentedSlidePages] = useState<number[]>([]);
@@ -139,7 +139,7 @@ const ConversationPage: React.FC = () => {
   const [audioVolume, setAudioVolume] = useState<number>(80);
   const [speechRate, setSpeechRate] = useState<number>(1.15);
   const [isListening, setIsListening] = useState(false);
-  const [continuousListening, setContinuousListening] = useState(false); // 常時マイク入力モード
+  const [continuousListening, setContinuousListening] = useState(false); // 常时麦克风输入模式
   const [speechRecognitionError, setSpeechRecognitionError] = useState<
     "permission" | "no-speech" | "network" | "not-supported" | "unknown" | null
   >(null);
@@ -148,43 +148,43 @@ const ConversationPage: React.FC = () => {
   const [goals, setGoals] = useState<Goal[]>([]);
   const [goalStatuses, setGoalStatuses] = useState<GoalStatus[]>([]);
 
-  // Transcribe音声認識サービスへの参照
+  // Transcribe 语音识别服务的引用
   const transcribeServiceRef = useRef<TranscribeService | null>(null);
-  // 最新のuserInputを参照するためのRef
+  // 引用最新 userInput 的 Ref
   const userInputRef = useRef<string>("");
-  // ゴールの達成スコア（セッション終了時に使用）
+  // 目标达成分数（会话结束时使用）
   const [goalScore, setGoalScore] = useState<number>(0);
-  // ジェスチャーリセット用タイマー
+  // 手势重置用定时器
   const gestureTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  // NPC応答タイマーRef管理（アンマウント時クリーンアップ用）
+  // NPC 响应定时器 Ref 管理（卸载时清理用）
   const npcResponseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const fallbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  // isSpeaking/currentMetricsをrefで管理（sendMessageの依存配列から除外するため）
+  // 用 ref 管理 isSpeaking/currentMetrics（为从 sendMessage 的依赖数组中排除）
   const isSpeakingRef = useRef(isSpeaking);
   const currentMetricsRef = useRef<Metrics>({ angerLevel: 0, trustLevel: 0, progressLevel: 0 });
-  // goalStatuses/goals/slideImagesをrefで管理（sendMessageの依存配列から除外するため）
+  // 用 ref 管理 goalStatuses/goals/slideImages（为从 sendMessage 的依赖数组中排除）
   const goalStatusesRef = useRef<GoalStatus[]>([]);
   const goalsRef = useRef<Goal[]>([]);
   const slideImagesRef = useRef<SlideImageInfo[]>([]);
-  // suggestionEnabledをrefで管理（sendMessageの依存配列から除外するため）
+  // 用 ref 管理 suggestionEnabled（为从 sendMessage 的依赖数组中排除）
   const suggestionEnabledRef = useRef<boolean>(false);
 
-  // userInputの変更をrefに同期
+  // 将 userInput 的变更同步到 ref
   useEffect(() => {
     userInputRef.current = userInput;
   }, [userInput]);
 
-  // isSpeakingの変更をrefに同期
+  // 将 isSpeaking 的变更同步到 ref
   useEffect(() => {
     isSpeakingRef.current = isSpeaking;
   }, [isSpeaking]);
 
-  // currentMetricsの変更をrefに同期
+  // 将 currentMetrics 的变更同步到 ref
   useEffect(() => {
     currentMetricsRef.current = currentMetrics;
   }, [currentMetrics]);
 
-  // goalStatuses/goals/slideImagesの変更をrefに同期
+  // 将 goalStatuses/goals/slideImages 的变更同步到 ref
   useEffect(() => {
     goalStatusesRef.current = goalStatuses;
   }, [goalStatuses]);
@@ -197,78 +197,78 @@ const ConversationPage: React.FC = () => {
     slideImagesRef.current = slideImages;
   }, [slideImages]);
 
-  // suggestionEnabledの変更をrefに同期
+  // 将 suggestionEnabled 的变更同步到 ref
   useEffect(() => {
     suggestionEnabledRef.current = suggestionEnabled;
   }, [suggestionEnabled]);
-  // コンプライアンス違反の通知管理
+  // 合规违规通知管理
   const [activeViolation, setActiveViolation] =
     useState<ComplianceViolation | null>(null);
   const [showComplianceAlert, setShowComplianceAlert] =
     useState<boolean>(false);
-  // カメラ初期化状態管理
+  // 相机初始化状态管理
   const [isCameraInitialized, setIsCameraInitialized] = useState<boolean>(false);
-  // カメラエラー状態管理
+  // 相机错误状态管理
   const [cameraError, setCameraError] = useState<boolean>(false);
-  // ビデオ録画機能のオン/オフ設定（localStorageで永続化、デフォルトはオン）
+  // 视频录制功能的开/关设置（localStorage 持久化，默认开启）
   const [videoRecordingEnabled, setVideoRecordingEnabled] = useState<boolean>(
     loadVideoRecordingEnabled,
   );
 
-  // ビデオ録画設定の変更をlocalStorageに永続化
+  // 将视频录制设置的变更持久化到 localStorage
   useEffect(() => {
     saveVideoRecordingEnabled(videoRecordingEnabled);
 
-    // 録画を無効化した場合、VideoManagerがアンマウントされてカメラ初期化コールバックが
-    // 呼ばれなくなるため、カメラ関連stateを明示的にリセットして状態の意味を一貫させる。
-    // （録画無効時はカメラを使用しないため、初期化済み・エラーのいずれでもない状態に戻す）
+    // 录制被禁用时，VideoManager 会卸载，相机初始化回调
+    // 将不再被调用，因此显式重置相机相关 state，使状态含义保持一致。
+    // （录制禁用时不使用相机，因此恢复到既非已初始化也非错误的状态）
     if (!videoRecordingEnabled) {
       setIsCameraInitialized(false);
       setCameraError(false);
     }
   }, [videoRecordingEnabled]);
 
-  // 新レイアウト用state
+  // 新布局用 state
   const [rightPanelsVisible, setRightPanelsVisible] = useState<boolean>(true);
   const [metricsVisible, setMetricsVisible] = useState<boolean>(true);
   const [chatLogExpanded] = useState<boolean>(false);
   const [showSettings, setShowSettings] = useState<boolean>(false);
 
 
-  // コンポーネントの初期マウント時のフラグ設定
+  // 组件初始挂载时的标志设置
   useEffect(() => {
     hasComponentMounted.current = true;
 
-    // TranscribeServiceの初期化
+    // TranscribeService 的初始化
     transcribeServiceRef.current = TranscribeService.getInstance();
 
-    // 接続状態変更コールバックを設定
+    // 设置连接状态变更回调
     transcribeServiceRef.current.setOnConnectionStateChange((state: ConnectionState) => {
       setConnectionState(state);
     });
 
-    // 環境変数からWebSocketエンドポイントを取得
+    // 从环境变量获取 WebSocket 端点
     const websocketEndpoint = import.meta.env.VITE_TRANSCRIBE_WEBSOCKET_URL;
     if (websocketEndpoint) {
       transcribeServiceRef.current.setWebSocketEndpoint(websocketEndpoint);
     }
 
     return () => {
-      // コンポーネントのアンマウント時にリソース解放
+      // 组件卸载时释放资源
       if (transcribeServiceRef.current) {
         transcribeServiceRef.current.dispose();
       }
 
-      // ジェスチャータイマーのクリーンアップ
+      // 手势定时器的清理
       if (gestureTimerRef.current) {
         clearTimeout(gestureTimerRef.current);
       }
 
-      // NPC応答タイマーとフォールバックタイマーをクリア
+      // 清除 NPC 响应定时器和回退定时器
       if (npcResponseTimerRef.current) clearTimeout(npcResponseTimerRef.current);
       if (fallbackTimerRef.current) clearTimeout(fallbackTimerRef.current);
 
-      // 音声認識関連の状態もクリアする
+      // 同时清除语音识别相关状态
       setConfirmedTranscripts([]);
     };
   }, []);
@@ -283,18 +283,18 @@ const ConversationPage: React.FC = () => {
 
           if (scenarioInfo) {
 
-            // APIから取得したScenarioInfo型をScenario型に変換
+            // 将从 API 获取的 ScenarioInfo 类型转换为 Scenario 类型
             const convertedScenario: Scenario = {
               id: scenarioInfo.scenarioId,
               title: scenarioInfo.title,
               description: scenarioInfo.description,
               difficulty: scenarioInfo.difficulty as DifficultyLevel,
               industry: scenarioInfo.category || scenarioInfo.industry || "",
-              // シナリオに定義された初期メッセージと言語を反映
+              // 反映场景中定义的初始消息和语言
               initialMessage: scenarioInfo.initialMessage,
               language: scenarioInfo.language || "zh",
               npc: {
-                // APIではnpcInfoではなくnpcフィールドが使われている可能性に対応
+                // 对应 API 中可能使用的是 npc 字段而非 npcInfo 的情况
                 id:
                   scenarioInfo.npc?.id ||
                   scenarioInfo.npcInfo?.id ||
@@ -320,13 +320,13 @@ const ConversationPage: React.FC = () => {
                   scenarioInfo.npcInfo?.description ||
                   "",
               },
-              // 文字列型で返される可能性があるmaxTurnsを数値型に変換
+              // 将可能以字符串类型返回的 maxTurns 转换为数值类型
               maxTurns:
                 scenarioInfo.maxTurns !== undefined
                   ? Number(scenarioInfo.maxTurns)
                   : undefined,
               goals: (scenarioInfo.goals || []).map((goal) => {
-                // goalが文字列の場合はオブジェクトに変換
+                // goal 为字符串时转换为对象
                 if (typeof goal === "string") {
                   return {
                     id: `goal-${Math.random().toString(36).substring(2, 11)}`,
@@ -336,7 +336,7 @@ const ConversationPage: React.FC = () => {
                     isRequired: false,
                   };
                 }
-                // goalがオブジェクトの場合は必要なプロパティを確認
+                // goal 为对象时确认所需属性
                 return {
                   id:
                     goal.id ||
@@ -348,7 +348,7 @@ const ConversationPage: React.FC = () => {
                 };
               }),
               initialMetrics: {
-                // 文字列型の場合は数値に変換する
+                // 字符串类型时转换为数值
                 angerLevel: Number(
                   scenarioInfo.initialMetrics?.angerLevel || 1,
                 ),
@@ -364,28 +364,28 @@ const ConversationPage: React.FC = () => {
             setScenario(convertedScenario);
             setCurrentMetrics(convertedScenario.initialMetrics);
 
-            // シナリオのアバター表示On/Off設定を読み込み（未設定時はfalse）
+            // 读取场景的头像显示开/关设置（未设置时默认为 false）
             setEnableAvatar(scenarioInfo.enableAvatar ?? false);
-            // ランタイムトグルの初期値もシナリオ設定に合わせる
+            // 运行时开关的初始值也与场景设置保持一致
             setAvatarVisible(scenarioInfo.enableAvatar ?? false);
 
-            // シナリオのサジェスト返答ボタン有効/無効設定を読み込み（未設定時はfalse）
+            // 读取场景的建议回复按钮启用/禁用设置（未设置时默认为 false）
             setSuggestionEnabled(scenarioInfo.suggestionEnabled ?? false);
-            // シナリオの初回サジェスト返答候補を読み込み（未設定時は空配列）
+            // 读取场景的初始建议回复候选项（未设置时为空数组）
             setInitialSuggestions(scenarioInfo.initialSuggestions ?? []);
 
-            // シナリオNPCの音声モデルIDを設定（アバターAPI取得前に即座に設定）
-            // アバター詳細APIの完了を待つとvoiceId設定が遅延し、
-            // 初期メッセージの音声合成でデフォルト（Takumi/男性）にフォールバックする問題を防止
+            // 设置场景 NPC 的语音模型 ID（在获取头像 API 前立即设置）
+            // 等待头像详情 API 完成会导致 voiceId 设置延迟，
+            // 从而防止初始消息的语音合成回退到默认（Takumi/男性）的问题
             const npcVoiceId = scenarioInfo.npc?.voiceId || scenarioInfo.npcInfo?.voiceId;
             if (npcVoiceId) {
               setScenarioVoiceId(npcVoiceId);
             }
 
-            // シナリオに紐づくアバターIDを設定
+            // 设置与场景关联的头像 ID
             if (scenarioInfo.avatarId) {
               setScenarioAvatarId(scenarioInfo.avatarId);
-              // アバター詳細APIからs3Keyを取得
+              // 从头像详情 API 获取 s3Key
               try {
                 const { AvatarService } = await import("../services/AvatarService");
                 const avatarDetail = await AvatarService.getInstance().getAvatarDetail(scenarioInfo.avatarId);
@@ -393,11 +393,11 @@ const ConversationPage: React.FC = () => {
                   setScenarioAvatarS3Key(avatarDetail.s3Key);
                 }
               } catch {
-                // アバターs3Key取得失敗時はCloudFrontフォールバックを使用
+                // 头像 s3Key 获取失败时使用 CloudFront 回退
               }
             }
 
-            // 提案資料のスライド画像を取得
+            // 获取提案资料的幻灯片图片
             if (scenarioInfo.presentationFile) {
               try {
                 const slidesResponse = await apiService.getSlideImages(scenarioInfo.scenarioId);
@@ -410,11 +410,11 @@ const ConversationPage: React.FC = () => {
                   })));
                 }
               } catch {
-                // スライド取得失敗時は無視（提案資料なしとして動作）
+                // 幻灯片获取失败时忽略（按无提案资料处理）
               }
             }
 
-            // ゴール情報の初期化
+            // 目标信息的初始化
             setGoals(
               convertedScenario.goals && convertedScenario.goals.length > 0
                 ? convertedScenario.goals
@@ -424,7 +424,7 @@ const ConversationPage: React.FC = () => {
               initializeGoalStatuses(convertedScenario);
             setGoalStatuses(initialGoalStatuses);
 
-            // AudioServiceの初期設定は別のuseEffectで管理
+            // AudioService 的初始设置在另一个 useEffect 中管理
           } else {
             navigate("/scenarios");
           }
@@ -438,7 +438,7 @@ const ConversationPage: React.FC = () => {
     fetchScenario();
   }, [scenarioId, navigate]);
 
-  // 音声設定の初期適用（シナリオ取得後）
+  // 音频设置的初始应用（场景获取后）
   useEffect(() => {
     if (scenario) {
       const audioSvc = AudioService.getInstance();
@@ -447,32 +447,32 @@ const ConversationPage: React.FC = () => {
     }
   }, [scenario, audioEnabled, audioVolume]);
 
-  // 音声設定変更時の処理
+  // 音频设置变更时的处理
   useEffect(() => {
     const audioSvc = AudioService.getInstance();
     audioSvc.setAudioEnabled(audioEnabled);
     audioSvc.setVolume(audioVolume / 100);
 
-    // 音声出力OFF時：再生中の音声を停止し、口パクをリセット
+    // 音频输出关闭时：停止正在播放的音频，并重置口型
     if (!audioEnabled) {
       audioSvc.stopAllAudio();
       setIsSpeaking(false);
     }
   }, [audioEnabled, audioVolume]);
 
-  // 読み上げ速度変更時の処理
+  // 朗读速度变更时的处理
   useEffect(() => {
     const pollySvc = PollyService.getInstance();
     pollySvc.setSpeechRate(speechRate);
   }, [speechRate]);
 
-  // シナリオ言語に応じたUI言語の設定
+  // 根据场景语言设置 UI 语言
   useEffect(() => {
     if (scenario?.language) {
       const languageService = LanguageService.getInstance();
       const currentLang = languageService.getCurrentLanguage();
 
-      // シナリオの言語がUIの言語と異なる場合、UI言語も変更する
+      // 场景语言与 UI 语言不同时，也变更 UI 语言
       if (scenario.language !== currentLang) {
         languageService
           .changeLanguage(scenario.language)
@@ -482,30 +482,30 @@ const ConversationPage: React.FC = () => {
   }, [scenario?.language]);
 
   // 商談開始
-  // 録画関連のstateは、VideoManagerコンポーネントに移動
+  // 录制相关 state 已迁移到 VideoManager 组件
 
-  // 商談開始（カメラを起動して録画も開始）
+  // 洽谈开始（启动相机并开始录制）
   const startConversation = async () => {
     if (!scenario) return;
 
-    // React 18のStrictモードで二重レンダリングを防止
+    // 在 React 18 的 Strict 模式下防止双重渲染
     if (sessionStarted) {
       return;
     }
 
-    // フロントエンド側でセッションIDを生成
+    // 在前端生成会话 ID
     const newSessionId = crypto.randomUUID();
 
-    // セッションIDを先に設定し、状態更新を確実に行う
+    // 先设置会话 ID，确保状态更新可靠
     setSessionId(newSessionId);
 
-    // DynamoDBにセッションを保存（AgentCore経由の会話でも評価画面で参照できるように）
+    // 将会话保存到 DynamoDB（即使通过 AgentCore 进行的对话也能在评估页面中查看）
     const apiService = ApiService.getInstance();
     try {
       await apiService.createOrUpdateSession(
         newSessionId,
         scenario.id,
-        `${scenario.npc.name}との会話`,
+        `与${scenario.npc.name}的会话`,
         {
           name: scenario.npc.name,
           role: scenario.npc.role,
@@ -516,29 +516,29 @@ const ConversationPage: React.FC = () => {
       );
     } catch (error) {
       console.error("会话保存错误（对话将继续）:", error);
-      // エラーが発生しても会話は続行できるようにする
+      // 即使发生错误也可以继续会话
     }
 
-    // Transcribe WebSocketの初期化
+    // Transcribe WebSocket 的初始化
     if (transcribeServiceRef.current) {
       transcribeServiceRef.current.initializeConnection(newSessionId, scenario?.language || 'zh')
         .catch(error => {
           console.error("Transcribe WebSocket连接错误:", error);
-          // エラーがあっても通常の会話は続行できるようにする
+          // 即使有错误也可以继续正常会话
         });
     }
 
-    // 短い遅延を入れてセッションIDの状態更新を確実に反映させる
+    // 加入短暂延迟以确保会话 ID 状态更新被可靠反映
     setTimeout(() => {
       setSessionStarted(true);
     }, 50);
 
-    // シナリオに定義された初期メッセージがある場合はそれを使用、なければデフォルトメッセージを表示
+    // 使用场景中定义的初始消息，否则显示默认消息
     const initialContent =
       scenario?.initialMessage ||
       `你好，我是${scenario?.npc.company}的${scenario?.npc.name}。今天想和你聊聊，方便吗？`;
 
-    // 少し遅延してからメッセージを追加（レンダリング安定化のため）
+    // 稍作延迟后添加消息（为渲染稳定）
     setTimeout(() => {
       const initialMessageId = crypto.randomUUID();
 
@@ -550,19 +550,19 @@ const ConversationPage: React.FC = () => {
         metrics: currentMetrics,
       };
 
-      // messagesRefも同時に更新して一貫性を保つ（バグ修正）
+      // 同时更新 messagesRef 以保持一致（Bug 修复）
       const initialMessages = [initialMessage];
       messagesRef.current = initialMessages;
       setMessages(initialMessages);
       setCurrentEmotion("neutral");
 
-      // 初回サジェスト返答候補を表示（シナリオで有効かつ初回候補が設定されている場合）
+      // 显示首次建议回复候选项（场景中启用且已设置首轮候选时）
       if (suggestionEnabled && initialSuggestions.length > 0) {
         setSuggestions(initialSuggestions);
       }
-    }, 100); // 100ms遅延させる
+    }, 100); // 延迟 100ms
 
-    // 初期メッセージの音声合成
+    // 初始消息的语音合成
     if (audioEnabled) {
       setIsSpeaking(true);
       const audioSvc = AudioService.getInstance();
@@ -570,7 +570,7 @@ const ConversationPage: React.FC = () => {
       audioSvc
         .synthesizeAndQueueAudio(initialContent, initialMessageId, scenarioVoiceId)
         .then(() => {
-          // 音声合成が成功したら、音声再生完了リスナーを追加
+          // 语音合成成功后，添加音频播放完成监听器
           audioSvc.addPlaybackCompleteListener(initialMessageId, () => {
             setIsSpeaking(false);
           });
@@ -584,7 +584,7 @@ const ConversationPage: React.FC = () => {
             utterance.onend = () => setIsSpeaking(false);
             synth.speak(utterance);
           } else {
-            // フォールバック: 音声合成が利用できない場合
+            // 回退：语音合成不可用时
             setTimeout(() => setIsSpeaking(false), 3000);
           }
         });
@@ -592,13 +592,13 @@ const ConversationPage: React.FC = () => {
   };
 
   /**
-   * 音声認識テキストの正規化（重複除去など）
+   * 语音识别文本的规范化（去除重复等）
    */
   const normalizeTranscriptText = useCallback((text: string): string => {
     if (!text) return "";
     let cleanedText = text.trim();
 
-    // 文単位の重複除去
+    // 按句子去重
     const sentences = cleanedText.split(/[。.？?！!\n]/).map(s => s.trim()).filter(s => s);
     if (sentences.length >= 2) {
       const uniqueSentences = [...new Set(sentences)];
@@ -607,7 +607,7 @@ const ConversationPage: React.FC = () => {
       }
     }
 
-    // フレーズの重複除去
+    // 按短语去重
     const words = cleanedText.split(/\s+/);
     if (words.length >= 2) {
       const halfIndex = Math.ceil(words.length / 2);
@@ -624,23 +624,23 @@ const ConversationPage: React.FC = () => {
     return cleanedText;
   }, []);
 
-  // メッセージ送信
+  // 发送消息
   const sendMessage = useCallback(async (inputText?: string) => {
-    // 引数で渡されたテキストまたは現在のuserInputを使用（ref経由で最新値を取得）
+    // 使用参数传入的文本或当前 userInput（通过 ref 获取最新值）
     const messageText = inputText || userInputRef.current.trim();
     if (!messageText || !scenario || isProcessing) return;
 
-    // 音声認識中なら停止する（送信時にマイクを自動OFF）
+    // 语音识别中则停止（发送时自动关闭麦克风）
     if (transcribeServiceRef.current && transcribeServiceRef.current.isListening()) {
       transcribeServiceRef.current.stopListening();
       setIsListening(false);
       setContinuousListening(false);
     }
 
-    // 入力フィールドを無効化（API処理中）
+    // 禁用输入字段（API 处理中）
     setIsProcessing(true);
 
-    // ユーザーメッセージを追加
+    // 添加用户消息
     const userMessage: Message = {
       id: crypto.randomUUID(),
       sender: "user",
@@ -651,52 +651,52 @@ const ConversationPage: React.FC = () => {
         : undefined,
     };
 
-    // リファレンスを使用して確実に最新のメッセージ履歴を維持（バグ修正）
+    // 使用引用确保维持最新的消息历史（Bug 修复）
     const currentMessages = messagesRef.current;
     const updatedMessages = [...currentMessages, userMessage];
 
-    // 両方更新して確実に同期を保つ
+    // 同时更新两处以确保同步
     messagesRef.current = updatedMessages;
     setMessages(updatedMessages);
 
-    // 入力クリアの前にuserInputRefも更新して同期を確保
+    // 在清除输入前也更新 userInputRef 以确保同步
     userInputRef.current = "";
     setUserInput("");
 
-    // 音声認識の状態もリセット
+    // 同时重置语音识别状态
     setConfirmedTranscripts([]);
 
-    // 送信時にサジェスト返答候補をクリア（次の評価結果で更新される）
+    // 发送时清除建议回复候选项（将在下次评估结果中更新）
     setSuggestions([]);
 
-    // メッセージ送信時に一時的に感情状態を更新
-    // ユーザーが入力している間は中立的な状態にする
+    // 发送消息时暂时更新情绪状态
+    // 用户输入期间保持中性状态
     setCurrentEmotion("neutral");
 
-    // NPCの応答を生成（タイマーIDをrefで管理してクリーンアップ可能にする）
+    // 生成 NPC 的响应（通过 ref 管理定时器 ID 以便可清理）
     npcResponseTimerRef.current = setTimeout(
       async () => {
-        // 安全なプリミティブ型に変換して循環参照を避ける
+        // 转换为安全的原始类型以避免循环引用
         const cleanMessageText = messageText ? String(messageText) : "";
 
         try {
           const apiService = ApiService.getInstance();
-          // セッションIDとメッセージIDを追加
+          // 添加会话 ID 和消息 ID
           const messageId = crypto.randomUUID();
-          // フロントエンドで生成されたセッションIDを使用
+          // 使用前端生成的会话 ID
           const currentSessionId = sessionId;
 
-          // 純粋なオブジェクトを作成してAPI呼び出し（ref経由で最新のメトリクスを取得）
+          // 创建纯对象后调用 API（通过 ref 获取最新的指标）
           const cleanMetrics = {
             angerLevel: Number(currentMetricsRef.current.angerLevel) || 1,
             trustLevel: Number(currentMetricsRef.current.trustLevel) || 1,
             progressLevel: Number(currentMetricsRef.current.progressLevel) || 1,
           };
 
-          // messagesRef経由で確実に最新のメッセージ履歴を取得（バグ修正）
+          // 通过 messagesRef 确保获取最新的消息历史（Bug 修复）
           const currentMessages = messagesRef.current;
 
-          // メッセージ配列をディープコピーし、純粋なデータ構造にする（sender型を正しくキャスト）
+          // 深拷贝消息数组，转为纯数据结构（正确转换 sender 类型）
           const cleanMessages = currentMessages.map(msg => ({
             id: String(msg.id),
             sender: (msg.sender === "user" || msg.sender === "npc" ? msg.sender : "user") as "user" | "npc",
@@ -704,7 +704,7 @@ const ConversationPage: React.FC = () => {
             timestamp: msg.timestamp instanceof Date ? msg.timestamp : new Date()
           }));
 
-          // NPCオブジェクトをディープコピー
+          // 深拷贝 NPC 对象
           const cleanNpc = {
             name: String(scenario.npc.name),
             role: String(scenario.npc.role),
@@ -714,20 +714,20 @@ const ConversationPage: React.FC = () => {
               scenario.npc.personality.map(p => String(p)) : []
           };
 
-          // /bedrock/conversation エンドポイントからメトリクス出力を廃止したため、デフォルトのメトリクスを使用
+          // 由于已从 /bedrock/conversation 端点移除指标输出，使用默认指标
           const result = await apiService.chatWithNPC(
-            cleanMessageText, // 安全な文字列に変換済み
-            cleanNpc, // 安全なプリミティブ型に変換済み
-            cleanMessages, // 安全なプリミティブ型に変換済み
+            cleanMessageText, // 已转换为安全的字符串
+            cleanNpc, // 已转换为安全的原始类型
+            cleanMessages, // 已转换为安全的原始类型
             String(currentSessionId),
             String(messageId),
-            // 感情パラメータを追加
+            // 添加情绪参数
             cleanMetrics,
-            // シナリオIDを追加
+            // 添加场景 ID
             String(scenario.id),
-            // 言語設定を追加
+            // 添加语言设置
             scenario?.language || 'zh',
-            // 選択済みスライドのS3キーを送信（AgentCore RuntimeがS3から直接読み取り）
+            // 发送已选幻灯片的 S3 key（AgentCore Runtime 直接从 S3 读取）
             presentedSlidePagesRef.current.length > 0
               ? slideImagesRef.current
                 .filter(s => presentedSlidePagesRef.current.includes(s.pageNumber))
@@ -737,10 +737,10 @@ const ConversationPage: React.FC = () => {
 
           const { response } = result;
 
-          // フロントエンドで生成されたセッションIDを使用
+          // 使用前端生成的会话 ID
           const activeSessionId = sessionId;
 
-          // メトリクスは現在の値を維持（ref経由で最新値を取得）
+          // 维持当前指标值（通过 ref 获取最新值）
           const newMetrics = { ...currentMetricsRef.current };
 
           const npcMessage: Message = {
@@ -751,53 +751,53 @@ const ConversationPage: React.FC = () => {
             metrics: newMetrics,
           };
 
-          // 話している状態を開始
+          // 开始讲话状态
           setIsSpeaking(true);
 
-          // messagesRefから最新の状態を取得（バグ修正）
+          // 从 messagesRef 获取最新状态（Bug 修复）
           const currentMessagesState = messagesRef.current;
           const finalMessages = [...currentMessagesState, npcMessage];
 
-          // 両方同時に更新して一貫性を保つ
+          // 同时更新两处以保持一致性
           messagesRef.current = finalMessages;
           setMessages(finalMessages);
           setCurrentMetrics(newMetrics);
 
-          // APIからのレスポンスが返ってきた時点で入力処理を有効化
-          // ユーザーは音声を聞きながら次の入力を準備できるように
+          // 收到 API 响应时启用输入处理
+          // 让用户可以在听语音的同时准备下一次输入
           setIsProcessing(false);
 
-          // Amazon Polly で音声合成
+          // 使用 Amazon Polly 进行语音合成
           if (audioEnabled) {
             const audioService = AudioService.getInstance();
             audioService
               .synthesizeAndQueueAudio(response, messageId, scenarioVoiceId)
               .then(() => {
-                // 音声合成が成功したら、音声再生完了リスナーを追加
-                // このリスナーは音声再生が完了したときに実行される
+                // 语音合成成功后，添加音频播放完成监听器
+                // 该监听器在音频播放完成时执行
                 audioService.addPlaybackCompleteListener(messageId, () => {
                   setIsSpeaking(false);
                 });
               })
               .catch((error) => {
                 console.error("Amazon Polly语音合成错误:", error);
-                // エラーが発生した場合も話している状態を更新
+                // 发生错误时也更新讲话状态
                 setIsSpeaking(false);
               });
           } else {
-            // 音声が無効な場合は、短い遅延後に話している状態を更新
+            // 音频无效时，在短暂延迟后更新讲话状态
             setTimeout(() => {
               setIsSpeaking(false);
             }, 500);
           }
 
-          // NPCの応答後にリアルタイム評価を実行（有効なsessionIDがある場合のみ）
+          // NPC 响应后执行实时评估（仅在存在有效 sessionID 时）
           if (activeSessionId) {
             try {
-              // 安全な文字列に変換
+              // 转换为安全字符串
               const cleanMessageText = messageText ? String(messageText) : "";
 
-              // メッセージ配列を純粋なデータ構造に変換（sender型を正しくキャスト）
+              // 将消息数组转换为纯数据结构（正确转换 sender 类型）
               const cleanMessages = finalMessages.map(msg => ({
                 id: String(msg.id || ""),
                 sender: (msg.sender === "user" || msg.sender === "npc" ? msg.sender : "user") as "user" | "npc",
@@ -806,7 +806,7 @@ const ConversationPage: React.FC = () => {
                   (typeof msg.timestamp === 'string' ? new Date(msg.timestamp) : new Date())
               }));
 
-              // ゴール状態を純粋なデータ構造に変換（GoalStatus型に合わせる）
+              // 将目标状态转换为纯数据结构（与 GoalStatus 类型对齐）
               const cleanGoalStatuses = Array.isArray(goalStatusesRef.current) ?
                 goalStatusesRef.current.map(status => ({
                   goalId: String(status.goalId || ""),
@@ -815,7 +815,7 @@ const ConversationPage: React.FC = () => {
                   achievedAt: status.achievedAt
                 })) : [];
 
-              // ゴールを純粋なデータ構造に変換（Goal型に合わせる）
+              // 将目标转换为纯数据结构（与 Goal 类型对齐）
               const cleanGoals = Array.isArray(goalsRef.current) ?
                 goalsRef.current.map(goal => ({
                   id: String(goal.id || ""),
@@ -828,28 +828,28 @@ const ConversationPage: React.FC = () => {
               const evaluationResult = await apiService.getRealtimeEvaluation(
                 cleanMessageText,
                 cleanMessages,
-                String(activeSessionId), // 安全な文字列に変換
+                String(activeSessionId), // 转换为安全字符串
                 cleanGoalStatuses,
                 cleanGoals,
-                String(scenario.id), // 安全な文字列に変換
+                String(scenario.id), // 转换为安全字符串
                 String(scenario.language || "zh"), // 安全地转换为字符串
-                // 現在のスコアを渡す（エージェントが差分を計算するため）（ref経由で最新値を取得）
+                // 传入当前分数（供智能体计算差值）（通过 ref 获取最新值）
                 {
                   angerLevel: currentMetricsRef.current.angerLevel,
                   trustLevel: currentMetricsRef.current.trustLevel,
                   progressLevel: currentMetricsRef.current.progressLevel,
                 },
-                // シナリオの説明文を渡す（サジェスト品質向上のため）
+                // 传入场景说明文（为提升建议质量）
                 String(scenario.description || ""),
               );
 
-              // コンプライアンスチェック結果の確認
+              // 确认合规检查结果
               if (
                 evaluationResult.compliance &&
                 evaluationResult.compliance.violations &&
                 evaluationResult.compliance.violations.length > 0
               ) {
-                // 最も重大度の高い違反を表示
+                // 显示严重度最高的违规
                 const sortedViolations = [
                   ...evaluationResult.compliance.violations,
                 ].sort((a, b) => {
@@ -863,16 +863,16 @@ const ConversationPage: React.FC = () => {
                   );
                 });
 
-                // 最も重大な違反を通知用に設定
+                // 将最严重的违规设置为通知
                 setActiveViolation(sortedViolations[0]);
                 setShowComplianceAlert(true);
               }
 
               if (evaluationResult) {
-                // 前回のメトリクスを保存（ref経由で最新値を取得）
+                // 保存上一次的指标（通过 ref 获取最新值）
                 setPrevMetrics(currentMetricsRef.current);
 
-                // NPC感情状態をアバターに反映
+                // 将 NPC 情绪状态反映到头像
                 if (evaluationResult.npcEmotion) {
                   const validEmotions: EmotionState[] = ['happy', 'angry', 'neutral', 'annoyed', 'satisfied'];
                   const emotion = evaluationResult.npcEmotion as EmotionState;
@@ -880,28 +880,28 @@ const ConversationPage: React.FC = () => {
                     setNpcDirectEmotion(emotion);
                   }
                 } else {
-                  // APIがnpcEmotionを返さない場合はリセットし、メトリクスベースの計算にフォールバック
+                  // API 未返回 npcEmotion 时重置，回退到基于指标的计算
                   setNpcDirectEmotion(undefined);
                 }
 
-                // NPCジェスチャーをアバターに反映
+                // 将 NPC 手势反映到头像
                 if (evaluationResult.gesture) {
                   const validGestures: GestureType[] = ['nod', 'headTilt', 'none'];
                   const gesture = evaluationResult.gesture as GestureType;
                   if (validGestures.includes(gesture)) {
                     if (gestureTimerRef.current) clearTimeout(gestureTimerRef.current);
                     setNpcGesture(gesture);
-                    // ジェスチャー実行後にリセット
+                    // 手势执行后重置
                     gestureTimerRef.current = setTimeout(() => setNpcGesture('none'), 1500);
                   }
                 }
 
-                // サジェスト返答候補を更新（シナリオで有効な場合のみ表示）
+                // 更新建议回复候选项（场景中启用时显示）
                 if (suggestionEnabledRef.current && Array.isArray(evaluationResult.suggestions)) {
                   setSuggestions(evaluationResult.suggestions);
                 }
 
-                // 新しいメトリクスを設定
+                // 设置新的指标
                 setCurrentMetrics((prevMetrics) => ({
                   ...prevMetrics,
                   angerLevel:
@@ -916,11 +916,11 @@ const ConversationPage: React.FC = () => {
                   analysis: evaluationResult.analysis || prevMetrics.analysis,
                 }));
 
-                // 更新中の状態を表示
+                // 显示更新中的状态
                 setMetricsUpdating(true);
                 setTimeout(() => setMetricsUpdating(false), 1000);
 
-                // ゴールステータス更新（既存のステータスとマージ）
+                // 目标状态更新（与既有状态合并）
                 if (evaluationResult.goalStatuses) {
                   setGoalStatuses((prevStatuses) => {
                     const merged = prevStatuses.map((prev) => {
@@ -942,44 +942,44 @@ const ConversationPage: React.FC = () => {
             }
           }
 
-          // 音声再生完了イベントが発火しない場合のフォールバック
-          // 音声が無限に再生され続けることを防止（ref経由で最新値を取得）
+          // 音频播放完成事件未触发时的回退
+          // 防止音频无限播放（通过 ref 获取最新值）
           fallbackTimerRef.current = setTimeout(() => {
             if (isSpeakingRef.current) {
               setIsSpeaking(false);
             }
-          }, 30000); // 長めのタイムアウト - 通常は音声再生が完了するはず
+          }, 30000); // 较长的超时 - 通常音频播放应已完成
 
         } catch (error) {
           console.error("=== ConversationPage: API调用错误 ===");
           console.error("错误详情:", error);
 
-          // エラー時はセッションを終了
+          // 出错时结束会话
           setIsProcessing(false);
           console.error("由于API调用错误，结束会话");
         }
       },
       NPC_RESPONSE_BASE_DELAY + Math.random() * NPC_RESPONSE_RANDOM_DELAY,
-    ); // NPC応答遅延（設定可能: VITE_NPC_RESPONSE_DELAY環境変数で制御）
+    ); // NPC 响应延迟（可配置：通过 VITE_NPC_RESPONSE_DELAY 环境变量控制）
   }, [scenario, isProcessing, sessionId, audioEnabled, scenarioVoiceId]);
 
   /**
-   * セッション終了処理
+   * 会话结束处理
    *
-   * 会話セッションを終了し、結果ページに遷移する
+   * 结束会话并跳转到结果页面
    *
-   * @param finalMessages 最終的なメッセージリスト
-   * @param finalMetrics 最終的なメトリクス
+   * @param finalMessages 最终的消息列表
+   * @param finalMetrics 最终的指标
    */
   const endSession = useCallback(
     async (finalMessages: Message[], finalMetrics: Metrics) => {
       setSessionEnded(true);
 
-      // 最終的なゴールスコアを計算
+      // 计算最终的目标分数
       const finalGoalScore = calculateGoalScore(goalStatuses, goals);
       setGoalScore(finalGoalScore);
 
-      // 終了理由を取得
+      // 获取结束原因
       const endReason = getSessionEndReason(
         finalMetrics,
         finalMessages.length,
@@ -988,7 +988,7 @@ const ConversationPage: React.FC = () => {
         scenario || undefined,
       );
 
-      // セッションデータを作成
+      // 创建会话数据
       const session: Session = {
         id: sessionId,
         scenarioId: scenario!.id,
@@ -1003,18 +1003,18 @@ const ConversationPage: React.FC = () => {
         endReason: endReason,
       };
 
-      // セッションデータをlocalStorageに保存
+      // 将会话数据保存到 localStorage
       localStorage.setItem(`session_${session.id}`, JSON.stringify(session));
 
-      // 録画完了を確実に待つ処理を改善
+      // 改善等待录制完成处理
       const waitForRecordingUpload = () => {
         return new Promise<void>((resolve) => {
           let uploadCompleted = false;
 
-          // 前回の録画キーを保存（新しいセッションの録画を待つため）
+          // 保存上一次的录制 key（为等待新会话的录制）
           const previousKey = localStorage.getItem("lastRecordingKey");
 
-          // 90秒でタイムアウト（大きなファイル対応）
+          // 90 秒超时（应对大文件）
           const timeoutId = setTimeout(() => {
             window.removeEventListener('recordingComplete', handleRecordingComplete as EventListener);
             resolve();
@@ -1025,9 +1025,9 @@ const ConversationPage: React.FC = () => {
 
             const videoKey = newVideoKey || localStorage.getItem("lastRecordingKey");
 
-            // 新しいキーが設定されているか確認
-            // 1. セッションIDを含むキーであること
-            // 2. 前回のキーと異なること（または前回のキーがない場合）
+            // 确认是否已设置新 key
+            // 1. 是包含会话 ID 的 key
+            // 2. 与上一次的 key 不同（或不存在上一次的 key）
             if (videoKey && videoKey.includes(session.id)) {
               if (!previousKey || videoKey !== previousKey) {
                 uploadCompleted = true;
@@ -1036,12 +1036,12 @@ const ConversationPage: React.FC = () => {
                 window.removeEventListener('recordingComplete', handleRecordingComplete as EventListener);
                 resolve();
               } else {
-                // 前回と同じキーのためスキップ
+                // 与上一次相同的 key，跳过
               }
             }
           };
 
-          // 録画完了イベントリスナー
+          // 录制完成事件监听器
           const handleRecordingComplete = (event: CustomEvent) => {
             if (event.detail?.videoKey) {
               checkUploadComplete(event.detail.videoKey);
@@ -1052,7 +1052,7 @@ const ConversationPage: React.FC = () => {
 
           window.addEventListener('recordingComplete', handleRecordingComplete as EventListener);
 
-          // 定期的にlocalStorageをチェック（イベントが発火しない場合の対策）
+          // 定期检查 localStorage（作为事件未触发时的对策）
           const checkInterval = setInterval(() => {
             if (!uploadCompleted) {
               const currentKey = localStorage.getItem("lastRecordingKey");
@@ -1065,25 +1065,25 @@ const ConversationPage: React.FC = () => {
             }
           }, 1000);
 
-          // タイムアウト時にインターバルもクリア
+          // 超时时也清除定时器
           setTimeout(() => {
             clearInterval(checkInterval);
           }, 90000);
         });
       };
 
-      // 録画アップロード完了を待ってから遷移
-      // ビデオ録画が無効な場合は待機をスキップ
+      // 等待录制上传完成后再跳转
+      // 视频录制被禁用时跳过等待
       if (videoRecordingEnabled) {
         await waitForRecordingUpload();
       }
 
-      // セッション分析を非同期で開始（Step Functions）
-      // 注意: 録画無効時もセッション分析は起動するが、これは意図的な設計。
-      // バックエンドの動画分析ステップ（sessionAnalysis/video_handler.py）は
-      // S3に動画が存在しない場合を正常系として扱い、videoSkipReason="no_video"で
-      // スキップする。そのため録画オフでもエラーや無駄なNova呼び出し（課金）は発生せず、
-      // 会話ログベースのフィードバック分析は通常どおり実行される。
+      // 异步开始会话分析（Step Functions）
+      // 注意：录制禁用时也会启动会话分析，这是有意的设计。
+      // 后端的视频分析步骤（sessionAnalysis/video_handler.py）会
+      // 将 S3 中不存在视频的情况视为正常流程，以 videoSkipReason="no_video"
+      // 跳过。因此即使录制关闭也不会产生错误或多余的 Nova 调用（计费），
+      // 基于会话日志的反馈分析照常执行。
       try {
         const apiService = ApiService.getInstance();
         await apiService.startSessionAnalysis(
@@ -1092,10 +1092,10 @@ const ConversationPage: React.FC = () => {
           goalStatuses
         );
 
-        // 分析開始情報をlocalStorageに保存
+        // 将分析开始信息保存到 localStorage
         localStorage.setItem(`session_${session.id}_analysisStarted`, "true");
       } catch {
-        // 分析開始に失敗しても結果ページへ遷移（従来の同期分析にフォールバック）
+        // 分析开始失败时也跳转到结果页面（回退到原有的同步分析）
       }
 
       setTimeout(() => {
@@ -1123,7 +1123,7 @@ const ConversationPage: React.FC = () => {
     }
   };
 
-  // スライド提示ハンドラー
+  // 幻灯片提示处理器
   const handleSlidePresent = useCallback((pageNumber: number) => {
     if (!presentedSlidePagesRef.current.includes(pageNumber)) {
       const updated = [...presentedSlidePagesRef.current, pageNumber];
@@ -1132,47 +1132,47 @@ const ConversationPage: React.FC = () => {
     }
   }, []);
 
-  // スライド提示取消ハンドラー
+  // 幻灯片取消提示处理器
   const handleSlideUnpresent = useCallback((pageNumber: number) => {
     const updated = presentedSlidePagesRef.current.filter(p => p !== pageNumber);
     presentedSlidePagesRef.current = updated;
     setPresentedSlidePages(updated);
   }, []);
 
-  // スライド全選択解除ハンドラー
+  // 幻灯片全选取消处理器
   const handleSlideClearAll = useCallback(() => {
     presentedSlidePagesRef.current = [];
     setPresentedSlidePages([]);
   }, []);
 
-  // Enter キー処理
+  // Enter 键处理
   const handleKeyDown = (event: CompositionEventType) => {
-    // IME入力中の場合は何もしない
+    // IME 输入中不进行任何处理
     if (event.nativeEvent.isComposing || event.key === "Process") {
       return;
     }
 
-    // Enterキーで送信（Shift + Enterは改行）
+    // Enter 键发送（Shift + Enter 换行）
     if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
       sendMessage();
     }
   };
 
-  // 音声入力を開始
+  // 开始语音输入
   const startSpeechRecognition = useCallback(async () => {
-    // すでにリスニング中なら停止（トグル動作）
+    // 已在监听中则停止（开关动作）
     if (isListening && transcribeServiceRef.current) {
       transcribeServiceRef.current.stopListening();
       setIsListening(false);
       setContinuousListening(false);
 
-      // 現在入力中のテキストがあれば送信
+      // 当前有正在输入的文本则发送
       if (userInputRef.current.trim()) {
         sendMessage(userInputRef.current.trim());
-        // sendMessage内で状態がクリアされるので、ここでは不要
+        // 状态已在 sendMessage 内被清除，因此这里无需处理
       } else {
-        // テキストがない場合は音声認識状態だけクリア
+        // 无文本时仅清除语音识别状态
         setConfirmedTranscripts([]);
       }
       return;
@@ -1183,7 +1183,7 @@ const ConversationPage: React.FC = () => {
         throw new Error("TranscribeService 未初始化");
       }
 
-      // WebSocketが接続されていなければ再接続を試みる
+      // WebSocket 未连接时尝试重新连接
       if (!transcribeServiceRef.current.isConnected() && sessionId) {
         try {
           await transcribeServiceRef.current.initializeConnection(sessionId, scenario?.language || 'zh');
@@ -1194,12 +1194,12 @@ const ConversationPage: React.FC = () => {
         }
       }
 
-      // Amazon Transcribeを使った常時マイク入力を開始
+      // 使用 Amazon Transcribe 开始常时麦克风输入
       await transcribeServiceRef.current.startListening(
-        // 文字起こしコールバック（isPartial: true=途中認識、false=最終確定）
+        // 文字转写回调（isPartial: true=途中识别、false=最终确定）
         (text, isPartial) => {
           if (!isPartial) {
-            // 最終確定時の処理（無音検出後に来る場合は既に送信済みのためスキップされる）
+            // 最终确定时的处理（若在无音检测后到来则已发送，因此会被跳过）
             const trimmedText = text.trim();
             if (!trimmedText) return;
 
@@ -1218,12 +1218,12 @@ const ConversationPage: React.FC = () => {
               return newConfirmed;
             });
           } else {
-            // 途中認識時の処理 - Transcribeは累積的にテキストを返す
+            // 途中识别时的处理 - Transcribe 会累积地返回文本
             const currentPartial = text.trim();
             if (!currentPartial) return;
 
-            // 確定済みテキストと途中認識を組み合わせて表示
-            // state updater関数を使ってクロージャ問題を回避
+            // 组合已确定文本与途中识别结果显示
+            // 使用 state updater 函数避免闭包问题
             setConfirmedTranscripts((prevConfirmed) => {
               const combinedText = prevConfirmed.length > 0
                 ? prevConfirmed.join("\n") + "\n" + currentPartial
@@ -1231,20 +1231,20 @@ const ConversationPage: React.FC = () => {
 
               setUserInput(combinedText);
               userInputRef.current = combinedText;
-              return prevConfirmed; // 途中認識では確定リストは変更しない
+              return prevConfirmed; // 途中识别时不变更确定列表
             });
           }
         },
-        // 無音検出コールバック（マイクを自動停止し、テキストを確定する。送信はユーザーが手動で行う）
+        // 无音检测回调（自动停止麦克风并确定文本。发送由用户手动进行）
         () => {
-          // マイクを停止（Transcribeセッションのタイムアウトを防止）
+          // 停止麦克风（防止 Transcribe 会话超时）
           if (transcribeServiceRef.current && transcribeServiceRef.current.isListening()) {
             transcribeServiceRef.current.stopListening();
           }
           setIsListening(false);
           setContinuousListening(false);
         },
-        // エラーコールバック
+        // 错误回调
         (error) => {
           console.error("语音识别错误:", error);
           setIsListening(false);
@@ -1263,20 +1263,20 @@ const ConversationPage: React.FC = () => {
     }
   }, [isListening, sessionId, sendMessage, normalizeTranscriptText, scenario?.language]);
 
-  // 音声認識を停止し、テキスト入力モードに切り替え
+  // 停止语音识别并切换到文本输入模式
   const switchToTextInput = useCallback(() => {
     setSpeechRecognitionError(null);
     setIsListening(false);
     setContinuousListening(false);
 
-    // Transcribeサービスの停止
+    // 停止 Transcribe 服务
     if (transcribeServiceRef.current && transcribeServiceRef.current.isListening()) {
       transcribeServiceRef.current.stopListening();
     }
 
-    // 部分認識をクリア（確定済みテキストは保持）
+    // 清除部分识别（保持已确定文本）
 
-    // ユーザー入力を確定済みテキストのみに更新（state updaterパターンで統一）
+    // 将用户输入仅更新为已确定文本（统一使用 state updater 模式）
     setConfirmedTranscripts((prevConfirmed) => {
       if (prevConfirmed.length > 0) {
         const confirmedText = prevConfirmed.join("\n");
@@ -1287,23 +1287,23 @@ const ConversationPage: React.FC = () => {
     });
   }, []);
 
-  // 感情状態変化のハンドラー
+  // 情绪状态变化的处理器
   const handleEmotionChange = useCallback((emotion: EmotionState) => {
     setCurrentEmotion(emotion);
   }, []);
 
-  // カメラ初期化状態のハンドラー
+  // 相机初始化状态的处理器
   const handleCameraInitialized = useCallback((initialized: boolean) => {
     setIsCameraInitialized(initialized);
-    // カメラ初期化に失敗した場合はエラー状態を設定
+    // 相机初始化失败时设置错误状态
     if (!initialized) {
       setCameraError(true);
     }
   }, []);
 
-  // ゴール達成時の通知表示
+  // 目标达成时的通知显示
   useEffect(() => {
-    // 前回のゴール状態と比較して新たに達成されたゴールを検出
+    // 与上一次的目标状态比较，检测新达成的目标
     const newlyAchievedGoals = goalStatuses.filter((status) => {
       if (!status.achieved) return false;
       const goal = goals.find((g) => g.id === status.goalId);
@@ -1311,16 +1311,16 @@ const ConversationPage: React.FC = () => {
         goal &&
         status.achievedAt &&
         new Date(status.achievedAt).getTime() > Date.now() - 5000
-      ); // 5秒以内に達成されたゴール
+      ); // 5 秒内达成的目标
     });
 
-    // 新たに達成されたゴールがある場合、通知を表示
+    // 存在新达成的目标时显示通知
     if (newlyAchievedGoals.length > 0) {
       const achievedGoal = newlyAchievedGoals[0];
       const goal = goals.find((g) => g.id === achievedGoal.goalId);
 
       if (goal) {
-        // 必須ゴールがすべて達成された場合、セッションを終了
+        // 所有必需目标均已达成时，结束会话
         if (areAllRequiredGoalsAchieved(goalStatuses, goals)) {
           setTimeout(async () => {
             if (!sessionEnded && messagesRef.current.length > 0) {
@@ -1336,9 +1336,9 @@ const ConversationPage: React.FC = () => {
     return null;
   }
 
-  // 録画完了時のハンドラー
+  // 录制完成时的处理器
 
-  // 現在の感情状態を使用してレンダリングに影響を与えるためのクラス名を生成
+  // 使用当前情绪状态生成影响渲染的类名
   const emotionClassName = `emotion-${currentEmotion}`;
 
   return (
@@ -1352,7 +1352,7 @@ const ConversationPage: React.FC = () => {
         position: "relative",
       }}
     >
-      {/* ヘッダー */}
+      {/* 页头 */}
       <ConversationHeader
         scenario={scenario}
         sessionStarted={sessionStarted}
@@ -1366,7 +1366,7 @@ const ConversationPage: React.FC = () => {
         metricsVisible={metricsVisible}
       />
 
-      {/* コンプライアンス違反通知 - ヘッダー下スライドイン */}
+      {/* 合规违规通知 - 页头下方滑入 */}
       {showComplianceAlert && activeViolation && (
         <ComplianceAlert
           violation={activeViolation}
@@ -1375,21 +1375,21 @@ const ConversationPage: React.FC = () => {
         />
       )}
 
-      {/* メインエリア */}
+      {/* 主区域 */}
       <Box
         sx={{
           flex: 1,
           position: "relative",
           display: "flex",
-          // セッション開始後は3カラム横並び、開始前は従来の縦積み
+          // 会话开始后为 3 栏横排，开始前为原有的纵向堆叠
           flexDirection: sessionStarted ? "row" : "column",
           minHeight: 0,
           overflow: "hidden",
-          // 左右の余白を確保して見切れを防止
+          // 预留左右边距以防内容被截断
           px: sessionStarted ? 1 : 0,
         }}
       >
-        {/* ===== 左カラム: アバター + メトリクス + スライド ===== */}
+        {/* ===== 左栏：头像 + 指标 + 幻灯片 ===== */}
         {sessionStarted && avatarVisible && (
           <Box
             sx={{
@@ -1404,7 +1404,7 @@ const ConversationPage: React.FC = () => {
               position: "relative",
             }}
           >
-            {/* アバターステージ（カラム全体を使用） */}
+            {/* 头像舞台（使用整个栏） */}
             <AvatarProvider>
               <Box sx={{
                 position: "absolute",
@@ -1428,10 +1428,10 @@ const ConversationPage: React.FC = () => {
               </Box>
             </AvatarProvider>
 
-            {/* スペーサー（提案資料を下部に押す） */}
+            {/* 占位符（将提案资料压至底部） */}
             <Box sx={{ flex: 1 }} />
 
-            {/* スライドトレイ（提案資料、アバターの上に重ねる） */}
+            {/* 幻灯片托盘（提案资料，叠加在头像之上） */}
             {slideImages.length > 0 && (
               <Box sx={{
                 position: "relative",
@@ -1454,7 +1454,7 @@ const ConversationPage: React.FC = () => {
               </Box>
             )}
 
-            {/* カメラプレビュー（左カラム下部） */}
+            {/* 相机预览（左栏下部） */}
             {videoRecordingEnabled && (
               <Box
                 data-testid="video-manager-container"
@@ -1476,7 +1476,7 @@ const ConversationPage: React.FC = () => {
           </Box>
         )}
 
-        {/* ===== 中央カラム: チャットログ + 入力 ===== */}
+        {/* ===== 中央栏：聊天记录 + 输入 ===== */}
         <Box
           sx={{
             flex: 1,
@@ -1484,13 +1484,13 @@ const ConversationPage: React.FC = () => {
             display: "flex",
             flexDirection: "column",
             overflow: "hidden",
-            // セッション開始前はメトリクスをabsolute配置で表示
+            // 会话开始前以 absolute 定位显示指标
             position: "relative",
           }}
         >
-          {/* アバターなし時：メトリクスは右パネルにのみ表示（アバターあり版と統一） */}
+          {/* 无头像时：指标仅显示在右栏（与有头像版本统一） */}
 
-          {/* セッション開始前のカメラプレビュー */}
+          {/* 会话开始前的相机预览 */}
           {videoRecordingEnabled && !sessionStarted && (
             <Box
               data-testid="video-manager-container"
@@ -1515,7 +1515,7 @@ const ConversationPage: React.FC = () => {
             </Box>
           )}
 
-          {/* チャットログ */}
+          {/* 聊天记录 */}
           <Box
             sx={{
               flex: 1,
@@ -1551,12 +1551,12 @@ const ConversationPage: React.FC = () => {
             />
           </Box>
 
-          {/* コーチングヒントバー */}
+          {/* 教练提示栏 */}
           <Box sx={{ flexShrink: 0 }}>
             <CoachingHintBar hint={currentMetrics.analysis} />
           </Box>
 
-          {/* サジェスト返答ボタン（コーチングヒントと入力欄の間に表示） */}
+          {/* 建议回复按钮（显示在教练提示与输入框之间） */}
           {sessionStarted && !sessionEnded && suggestionEnabled && (
             <Box sx={{ flexShrink: 0 }}>
               <SuggestionBar
@@ -1567,7 +1567,7 @@ const ConversationPage: React.FC = () => {
             </Box>
           )}
 
-          {/* メッセージ入力エリア */}
+          {/* 消息输入区域 */}
           <Box sx={{ flexShrink: 0 }}>
             <MessageInput
               userInput={userInput}
@@ -1587,7 +1587,7 @@ const ConversationPage: React.FC = () => {
           </Box>
         </Box>
 
-        {/* ===== 右カラム: メトリクス + ゴール + シナリオ情報 ===== */}
+        {/* ===== 右栏：指标 + 目标 + 场景信息 ===== */}
         {sessionStarted && rightPanelsVisible && (
           <Box
             sx={{
@@ -1599,7 +1599,7 @@ const ConversationPage: React.FC = () => {
               overflow: "auto",
             }}
           >
-            {/* メトリクスパネル（右カラム上部） */}
+            {/* 指标面板（右栏上部） */}
             {metricsVisible && (
               <Box sx={{
                 borderBottom: "1px solid",
@@ -1632,7 +1632,7 @@ const ConversationPage: React.FC = () => {
 
       </Box>
 
-      {/* スライド拡大モーダル */}
+      {/* 幻灯片放大模态框 */}
       {slideImages.length > 0 && (
         <SlideZoomModal
           open={isSlideZoomOpen}
@@ -1646,7 +1646,7 @@ const ConversationPage: React.FC = () => {
         />
       )}
 
-      {/* 設定モーダル（音声設定 + アバター表示切替） */}
+      {/* 设置模态框（音频设置 + 头像显示切换） */}
       <Dialog
         open={showSettings}
         onClose={() => setShowSettings(false)}

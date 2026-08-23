@@ -1,11 +1,11 @@
 /**
- * アバター管理APIサービス
- * VRMアバターのCRUD操作を提供
+ * 头像管理 API 服务
+ * 提供 VRM 头像的 CRUD 操作
  */
 import { post, del, put, get } from "aws-amplify/api";
 import { getCurrentUser, fetchAuthSession, signOut } from "aws-amplify/auth";
 
-/** アバターメタデータ */
+/** 头像元数据 */
 export interface AvatarMetadata {
   userId: string;
   avatarId: string;
@@ -18,7 +18,7 @@ export interface AvatarMetadata {
   updatedAt: number;
 }
 
-/** アバター作成レスポンス */
+/** 创建头像响应 */
 export interface AvatarCreateResponse {
   success: boolean;
   avatarId: string;
@@ -59,7 +59,7 @@ export class AvatarService {
     }
   }
 
-  /** アバター作成（メタデータ登録 + アップロードURL取得） */
+  /** 创建头像（元数据注册 + 获取上传 URL） */
   public async createAvatar(
     fileName: string,
     name: string,
@@ -78,7 +78,7 @@ export class AvatarService {
     return JSON.parse(await response.body.text()) as AvatarCreateResponse;
   }
 
-  /** VRMファイルをS3にアップロード */
+  /** 将 VRM 文件上传到 S3 */
   public async uploadVrmFile(
     uploadUrl: string,
     formData: Record<string, string>,
@@ -100,7 +100,7 @@ export class AvatarService {
     }
   }
 
-  /** アップロード完了確認 */
+  /** 确认上传完成 */
   public async confirmUpload(avatarId: string): Promise<void> {
     const headers = await this.getAuthHeaders();
     const restOperation = put({
@@ -114,7 +114,7 @@ export class AvatarService {
     await restOperation.response;
   }
 
-  /** アバター詳細取得 */
+  /** 获取头像详情 */
   public async getAvatarDetail(avatarId: string): Promise<AvatarMetadata | null> {
     try {
       const headers = await this.getAuthHeaders();
@@ -132,7 +132,7 @@ export class AvatarService {
     }
   }
 
-  /** アバター削除 */
+  /** 删除头像 */
   public async deleteAvatar(avatarId: string): Promise<void> {
     const headers = await this.getAuthHeaders();
     const restOperation = del({

@@ -2,23 +2,23 @@ import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import SessionSettingsPanel from "../../components/conversation/SessionSettingsPanel";
 
-// i18nモック（キーをそのまま日本語訳に変換して返す）
+// i18n mock（将 key 转换为对应中文返回）
 jest.mock("react-i18next", () => ({
   useTranslation: () => ({
     t: (key: string, options?: Record<string, unknown>) => {
       const translations: { [key: string]: string } = {
-        "conversation.settings.recordingOn": "ビデオ録画 ON",
-        "conversation.settings.recordingOff": "ビデオ録画 OFF",
+        "conversation.settings.recordingOn": "视频录制 ON",
+        "conversation.settings.recordingOff": "视频录制 OFF",
         "conversation.settings.recordingNote":
-          "※ 録画をオフにすると、カメラを使用せず、動画分析機能は利用できません",
+          "※ 关闭录制后，将不使用摄像头，视频分析功能不可用",
         "conversation.settings.recordingLockedNote":
-          "※ 録画設定は商談開始前のみ変更できます",
-        "conversation.audioSettings.outputOn": "音声出力 ON",
-        "conversation.audioSettings.outputOff": "音声出力 OFF",
+          "※ 录制设置仅在商谈开始前可修改",
+        "conversation.audioSettings.outputOn": "音频输出 ON",
+        "conversation.audioSettings.outputOff": "音频输出 OFF",
         "conversation.audioSettings.volume": `音量: ${options?.volume ?? ""}%`,
-        "conversation.audioSettings.speechRate": `読み上げ速度: ${options?.rate ?? ""}x`,
+        "conversation.audioSettings.speechRate": `朗读速度: ${options?.rate ?? ""}x`,
         "conversation.audioSettings.npcResponseNote":
-          "※ NPCの応答が音声で再生されます",
+          "※ NPC 的回复将通过语音播放",
       };
       return translations[key] || key;
     },
@@ -26,21 +26,21 @@ jest.mock("react-i18next", () => ({
 }));
 
 /**
- * 録画トグルスイッチを取得（アクセシブル名で特定）
- * MUIのSwitchは role="switch" としてレンダリングされ、ラベルテキストから
- * アクセシブル名が算出される。日英のON/OFFラベルに対応。
+ * 获取录制切换开关（通过无障碍名称定位）
+ * MUI 的 Switch 以 role="switch" 渲染，并从标签文本计算
+ * 无障碍名称。兼容中英文的 ON/OFF 标签。
  */
 const getRecordingToggle = () =>
   screen.getByRole("switch", {
-    name: /ビデオ録画 (ON|OFF)|Video Recording (ON|OFF)/,
+    name: /视频录制 (ON|OFF)|Video Recording (ON|OFF)/,
   });
 
 const queryRecordingToggle = () =>
   screen.queryByRole("switch", {
-    name: /ビデオ録画 (ON|OFF)|Video Recording (ON|OFF)/,
+    name: /视频录制 (ON|OFF)|Video Recording (ON|OFF)/,
   });
 
-describe("SessionSettingsPanel - ビデオ録画トグル", () => {
+describe("SessionSettingsPanel - 视频录制切换", () => {
   const defaultProps = {
     audioEnabled: true,
     setAudioEnabled: jest.fn(),
@@ -54,7 +54,7 @@ describe("SessionSettingsPanel - ビデオ録画トグル", () => {
     jest.clearAllMocks();
   });
 
-  test("setVideoRecordingEnabledが渡された場合、録画トグルが表示される", () => {
+  test("传入 setVideoRecordingEnabled 时，显示录制切换", () => {
     render(
       <SessionSettingsPanel
         {...defaultProps}
@@ -66,13 +66,13 @@ describe("SessionSettingsPanel - ビデオ録画トグル", () => {
     expect(getRecordingToggle()).toBeInTheDocument();
   });
 
-  test("setVideoRecordingEnabledが渡されない場合、録画トグルは表示されない", () => {
+  test("未传入 setVideoRecordingEnabled 时，不显示录制切换", () => {
     render(<SessionSettingsPanel {...defaultProps} />);
 
     expect(queryRecordingToggle()).not.toBeInTheDocument();
   });
 
-  test("録画オン時はトグルがチェック済みになる", () => {
+  test("录制开启时切换为已选中", () => {
     render(
       <SessionSettingsPanel
         {...defaultProps}
@@ -84,7 +84,7 @@ describe("SessionSettingsPanel - ビデオ録画トグル", () => {
     expect(getRecordingToggle()).toBeChecked();
   });
 
-  test("録画オフ時はトグルが未チェックになる", () => {
+  test("录制关闭时切换为未选中", () => {
     render(
       <SessionSettingsPanel
         {...defaultProps}
@@ -96,7 +96,7 @@ describe("SessionSettingsPanel - ビデオ録画トグル", () => {
     expect(getRecordingToggle()).not.toBeChecked();
   });
 
-  test("トグル操作でsetVideoRecordingEnabledが呼ばれる", () => {
+  test("切换操作调用 setVideoRecordingEnabled", () => {
     const setVideoRecordingEnabled = jest.fn();
     render(
       <SessionSettingsPanel
@@ -110,7 +110,7 @@ describe("SessionSettingsPanel - ビデオ録画トグル", () => {
     expect(setVideoRecordingEnabled).toHaveBeenCalledWith(false);
   });
 
-  test("recordingSettingLocked=trueの場合、トグルは無効化される", () => {
+  test("recordingSettingLocked=true 时，切换被禁用", () => {
     render(
       <SessionSettingsPanel
         {...defaultProps}
@@ -123,7 +123,7 @@ describe("SessionSettingsPanel - ビデオ録画トグル", () => {
     expect(getRecordingToggle()).toBeDisabled();
   });
 
-  test("recordingSettingLocked=falseの場合、トグルは有効", () => {
+  test("recordingSettingLocked=false 时，切换可用", () => {
     render(
       <SessionSettingsPanel
         {...defaultProps}
@@ -136,7 +136,7 @@ describe("SessionSettingsPanel - ビデオ録画トグル", () => {
     expect(getRecordingToggle()).toBeEnabled();
   });
 
-  test("ロック時はロック用の注意書きが表示される", () => {
+  test("锁定时显示锁定说明", () => {
     render(
       <SessionSettingsPanel
         {...defaultProps}
@@ -147,11 +147,11 @@ describe("SessionSettingsPanel - ビデオ録画トグル", () => {
     );
 
     expect(
-      screen.getByText("※ 録画設定は商談開始前のみ変更できます"),
+      screen.getByText("※ 录制设置仅在商谈开始前可修改"),
     ).toBeInTheDocument();
   });
 
-  test("非ロック時は通常の注意書きが表示される", () => {
+  test("未锁定时显示常规说明", () => {
     render(
       <SessionSettingsPanel
         {...defaultProps}
@@ -163,7 +163,7 @@ describe("SessionSettingsPanel - ビデオ録画トグル", () => {
 
     expect(
       screen.getByText(
-        "※ 録画をオフにすると、カメラを使用せず、動画分析機能は利用できません",
+        "※ 关闭录制后，将不使用摄像头，视频分析功能不可用",
       ),
     ).toBeInTheDocument();
   });

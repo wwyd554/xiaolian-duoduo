@@ -3,7 +3,7 @@ import { render, screen, act } from "@testing-library/react";
 import AnimatedMessage from "../../components/AnimatedMessage";
 
 describe("AnimatedMessage", () => {
-  // 日付をモック
+  // mock 日期
   const mockDate = new Date("2023-06-15T12:30:45");
 
   beforeAll(() => {
@@ -14,10 +14,10 @@ describe("AnimatedMessage", () => {
     jest.useRealTimers();
   });
 
-  test("ユーザーメッセージが正しくレンダリングされる", async () => {
+  test("用户消息正确渲染", async () => {
     render(
       <AnimatedMessage
-        content="こんにちは、テストメッセージです"
+        content="你好，测试消息"
         sender="user"
         timestamp={mockDate}
         animationDelay={0}
@@ -25,58 +25,54 @@ describe("AnimatedMessage", () => {
       />,
     );
 
-    // アニメーションの完了を待つ
+    // 等待动画完成
     act(() => {
       jest.advanceTimersByTime(500);
     });
 
-    // メッセージ内容が表示されている
-    expect(
-      screen.getByText("こんにちは、テストメッセージです"),
-    ).toBeInTheDocument();
+    // 消息内容显示
+    expect(screen.getByText("你好，测试消息")).toBeInTheDocument();
 
-    // タイムスタンプが表示されている
+    // 时间戳显示
     expect(screen.getByText(mockDate.toLocaleTimeString())).toBeInTheDocument();
 
-    // ユーザーアバターが表示されている（"U"のデフォルト文字）
+    // 用户头像显示（默认字符 "U"）
     expect(screen.getByText("U")).toBeInTheDocument();
   });
 
-  test("NPCメッセージが正しくレンダリングされる", async () => {
+  test("NPC 消息正确渲染", async () => {
     render(
       <AnimatedMessage
-        content="こんにちは、NPCからの返信です"
+        content="你好，来自NPC的回复"
         sender="npc"
         timestamp={mockDate}
-        name="テストNPC"
+        name="测试NPC"
         avatar="T"
         animationDelay={0}
         typingEffect={false}
       />,
     );
 
-    // アニメーションの完了を待つ
+    // 等待动画完成
     act(() => {
       jest.advanceTimersByTime(500);
     });
 
-    // メッセージ内容が表示されている
-    expect(
-      screen.getByText("こんにちは、NPCからの返信です"),
-    ).toBeInTheDocument();
+    // 消息内容显示
+    expect(screen.getByText("你好，来自NPC的回复")).toBeInTheDocument();
 
-    // NPCの名前が表示されている
-    expect(screen.getByText("テストNPC")).toBeInTheDocument();
+    // NPC 名称显示
+    expect(screen.getByText("测试NPC")).toBeInTheDocument();
 
-    // NPCのアバターが表示されている（指定された"T"文字）
+    // NPC 头像显示（指定的 "T" 字符）
     expect(screen.getByText("T")).toBeInTheDocument();
 
-    // タイムスタンプが表示されている
+    // 时间戳显示
     expect(screen.getByText(mockDate.toLocaleTimeString())).toBeInTheDocument();
   });
 
-  test("タイピングエフェクトが動作する", async () => {
-    const testMessage = "テスト";
+  test("打字效果正常工作", async () => {
+    const testMessage = "测试";
 
     render(
       <AnimatedMessage
@@ -88,30 +84,30 @@ describe("AnimatedMessage", () => {
       />,
     );
 
-    // 最初は表示されない
+    // 最初不显示
     act(() => {
       jest.advanceTimersByTime(10);
     });
 
-    // 部分的に表示される（1文字目）
+    // 部分显示（第 1 个字符）
     act(() => {
       jest.advanceTimersByTime(30);
     });
 
-    // タイピングが完了するまで待機
+    // 等待打字完成
     act(() => {
       jest.advanceTimersByTime(testMessage.length * 30 + 100);
     });
 
-    // 最終的に全体が表示される
+    // 最终全部显示
     expect(screen.getByText(testMessage)).toBeInTheDocument();
   });
 
-  test("アニメーション遅延が適用される", async () => {
+  test("动画延迟生效", async () => {
     const animationDelay = 1000;
     const { container } = render(
       <AnimatedMessage
-        content="遅延メッセージ"
+        content="延迟消息"
         sender="user"
         timestamp={mockDate}
         animationDelay={animationDelay}
@@ -119,11 +115,11 @@ describe("AnimatedMessage", () => {
       />,
     );
 
-    // 遅延前はopacity: 0
+    // 延迟前 opacity: 0
     const messageElement = container.firstChild as HTMLElement;
     expect(messageElement).toHaveStyle("opacity: 0");
 
-    // 遅延後はopacity: 1
+    // 延迟后 opacity: 1
     act(() => {
       jest.advanceTimersByTime(animationDelay + 100);
     });
@@ -131,13 +127,13 @@ describe("AnimatedMessage", () => {
     expect(messageElement).toHaveStyle("opacity: 1");
   });
 
-  test("文字列形式のタイムスタンプが正しく処理される", async () => {
+  test("字符串形式的时间戳正确处理", async () => {
     const timestampString = "2023-06-15T12:30:45";
     const expectedTime = new Date(timestampString).toLocaleTimeString();
 
     render(
       <AnimatedMessage
-        content="メッセージ内容"
+        content="消息内容"
         sender="npc"
         timestamp={timestampString}
         animationDelay={0}
@@ -145,39 +141,39 @@ describe("AnimatedMessage", () => {
       />,
     );
 
-    // アニメーションの完了を待つ
+    // 等待动画完成
     act(() => {
       jest.advanceTimersByTime(500);
     });
 
-    // 正しいフォーマットのタイムスタンプが表示されている
+    // 正确格式的时间戳显示
     expect(screen.getByText(expectedTime)).toBeInTheDocument();
   });
 
-  test("アバターが指定されていない場合のデフォルトが表示される", async () => {
+  test("未指定头像时显示默认头像", async () => {
     render(
       <AnimatedMessage
-        content="アバターなしメッセージ"
+        content="无头像消息"
         sender="npc"
         timestamp={mockDate}
-        name="テスト"
+        name="测试"
         animationDelay={0}
         typingEffect={false}
       />,
     );
 
-    // アニメーションの完了を待つ
+    // 等待动画完成
     act(() => {
       jest.advanceTimersByTime(500);
     });
 
-    // 名前の頭文字がアバターとして使用される
-    expect(screen.getByText("テ")).toBeInTheDocument();
+    // 名称首字符用作头像
+    expect(screen.getByText("测")).toBeInTheDocument();
 
-    // 名前もアバターも指定されていない場合のテスト
+    // 名称和头像都未指定时的测试
     render(
       <AnimatedMessage
-        content="アバターなしメッセージ"
+        content="无头像消息"
         sender="npc"
         timestamp={mockDate}
         animationDelay={0}
@@ -185,12 +181,12 @@ describe("AnimatedMessage", () => {
       />,
     );
 
-    // アニメーションの完了を待つ
+    // 等待动画完成
     act(() => {
       jest.advanceTimersByTime(500);
     });
 
-    // デフォルト文字「N」が表示される
+    // 默认字符「N」显示
     expect(screen.getByText("N")).toBeInTheDocument();
   });
 });

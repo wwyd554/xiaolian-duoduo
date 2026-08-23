@@ -25,8 +25,8 @@ interface ComplianceViolationsListProps {
 }
 
 /**
- * コンプライアンス違反一覧表示コンポーネント
- * セッション終了後の評価画面で使用
+ * 合规违规列表展示组件
+ * 在会话结束后的评估页面使用
  */
 const ComplianceViolationsList: React.FC<ComplianceViolationsListProps> = ({
   violations,
@@ -36,31 +36,31 @@ const ComplianceViolationsList: React.FC<ComplianceViolationsListProps> = ({
   // Helper function to translate legacy Japanese rule names
   const translateLegacyRuleName = (ruleName: string): string => {
     // Map legacy Japanese text to translation keys
-    if (ruleName.includes("トピック違反:")) {
-      const topicName = ruleName.replace("トピック違反: ", "");
+    if (ruleName.includes("话题违规:")) {
+      const topicName = ruleName.replace("话题违规: ", "");
       return String(t("compliance.violations.topicViolation", { topicName }));
     }
-    if (ruleName.includes("コンテンツフィルター:")) {
-      const filterType = ruleName.replace("コンテンツフィルター: ", "");
+    if (ruleName.includes("内容过滤器:")) {
+      const filterType = ruleName.replace("内容过滤器: ", "");
       return String(t("compliance.violations.contentFilter", { filterType }));
     }
-    if (ruleName === "カスタムワード検出") {
+    if (ruleName === "自定义词检测") {
       return String(t("compliance.violations.customWordDetected"));
     }
-    if (ruleName.includes("管理語句リスト:")) {
-      const type = ruleName.replace("管理語句リスト: ", "");
+    if (ruleName.includes("管理词句列表:")) {
+      const type = ruleName.replace("管理词句列表: ", "");
       return String(t("compliance.violations.managedWordList", { type }));
     }
-    if (ruleName.includes("個人情報検出:")) {
-      const type = ruleName.replace("個人情報検出: ", "");
+    if (ruleName.includes("个人信息检测:")) {
+      const type = ruleName.replace("个人信息检测: ", "");
       return String(t("compliance.violations.personalInfoDetected", { type }));
     }
-    if (ruleName.includes("正規表現フィルター:")) {
-      const name = ruleName.replace("正規表現フィルター: ", "");
+    if (ruleName.includes("正则表达式过滤器:")) {
+      const name = ruleName.replace("正则表达式过滤器: ", "");
       return String(t("compliance.violations.regexFilter", { name }));
     }
-    if (ruleName.includes("コンテキストグラウンディング:")) {
-      const type = ruleName.replace("コンテキストグラウンディング: ", "");
+    if (ruleName.includes("上下文接地:")) {
+      const type = ruleName.replace("上下文接地: ", "");
       return String(t("compliance.violations.contextualGrounding", { type }));
     }
 
@@ -71,19 +71,16 @@ const ComplianceViolationsList: React.FC<ComplianceViolationsListProps> = ({
   // Helper function to translate legacy Japanese messages
   const translateLegacyMessage = (message: string): string => {
     // Map legacy Japanese text to translation keys
-    if (message.includes("禁止されたトピックが検出されました:")) {
-      const topicName = message.replace(
-        "禁止されたトピックが検出されました: ",
-        "",
-      );
+    if (message.includes("检测到禁止话题:")) {
+      const topicName = message.replace("检测到禁止话题: ", "");
       return String(
         t("compliance.violations.prohibitedTopicDetected", { topicName }),
       );
     }
-    if (message.includes("不適切なコンテンツが検出されました:")) {
-      // Extract filterType and confidence from message like "不適切なコンテンツが検出されました: HATE (信頼度: HIGH)"
+    if (message.includes("检测到不当内容:")) {
+      // Extract filterType and confidence from message like "检测到不当内容: HATE (置信度: HIGH)"
       const match = message.match(
-        /不適切なコンテンツが検出されました: (.+?) \(信頼度: (.+?)\)/,
+        /检测到不当内容: (.+?) \(置信度: (.+?)\)/,
       );
       if (match) {
         const [, filterType, confidence] = match;
@@ -95,16 +92,16 @@ const ComplianceViolationsList: React.FC<ComplianceViolationsListProps> = ({
         );
       }
     }
-    if (message.includes("禁止語句が検出されました:")) {
-      const match = message.replace("禁止語句が検出されました: ", "");
+    if (message.includes("检测到禁止词句:")) {
+      const match = message.replace("检测到禁止词句: ", "");
       return String(
         t("compliance.violations.prohibitedWordDetected", { match }),
       );
     }
-    if (message.includes("管理語句リストの語句が検出されました:")) {
-      // Extract match and type from message like "管理語句リストの語句が検出されました: word (TYPE)"
+    if (message.includes("检测到管理词句列表中的词句:")) {
+      // Extract match and type from message like "检测到管理词句列表中的词句: word (TYPE)"
       const match = message.match(
-        /管理語句リストの語句が検出されました: (.+?) \((.+?)\)/,
+        /检测到管理词句列表中的词句: (.+?) \((.+?)\)/,
       );
       if (match) {
         const [, wordMatch, type] = match;
@@ -116,9 +113,9 @@ const ComplianceViolationsList: React.FC<ComplianceViolationsListProps> = ({
         );
       }
     }
-    if (message.includes("個人情報が検出されました:")) {
-      // Extract type and match from message like "個人情報が検出されました: EMAIL - example@test.com"
-      const match = message.match(/個人情報が検出されました: (.+?) - (.+)/);
+    if (message.includes("检测到个人信息:")) {
+      // Extract type and match from message like "检测到个人信息: EMAIL - example@test.com"
+      const match = message.match(/检测到个人信息: (.+?) - (.+)/);
       if (match) {
         const [, type, wordMatch] = match;
         return String(
@@ -129,14 +126,14 @@ const ComplianceViolationsList: React.FC<ComplianceViolationsListProps> = ({
         );
       }
     }
-    if (message.includes("正規表現パターンにマッチしました:")) {
-      const match = message.replace("正規表現パターンにマッチしました: ", "");
+    if (message.includes("正则表达式模式匹配:")) {
+      const match = message.replace("正则表达式模式匹配: ", "");
       return String(t("compliance.violations.regexPatternMatched", { match }));
     }
-    if (message.includes("コンテキストグラウンディング違反:")) {
-      // Extract type, score, and threshold from message like "コンテキストグラウンディング違反: TYPE (スコア: 0.85, 閾値: 0.75)"
+    if (message.includes("上下文接地违规:")) {
+      // Extract type, score, and threshold from message like "上下文接地违规: TYPE (分数: 0.85, 阈值: 0.75)"
       const match = message.match(
-        /コンテキストグラウンディング違反: (.+?) \(スコア: (.+?), 閾値: (.+?)\)/,
+        /上下文接地违规: (.+?) \(分数: (.+?), 阈值: (.+?)\)/,
       );
       if (match) {
         const [, type, score, threshold] = match;
@@ -154,10 +151,10 @@ const ComplianceViolationsList: React.FC<ComplianceViolationsListProps> = ({
     return message;
   };
 
-  // 空配列またはundefinedの場合は違反なしとして処理
+  // 空数组或 undefined 时按无违规处理
   const hasViolations = violations && violations.length > 0;
 
-  // 違反の重大度に応じてアイコンと色を選択
+  // 根据违规的严重程度选择图标和颜色
   const getSeverityInfo = (severity: string) => {
     switch (severity) {
       case "high":
@@ -181,7 +178,7 @@ const ComplianceViolationsList: React.FC<ComplianceViolationsListProps> = ({
     }
   };
 
-  // 違反のグループ化（同じruleNameごと）
+  // 违规的分组（按相同 ruleName）
   const groupedViolations = hasViolations
     ? violations.reduce(
       (groups, violation) => {
@@ -202,7 +199,7 @@ const ComplianceViolationsList: React.FC<ComplianceViolationsListProps> = ({
         <Box display="flex" alignItems="center" mb={2}>
           <GavelIcon sx={{ mr: 1, color: "text.secondary" }} />
           <Typography variant="h6" component="div">
-            {t("compliance.violationsTitle", "コンプライアンス違反")}
+            {t("compliance.violationsTitle", "合规违规")}
           </Typography>
         </Box>
 
@@ -212,7 +209,7 @@ const ComplianceViolationsList: React.FC<ComplianceViolationsListProps> = ({
           <Alert severity="success" sx={{ mb: 1 }}>
             {t(
               "compliance.noViolationsDetected",
-              "コンプライアンス違反は検出されませんでした",
+              "未检测到合规违规",
             )}
           </Alert>
         ) : (
@@ -220,7 +217,7 @@ const ComplianceViolationsList: React.FC<ComplianceViolationsListProps> = ({
             <Typography variant="body2" color="text.secondary" paragraph>
               {t(
                 "compliance.violationsDescription",
-                "商談中に以下のコンプライアンス違反が検出されました。適切な表現を心がけましょう。",
+                "商谈中检测到以下合规违规，请注意恰当的措辞。",
               )}
             </Typography>
 
@@ -244,7 +241,7 @@ const ComplianceViolationsList: React.FC<ComplianceViolationsListProps> = ({
                     mb={1}
                   >
                     <Typography variant="subtitle1" fontWeight="medium">
-                      {/* 翻訳キーがある場合はそれを使用、なければレガシー日本語テキストを翻訳 */}
+                      {/* 有翻译键时使用翻译键，否则翻译旧版日文文本 */}
                       {violations[0].ruleNameKey
                         ? String(
                           t(
@@ -275,7 +272,7 @@ const ComplianceViolationsList: React.FC<ComplianceViolationsListProps> = ({
                         <ListItem alignItems="flex-start" sx={{ px: 0 }}>
                           <Box sx={{ width: "100%" }}>
                             <Typography variant="body1" sx={{ mb: 1 }}>
-                              {/* 翻訳キーがある場合はそれを使用、なければレガシー日本語テキストを翻訳 */}
+                              {/* 有翻译键时使用翻译键，否则翻译旧版日文文本 */}
                               {violation.messageKey
                                 ? String(
                                   t(
@@ -293,7 +290,7 @@ const ComplianceViolationsList: React.FC<ComplianceViolationsListProps> = ({
                                 fontStyle="italic"
                                 sx={{ mb: 0.5 }}
                               >
-                                {t("compliance.context", "検出された文脈")}:
+                                {t("compliance.context", "检测到的语境")}:
                               </Typography>
                               <Paper
                                 variant="outlined"

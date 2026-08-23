@@ -2,28 +2,28 @@
 
 echo ""
 echo "==========================================================================="
-echo "  🚀 AI営業ロールプレイアプリケーション デプロイツール                    "
+echo "  🚀 AI销售角色扮演应用程序 部署工具                    "
 echo "---------------------------------------------------------------------------"
-echo "  このスクリプトは、AWS CloudShellからAI営業ロールプレイアプリケーションを"
-echo "  簡単にデプロイするためのものです。                                      "
+echo "  此脚本用于从AWS CloudShell轻松部署AI销售角色扮演应用程序。"
 echo "                                                                           "
-echo "  作業内容:                                                               "
-echo "  - CloudFormationスタックの作成                                          "
-echo "  - CodeBuildプロジェクトの実行                                           "
-echo "  - アプリケーションのデプロイ（CDK）                                     "
+echo "                                                                           "
+echo "  工作内容:                                                               "
+echo "  - 创建CloudFormation堆栈                                          "
+echo "  - 运行CodeBuild项目                                           "
+echo "  - 部署应用程序（CDK）                                     "
 echo "==========================================================================="
 echo ""
 
-# デフォルトのパラメータ
+# 默认参数
 ALLOW_SELF_REGISTER="true"
 CDK_JSON_OVERRIDE="{}"
 REPO_URL="https://github.com/aws-samples/sample-ai-sales-roleplay.git"
 VERSION="main"
 
-# AWS_DEFAULT_REGIONの設定（フォールバック付き）
+# AWS_DEFAULT_REGION 设置（带回退）
 AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION:-us-east-1}"
 
-# 個別モデル指定パラメータ
+# 单个模型指定参数
 CONVERSATION_MODEL=""
 SCORING_MODEL=""
 FEEDBACK_MODEL=""
@@ -31,7 +31,7 @@ GUARDRAIL_MODEL=""
 VIDEO_MODEL=""
 REFERENCE_CHECK_MODEL=""
 
-# コマンドライン引数の解析
+# 命令行参数解析
 while [[ "$#" -gt 0 ]]; do
     case $1 in
         --disable-self-register) ALLOW_SELF_REGISTER="false" ;;
@@ -45,108 +45,108 @@ while [[ "$#" -gt 0 ]]; do
         --video-model) VIDEO_MODEL="$2"; shift ;;
         --reference-check-model) REFERENCE_CHECK_MODEL="$2"; shift ;;
         --help) 
-            echo "使用方法: $0 [オプション]"
+            echo "使用方法: $0 [选项]"
             echo ""
-            echo "一般オプション:"
-            echo "  --disable-self-register      セルフサインアップを無効化"
-            echo "  --repo-url URL               GitHubリポジトリURLを指定"
-            echo "  --version VERSION            デプロイするブランチ/タグを指定 (デフォルト: main)"
-            echo "  --cdk-json-override JSON     CDK設定のJSONオーバーライド"
+            echo "通用选项:"
+            echo "  --disable-self-register      禁用自助注册"
+            echo "  --repo-url URL               指定GitHub仓库URL"
+            echo "  --version VERSION            指定要部署的分支/标签 (默认: main)"
+            echo "  --cdk-json-override JSON     CDK配置的JSON覆盖"
             echo ""
-            echo "リージョン設定:"
-            echo "  デプロイ先リージョンは AWS_DEFAULT_REGION 環境変数で指定してください。"
-            echo "  未設定の場合は us-east-1 が使用されます。"
-            echo "  例: export AWS_DEFAULT_REGION=ap-northeast-1"
+            echo "区域设置:"
+            echo "  请通过 AWS_DEFAULT_REGION 环境变量指定部署区域。"
+            echo "  未设置时默认使用 us-east-1。"
+            echo "  示例: export AWS_DEFAULT_REGION=ap-northeast-1"
             echo ""
-            echo "個別モデル指定オプション:"
-            echo "  --conversation-model MODEL   対話用モデルを指定"
-            echo "  --scoring-model MODEL        スコアリング用モデルを指定"
-            echo "  --feedback-model MODEL       フィードバック用モデルを指定"
-            echo "  --guardrail-model MODEL      ガードレール用モデルを指定"
-            echo "  --video-model MODEL          動画分析用モデルを指定"
-            echo "  --reference-check-model MODEL リファレンスチェック用モデルを指定"
+            echo "单个模型指定选项:"
+            echo "  --conversation-model MODEL   指定对话模型"
+            echo "  --scoring-model MODEL        指定评分模型"
+            echo "  --feedback-model MODEL       指定反馈模型"
+            echo "  --guardrail-model MODEL      指定护栏模型"
+            echo "  --video-model MODEL          指定视频分析模型"
+            echo "  --reference-check-model MODEL 指定参考核对模型"
             echo ""
-            echo "モデル例:"
+            echo "模型示例:"
             echo "  global.anthropic.claude-haiku-4-5-20251001-v1:0"
             echo "  global.anthropic.claude-sonnet-4-5-20250929-v1:0"
             echo "  global.amazon.nova-2-lite-v1:0"
             exit 0
             ;;
-        *) echo "不明なパラメータ: $1"; echo "ヘルプを表示するには --help を使用してください"; exit 1 ;;
+        *) echo "未知参数: $1"; echo "如需显示帮助请使用 --help"; exit 1 ;;
     esac
     shift
 done
 
-echo "以下の設定でデプロイを開始します:"
-echo "- セルフサインアップ: $ALLOW_SELF_REGISTER"
-echo "- デプロイリージョン: $AWS_DEFAULT_REGION"
-echo "- リポジトリURL: $REPO_URL"
-echo "- バージョン/ブランチ: $VERSION"
+echo "将按以下配置开始部署:"
+echo "- 自助注册: $ALLOW_SELF_REGISTER"
+echo "- 部署区域: $AWS_DEFAULT_REGION"
+echo "- 仓库URL: $REPO_URL"
+echo "- 版本/分支: $VERSION"
 
-# 個別モデル指定の表示
+# 显示单个模型指定
 if [[ -n "$CONVERSATION_MODEL" || -n "$SCORING_MODEL" || -n "$FEEDBACK_MODEL" || -n "$GUARDRAIL_MODEL" || -n "$VIDEO_MODEL" || -n "$REFERENCE_CHECK_MODEL" ]]; then
-    echo "- 個別モデル指定:"
-    [[ -n "$CONVERSATION_MODEL" ]] && echo "  - 対話用モデル: $CONVERSATION_MODEL"
-    [[ -n "$SCORING_MODEL" ]] && echo "  - スコアリング用モデル: $SCORING_MODEL"
-    [[ -n "$FEEDBACK_MODEL" ]] && echo "  - フィードバック用モデル: $FEEDBACK_MODEL"
-    [[ -n "$GUARDRAIL_MODEL" ]] && echo "  - ガードレール用モデル: $GUARDRAIL_MODEL"
-    [[ -n "$VIDEO_MODEL" ]] && echo "  - 動画分析用モデル: $VIDEO_MODEL"
-    [[ -n "$REFERENCE_CHECK_MODEL" ]] && echo "  - リファレンスチェック用モデル: $REFERENCE_CHECK_MODEL"
+    echo "- 单个模型指定:"
+    [[ -n "$CONVERSATION_MODEL" ]] && echo "  - 对话模型: $CONVERSATION_MODEL"
+    [[ -n "$SCORING_MODEL" ]] && echo "  - 评分模型: $SCORING_MODEL"
+    [[ -n "$FEEDBACK_MODEL" ]] && echo "  - 反馈模型: $FEEDBACK_MODEL"
+    [[ -n "$GUARDRAIL_MODEL" ]] && echo "  - 护栏模型: $GUARDRAIL_MODEL"
+    [[ -n "$VIDEO_MODEL" ]] && echo "  - 视频分析模型: $VIDEO_MODEL"
+    [[ -n "$REFERENCE_CHECK_MODEL" ]] && echo "  - 参考核对模型: $REFERENCE_CHECK_MODEL"
 fi
 
 if [[ "$CDK_JSON_OVERRIDE" != "{}" ]]; then
-    echo "- CDK設定オーバーライド: $CDK_JSON_OVERRIDE"
+    echo "- CDK配置覆盖: $CDK_JSON_OVERRIDE"
 fi
 
 echo ""
-read -p "続行しますか？ (y/N): " answer
+read -p "是否继续？ (y/N): " answer
 case ${answer:0:1} in
     y|Y )
-        echo "デプロイを開始します..."
+        echo "开始部署..."
         ;;
     * )
-        echo "デプロイをキャンセルしました"
+        echo "已取消部署"
         exit 1
         ;;
 esac
 
-# テンプレートの検証
+# 模板验证
 aws cloudformation validate-template --template-body file://deploy.yml > /dev/null 2>&1
 if [[ $? -ne 0 ]]; then
-    echo "テンプレートの検証に失敗しました"
+    echo "模板验证失败"
     exit 1
 fi
 
-# モデルIDの基本形式をバリデーション
+# 验证模型ID的基本格式
 validate_model_id() {
     local model_id="$1"
     local model_type="$2"
     
     if [[ -z "$model_id" ]]; then
-        return 0  # 空の場合はスキップ
+        return 0  # 为空时跳过
     fi
     
-    # 基本的なBedrockモデルIDの形式チェック（region.provider.model:version）
+    # 基本Bedrock模型ID格式检查（region.provider.model:version）
     if [[ ! "$model_id" =~ ^[a-z-]+\.[a-z]+\.[a-z0-9.-]+:[0-9]+$ ]]; then
-        echo "警告: $model_type モデルID '$model_id' の形式が正しくない可能性があります"
-        echo "  期待される形式: region.provider.model-name:version"
-        echo "  例: global.anthropic.claude-haiku-4-5-20251001-v1:0"
+        echo "警告: $model_type 模型ID '$model_id' 的格式可能不正确"
+        echo "  预期格式: region.provider.model-name:version"
+        echo "  示例: global.anthropic.claude-haiku-4-5-20251001-v1:0"
         echo ""
-        read -p "このまま続行しますか？ (y/N): " confirm
+        read -p "是否仍要继续？ (y/N): " confirm
         case ${confirm:0:1} in
             y|Y ) return 0 ;;
-            * ) echo "デプロイをキャンセルしました"; exit 1 ;;
+            * ) echo "已取消部署"; exit 1 ;;
         esac
     fi
     
     return 0
 }
 
-# 個別モデル指定からCDK JSONオーバーライドを生成（Global CRISのためリージョン分岐不要）
+# 从单个模型指定生成CDK JSON覆盖（因Global CRIS无需区域分支）
 generate_model_override_json() {
     local model_override="{}"
     
-    # bedrockModelsのオーバーライドを構築
+    # 构建bedrockModels的覆盖
     if [[ -n "$CONVERSATION_MODEL" || -n "$SCORING_MODEL" || -n "$FEEDBACK_MODEL" || -n "$GUARDRAIL_MODEL" || -n "$VIDEO_MODEL" || -n "$REFERENCE_CHECK_MODEL" ]]; then
         model_override=$(jq -n '{
             "context": {
@@ -156,7 +156,7 @@ generate_model_override_json() {
             }
         }')
         
-        # 指定されたモデルをフラットに設定
+        # 将指定模型平铺设置
         [[ -n "$CONVERSATION_MODEL" ]] && model_override=$(echo "$model_override" | jq --arg model "$CONVERSATION_MODEL" '.context.default.bedrockModels.conversation = $model')
         [[ -n "$SCORING_MODEL" ]] && model_override=$(echo "$model_override" | jq --arg model "$SCORING_MODEL" '.context.default.bedrockModels.scoring = $model')
         [[ -n "$FEEDBACK_MODEL" ]] && model_override=$(echo "$model_override" | jq --arg model "$FEEDBACK_MODEL" '.context.default.bedrockModels.feedback = $model')
@@ -168,35 +168,35 @@ generate_model_override_json() {
     echo "$model_override"
 }
 
-# 既存のCDK_JSON_OVERRIDEと個別モデル指定を統合
+# 合并现有CDK_JSON_OVERRIDE与单个模型指定
 if [[ -n "$CONVERSATION_MODEL" || -n "$SCORING_MODEL" || -n "$FEEDBACK_MODEL" || -n "$GUARDRAIL_MODEL" || -n "$VIDEO_MODEL" || -n "$REFERENCE_CHECK_MODEL" ]]; then
-    echo "個別モデル指定からCDK設定を生成中..."
+    echo "正在从单个模型指定生成CDK配置..."
     
-    # モデルIDのバリデーション
-    validate_model_id "$CONVERSATION_MODEL" "対話用"
-    validate_model_id "$SCORING_MODEL" "スコアリング用"
-    validate_model_id "$FEEDBACK_MODEL" "フィードバック用"
-    validate_model_id "$GUARDRAIL_MODEL" "ガードレール用"
-    validate_model_id "$VIDEO_MODEL" "動画分析用"
-    validate_model_id "$REFERENCE_CHECK_MODEL" "リファレンスチェック用"
+    # 模型ID验证
+    validate_model_id "$CONVERSATION_MODEL" "对话用"
+    validate_model_id "$SCORING_MODEL" "评分用"
+    validate_model_id "$FEEDBACK_MODEL" "反馈用"
+    validate_model_id "$GUARDRAIL_MODEL" "护栏用"
+    validate_model_id "$VIDEO_MODEL" "视频分析用"
+    validate_model_id "$REFERENCE_CHECK_MODEL" "参考核对用"
     
     MODEL_OVERRIDE_JSON=$(generate_model_override_json)
     
-    # 既存のCDK_JSON_OVERRIDEと統合
+    # 与现有CDK_JSON_OVERRIDE整合
     if [[ "$CDK_JSON_OVERRIDE" != "{}" ]]; then
-        # 既存の設定と新しいモデル設定をマージ
+        # 合并现有配置与新的模型配置
         CDK_JSON_OVERRIDE=$(echo "$CDK_JSON_OVERRIDE" | jq --argjson models "$MODEL_OVERRIDE_JSON" '. * $models')
     else
         CDK_JSON_OVERRIDE="$MODEL_OVERRIDE_JSON"
     fi
     
-    echo "生成されたCDK設定オーバーライド: $CDK_JSON_OVERRIDE"
+    echo "生成的CDK配置覆盖: $CDK_JSON_OVERRIDE"
 fi
 
 StackName="AIRoleplayDeployStack"
 
-# CloudFormationスタックのデプロイ
-echo "CloudFormationスタックのデプロイを開始します..."
+# 部署CloudFormation堆栈
+echo "开始部署CloudFormation堆栈..."
 aws cloudformation deploy \
   --stack-name $StackName \
   --template-file deploy.yml \
@@ -208,8 +208,8 @@ aws cloudformation deploy \
     RepoUrl="$REPO_URL" \
     Version="$VERSION"
 
-echo "スタック作成の完了を待機しています..."
-echo "注: このスタックはCDKデプロイ用のCodeBuildプロジェクトを含みます。"
+echo "正在等待堆栈创建完成..."
+echo "注意: 此堆栈包含用于CDK部署的CodeBuild项目。"
 spin='-\|/'
 i=0
 while true; do
@@ -217,33 +217,33 @@ while true; do
     if [[ "$status" == "CREATE_COMPLETE" || "$status" == "UPDATE_COMPLETE" ]]; then
         break
     elif [[ "$status" == "ROLLBACK_COMPLETE" || "$status" == "DELETE_FAILED" || "$status" == "CREATE_FAILED" ]]; then
-        echo "スタック作成に失敗しました: $status"
+        echo "堆栈创建失败: $status"
         exit 1
     fi
     printf "\r${spin:i++%${#spin}:1}"
     sleep 1
 done
-echo -e "\n完了しました。\n"
+echo -e "\n已完成。\n"
 
-# スタックの出力情報を取得
+# 获取堆栈的输出信息
 outputs=$(aws cloudformation describe-stacks --stack-name $StackName --query 'Stacks[0].Outputs')
 projectName=$(echo $outputs | jq -r '.[] | select(.OutputKey=="ProjectName").OutputValue')
 
 if [[ -z "$projectName" ]]; then
-    echo "CodeBuildプロジェクト名の取得に失敗しました"
+    echo "获取CodeBuild项目名称失败"
     exit 1
 fi
 
-echo "CodeBuildプロジェクト $projectName を開始します..."
+echo "开始CodeBuild项目 $projectName ..."
 buildId=$(aws codebuild start-build --project-name $projectName --query 'build.id' --output text)
 
 if [[ -z "$buildId" ]]; then
-    echo "CodeBuildプロジェクトの開始に失敗しました"
+    echo "CodeBuild项目启动失败"
     exit 1
 fi
 
-echo "CodeBuildプロジェクトの完了を待機しています..."
-echo "ビルドID: $buildId"
+echo "正在等待CodeBuild项目完成..."
+echo "构建ID: $buildId"
 while true; do
     buildStatus=$(aws codebuild batch-get-builds --ids $buildId --query 'builds[0].buildStatus' --output text)
     if [[ "$buildStatus" == "SUCCEEDED" || "$buildStatus" == "FAILED" || "$buildStatus" == "STOPPED" ]]; then
@@ -252,29 +252,29 @@ while true; do
     printf "."
     sleep 10
 done
-echo -e "\nCodeBuildプロジェクトのステータス: $buildStatus"
+echo -e "\nCodeBuild项目状态: $buildStatus"
 
 if [[ "$buildStatus" == "SUCCEEDED" ]]; then
-    echo "デプロイが正常に完了しました！"
+    echo "部署已成功完成！"
     
-    # ビルドログの取得
+    # 获取构建日志
     buildDetail=$(aws codebuild batch-get-builds --ids $buildId --query 'builds[0].logs.{groupName: groupName, streamName: streamName}' --output json)
     logGroupName=$(echo $buildDetail | jq -r '.groupName')
     logStreamName=$(echo $buildDetail | jq -r '.streamName')
     
-    echo "ログ情報:"
-    echo "- グループ名: $logGroupName"
-    echo "- ストリーム名: $logStreamName"
+    echo "日志信息:"
+    echo "- 组名: $logGroupName"
+    echo "- 流名: $logStreamName"
     
-    # CDKアプリケーションのURLを抽出
+    # 提取CDK应用程序的URL
     logs=$(aws logs get-log-events --log-group-name $logGroupName --log-stream-name $logStreamName)
     CloudFrontURL=$(echo "$logs" | grep -o 'CloudFrontURL = [^ ]*' | cut -d' ' -f3 | tr -d '\n,')
     
     if [[ -n "$CloudFrontURL" ]]; then
-        echo -e "\n🌐 アプリケーションURL: $CloudFrontURL"
+        echo -e "\n🌐 应用程序URL: $CloudFrontURL"
     else
-        echo -e "\nアプリケーションURLが見つかりませんでした。ログを確認してください。"
+        echo -e "\n未找到应用程序URL。请查看日志。"
     fi
 else
-    echo "デプロイに失敗しました。CodeBuildログを確認してください。"
+    echo "部署失败。请查看CodeBuild日志。"
 fi

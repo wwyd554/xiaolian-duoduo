@@ -14,7 +14,7 @@ interface EmojiFeedbackContainerProps {
 }
 
 /**
- * EmojiFeedbackを表示するコンテナコンポーネント
+ * 显示 EmojiFeedback 的容器组件
  */
 const EmojiFeedbackContainer: React.FC<EmojiFeedbackContainerProps> = ({
   angerLevel,
@@ -26,7 +26,7 @@ const EmojiFeedbackContainer: React.FC<EmojiFeedbackContainerProps> = ({
   const avatarContainerRef = useRef<HTMLDivElement>(null);
   const { t } = useTranslation();
 
-  // メトリクス値を使用
+  // 使用指标值
 
   return (
     <Box sx={{ position: "relative", height: "100%" }}>
@@ -41,7 +41,7 @@ const EmojiFeedbackContainer: React.FC<EmojiFeedbackContainerProps> = ({
         }}
         aria-labelledby="emotion-feedback-label"
       >
-        {/* アクセシビリティ対応のためのラベル */}
+        {/* 用于无障碍支持的标签 */}
         <Typography
           id="emotion-feedback-label"
           sx={{ position: "absolute", left: "-9999px" }}
@@ -60,20 +60,20 @@ const EmojiFeedbackContainer: React.FC<EmojiFeedbackContainerProps> = ({
           angerLevel={angerLevel}
           trustLevel={trustLevel}
           progressLevel={progressLevel}
-          size="medium" // サイズを中くらいに変更
+          size="medium" // 将尺寸改为中等
           animationEnabled={true}
           ariaLabelledBy="emotion-feedback-label"
           ariaDescribedBy="emotion-feedback-description"
           onEmotionChange={onEmotionChange}
-          // アクセシビリティ対応の設定
+          // 无障碍支持的设置
           focusable={true}
           tabIndex={0}
           announceStateChanges={true}
-          highContrast={false} // ユーザー設定に応じて切り替える場合はここを変更
+          highContrast={false} // 如需按用户设置切换请修改此处
         />
       </Box>
 
-      {/* 話している状態を表示するインジケーター */}
+      {/* 显示正在说话状态的指示器 */}
       {isSpeaking && (
         <Box
           sx={{

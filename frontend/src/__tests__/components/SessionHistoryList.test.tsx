@@ -5,7 +5,7 @@ import "@testing-library/jest-dom";
 import SessionHistoryPage from "../../pages/history/SessionHistoryPage";
 import { ApiService } from "../../services/ApiService";
 
-// APIサービスのモック
+// ApiService 的 mock
 jest.mock("../../services/ApiService", () => {
   return {
     ApiService: {
@@ -16,28 +16,28 @@ jest.mock("../../services/ApiService", () => {
               sessionId: "session-1",
               userId: "user-1",
               scenarioId: "scenario-1",
-              title: "テストセッション1",
+              title: "测试会话1",
               status: "completed",
               createdAt: "2025-06-28T10:00:00Z",
               updatedAt: "2025-06-28T10:30:00Z",
               npcInfo: {
-                name: "テストNPC",
-                role: "銀行員",
-                company: "テスト銀行",
+                name: "测试NPC",
+                role: "银行职员",
+                company: "测试银行",
               },
             },
             {
               sessionId: "session-2",
               userId: "user-1",
               scenarioId: "scenario-2",
-              title: "テストセッション2",
+              title: "测试会话2",
               status: "active",
               createdAt: "2025-06-29T09:00:00Z",
               updatedAt: "2025-06-29T09:15:00Z",
               npcInfo: {
-                name: "山田太郎",
-                role: "証券営業",
-                company: "ABC証券",
+                name: "王大川",
+                role: "证券销售",
+                company: "ABC证券",
               },
             },
           ],
@@ -46,15 +46,15 @@ jest.mock("../../services/ApiService", () => {
           scenarios: [
             {
               scenarioId: "scenario-1",
-              title: "シナリオ1",
-              description: "テストシナリオ1",
+              title: "场景1",
+              description: "测试场景1",
               difficulty: "beginner",
               category: "finance",
             },
             {
               scenarioId: "scenario-2",
-              title: "シナリオ2",
-              description: "テストシナリオ2",
+              title: "场景2",
+              description: "测试场景2",
               difficulty: "intermediate",
               category: "insurance",
             },
@@ -65,7 +65,7 @@ jest.mock("../../services/ApiService", () => {
   };
 });
 
-// AuthServiceのモック
+// AuthService 的 mock
 jest.mock("../../services/AuthService", () => ({
   AuthService: {
     getInstance: jest.fn(() => ({
@@ -78,23 +78,23 @@ jest.mock("../../services/AuthService", () => ({
   },
 }));
 
-// i18nのモック
+// i18n 的 mock
 jest.mock("react-i18next", () => ({
   useTranslation: () => {
     return {
       t: (key: string) => {
         const translations: { [key: string]: string } = {
-          "history.title": "会話履歴",
-          "history.description": "過去の会話セッションを確認できます",
-          "history.search": "検索",
-          "history.searchPlaceholder": "タイトルかNPC名で検索",
-          "history.scenarioFilter": "シナリオ",
-          "history.allScenarios": "すべてのシナリオ",
-          "history.noSessions": "セッションがありません",
-          "history.startNewSession": "新しいセッションを開始してください",
-          "history.completed": "完了",
-          "history.active": "進行中",
-          "history.unknownNPC": "不明なNPC",
+          "history.title": "会话记录",
+          "history.description": "可以查看过去的会话记录",
+          "history.search": "搜索",
+          "history.searchPlaceholder": "按标题或NPC名称搜索",
+          "history.scenarioFilter": "场景",
+          "history.allScenarios": "全部场景",
+          "history.noSessions": "没有会话",
+          "history.startNewSession": "请开始新的会话",
+          "history.completed": "已完成",
+          "history.active": "进行中",
+          "history.unknownNPC": "未知NPC",
         };
         return translations[key] || key;
       },
@@ -102,83 +102,85 @@ jest.mock("react-i18next", () => ({
   },
 }));
 
-// useNavigateのモック
+// useNavigate 的 mock
 jest.mock("react-router-dom", () => ({
   ...jest.requireActual("react-router-dom"),
   useNavigate: () => jest.fn(),
 }));
 
-describe("SessionHistoryPage コンポーネント", () => {
-  // モックAPIのリセットと初期化
+describe("SessionHistoryPage 组件", () => {
+  // mock API 的重置与初始化
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  test("セッション一覧が正常に表示される", async () => {
+  test("会话列表正常显示", async () => {
     render(
       <MemoryRouter>
         <SessionHistoryPage />
       </MemoryRouter>,
     );
 
-    // ローディング表示の確認
+    // 确认加载显示
     expect(screen.getByRole("progressbar")).toBeInTheDocument();
 
-    // セッション一覧表示の確認
+    // 确认会话列表显示
     await waitFor(() => {
-      expect(screen.getByText("テストセッション1")).toBeInTheDocument();
-      expect(screen.getByText("テストセッション2")).toBeInTheDocument();
+      expect(screen.getByText("测试会话1")).toBeInTheDocument();
+      expect(screen.getByText("测试会话2")).toBeInTheDocument();
     });
 
-    // セッション詳細の確認（NPC名は役職も含めて表示される）
-    expect(screen.getByText("テストNPC (銀行員)")).toBeInTheDocument();
-    expect(screen.getByText("山田太郎 (証券営業)")).toBeInTheDocument();
+    // 确认会话详情（NPC 名称连同职位一起显示；name 与 role 是嵌套元素，分开断言）
+    expect(screen.getByText("测试NPC")).toBeInTheDocument();
+    expect(screen.getByText("(银行职员)")).toBeInTheDocument();
+    expect(screen.getByText("王大川")).toBeInTheDocument();
+    expect(screen.getByText("(证券销售)")).toBeInTheDocument();
 
-    // ステータス表示の確認
-    const completedChip = screen.getByText("完了");
-    const activeChip = screen.getByText("進行中");
+    // 确认状态显示
+    const completedChip = screen.getByText("已完成");
+    const activeChip = screen.getByText("进行中");
     expect(completedChip).toBeInTheDocument();
     expect(activeChip).toBeInTheDocument();
   });
 
-  test("検索機能が正常に動作する", async () => {
+  test("搜索功能正常运作", async () => {
     render(
       <MemoryRouter>
         <SessionHistoryPage />
       </MemoryRouter>,
     );
 
-    // セッションが読み込まれるのを待機
+    // 等待会话加载
     await waitFor(() => {
-      expect(screen.getByText("テストセッション1")).toBeInTheDocument();
+      expect(screen.getByText("测试会话1")).toBeInTheDocument();
     });
 
-    // 検索ボックスを特定
-    const searchInput = screen.getByPlaceholderText("タイトルかNPC名で検索");
+    // 定位搜索框
+    const searchInput = screen.getByPlaceholderText("按标题或NPC名称搜索");
 
-    // 検索実行
-    fireEvent.change(searchInput, { target: { value: "山田太郎" } });
+    // 执行搜索
+    fireEvent.change(searchInput, { target: { value: "王大川" } });
 
-    // 検索結果の確認（実際の表示形式に合わせて確認）
+    // 确认搜索结果（按实际显示形式确认）
     await waitFor(() => {
-      expect(screen.queryByText("テストNPC")).not.toBeInTheDocument(); // 検索に一致しない
-      expect(screen.getByText("テストセッション2")).toBeInTheDocument(); // 山田太郎のセッションが表示される
+      expect(screen.queryByText("测试NPC")).not.toBeInTheDocument(); // 不匹配搜索条件
+      expect(screen.getByText("测试会话2")).toBeInTheDocument(); // 王大川的会话显示
     });
 
-    // 検索条件をリセット
+    // 重置搜索条件
     fireEvent.change(searchInput, { target: { value: "" } });
 
-    // 全てのセッションが再表示されることを確認
+    // 确认全部会话重新显示
     await waitFor(() => {
-      expect(screen.getByText("テストNPC (銀行員)")).toBeInTheDocument();
-      expect(screen.getByText("山田太郎 (証券営業)")).toBeInTheDocument();
+      expect(screen.getByText("测试NPC")).toBeInTheDocument();
+      expect(screen.getByText("王大川")).toBeInTheDocument();
     });
   });
 
-  test("シナリオフィルタが正常に動作する", async () => {
+  test("场景过滤器正常运作", async () => {
     const apiServiceMock = ApiService.getInstance() as jest.Mocked<ApiService>;
 
-    // フィルタ適用時のモックレスポンスを設定
+    // 设置过滤生效时的 mock 响应
     apiServiceMock.getSessions.mockImplementation(
       (limit, nextToken, scenarioId) => {
         if (scenarioId === "scenario-1") {
@@ -188,14 +190,14 @@ describe("SessionHistoryPage コンポーネント", () => {
                 sessionId: "session-1",
                 userId: "user-1",
                 scenarioId: "scenario-1",
-                title: "テストセッション1",
+                title: "测试会话1",
                 status: "completed",
                 createdAt: "2025-06-28T10:00:00Z",
                 updatedAt: "2025-06-28T10:30:00Z",
                 npcInfo: {
-                  name: "テストNPC",
-                  role: "銀行員",
-                  company: "テスト銀行",
+                  name: "测试NPC",
+                  role: "银行职员",
+                  company: "测试银行",
                 },
               },
             ],
@@ -207,28 +209,28 @@ describe("SessionHistoryPage コンポーネント", () => {
                 sessionId: "session-1",
                 userId: "user-1",
                 scenarioId: "scenario-1",
-                title: "テストセッション1",
+                title: "测试会话1",
                 status: "completed",
                 createdAt: "2025-06-28T10:00:00Z",
                 updatedAt: "2025-06-28T10:30:00Z",
                 npcInfo: {
-                  name: "テストNPC",
-                  role: "銀行員",
-                  company: "テスト銀行",
+                  name: "测试NPC",
+                  role: "银行职员",
+                  company: "测试银行",
                 },
               },
               {
                 sessionId: "session-2",
                 userId: "user-1",
                 scenarioId: "scenario-2",
-                title: "テストセッション2",
+                title: "测试会话2",
                 status: "active",
                 createdAt: "2025-06-29T09:00:00Z",
                 updatedAt: "2025-06-29T09:15:00Z",
                 npcInfo: {
                   name: "山田太郎",
-                  role: "証券営業",
-                  company: "ABC証券",
+                  role: "证券销售",
+                  company: "ABC证券",
                 },
               },
             ],
@@ -243,37 +245,37 @@ describe("SessionHistoryPage コンポーネント", () => {
       </MemoryRouter>,
     );
 
-    // セッションとシナリオが読み込まれるのを待機
+    // 等待会话和场景加载
     await waitFor(() => {
-      expect(screen.getByText("テストセッション1")).toBeInTheDocument();
-      expect(screen.getAllByText("シナリオ").length).toBeGreaterThan(0);
+      expect(screen.getByText("测试会话1")).toBeInTheDocument();
+      expect(screen.getAllByText("场景").length).toBeGreaterThan(0);
     });
 
-    // シナリオフィルターを開く
+    // 打开场景过滤器
     const scenarioFilterButton = screen.getByRole("combobox", {
-      name: /シナリオ/,
+      name: /场景/,
     });
     fireEvent.mouseDown(scenarioFilterButton);
 
-    // ドロップダウンが表示されるのを待機
+    // 等待下拉菜单显示
     await waitFor(() => {
       const menuItems = screen.getAllByRole("option");
       expect(menuItems.length).toBeGreaterThan(0);
     });
 
-    // シナリオ1を選択
-    const scenarioOption = screen.getByText("シナリオ1");
+    // 选择场景1
+    const scenarioOption = screen.getByText("场景1");
     fireEvent.click(scenarioOption);
 
-    // フィルタ選択が完了したことを確認
+    // 确认过滤选择完成
     await waitFor(() => {
-      // フィルタが適用されたことを確認（具体的なAPIコール検証は省略）
+      // 确认过滤生效（省略具体 API 调用验证）
       expect(scenarioOption).toBeInTheDocument();
     });
   });
 
-  test("セッションがない場合の表示が正しい", async () => {
-    // セッション0件の場合のモックレスポンスを設定
+  test("没有会话时的显示正确", async () => {
+    // 设置会话 0 条时的 mock 响应
     const mockApiService = {
       getSessions: jest.fn().mockResolvedValue({
         sessions: [],
@@ -291,27 +293,27 @@ describe("SessionHistoryPage コンポーネント", () => {
       </MemoryRouter>,
     );
 
-    // ローディング終了を待機（データが読み込まれるまで待つ）
+    // 等待加载结束（等待数据加载完成）
     await waitFor(() => {
       expect(mockApiService.getSessions).toHaveBeenCalled();
     });
 
-    // ローディングが終了していることを確認
+    // 确认加载结束
     await waitFor(() => {
       expect(screen.queryByRole("progressbar")).not.toBeInTheDocument();
     });
 
-    // セッションが0件の場合の表示メッセージを確認
-    expect(screen.getByText("セッションがありません")).toBeInTheDocument();
+    // 确认会话 0 条时的提示消息
+    expect(screen.getByText("没有会话")).toBeInTheDocument();
     expect(
-      screen.getByText("新しいセッションを開始してください"),
+      screen.getByText("请开始新的会话"),
     ).toBeInTheDocument();
 
-    // 基本的なUIコンポーネントも表示されることを確認
+    // 确认基础 UI 组件也显示
     expect(
-      screen.getByPlaceholderText("タイトルかNPC名で検索"),
+      screen.getByPlaceholderText("按标题或NPC名称搜索"),
     ).toBeInTheDocument();
-    // シナリオフィルターのラベルが存在することを確認
-    expect(screen.getByLabelText("シナリオ")).toBeInTheDocument();
+    // 确认场景过滤器标签存在
+    expect(screen.getByLabelText("场景")).toBeInTheDocument();
   });
 });

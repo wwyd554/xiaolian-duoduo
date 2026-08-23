@@ -1,6 +1,6 @@
 import { Page } from "@playwright/test";
 
-// テスト用の型定義
+// 测试用的类型定义
 interface MockAuthState {
   isSignedIn: boolean;
   user: {
@@ -20,32 +20,32 @@ interface MockWindow {
 }
 
 /**
- * AWS Amplify認証のモック関数
+ * AWS Amplify 认证的 mock 函数
  *
- * テスト時にAWS Amplify認証をモックするための関数
- * @param page Playwrightのページオブジェクト
+ * 测试时用于 mock AWS Amplify 认证的函数
+ * @param page Playwright 的页面对象
  */
 export async function mockAmplifyAuth(page: Page): Promise<void> {
-  // Amplify Auth APIをモック
+  // mock Amplify Auth API
   await page.addInitScript(() => {
-    // グローバルオブジェクトにモックを設定
+    // 在全局对象上设置 mock
     (window as unknown as MockWindow).mockAuthState = {
       isSignedIn: true,
       user: {
         username: "testuser",
         email: "test@example.com",
-        preferredUsername: "テストユーザー",
+        preferredUsername: "测试用户",
       },
     };
 
-    // Auth.getCurrentUserをモック
+    // mock Auth.getCurrentUser
     (window as unknown as MockWindow).getCurrentUser = () => {
       return Promise.resolve(
         (window as unknown as MockWindow).mockAuthState.user,
       );
     };
 
-    // Authenticatorコンポーネントをモック
+    // mock Authenticator 组件
     Object.defineProperty(window, "Authenticator", {
       value: ({ children }: { children: () => unknown }) => {
         if (typeof children === "function") {
@@ -56,7 +56,7 @@ export async function mockAmplifyAuth(page: Page): Promise<void> {
       writable: true,
     });
 
-    // AuthServiceのgetCurrentUserをモック
+    // mock AuthService 的 getCurrentUser
     const originalGetInstance = (window as unknown as MockWindow).AuthService
       ?.getInstance;
     if (originalGetInstance) {

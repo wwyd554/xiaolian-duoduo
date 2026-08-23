@@ -1,10 +1,10 @@
 /**
- * アバター関連の型定義
+ * 头像相关的类型定义
  */
 import { EmotionState } from './index';
 
 /**
- * アバター情報（DynamoDB管理）
+ * 头像信息（DynamoDB 管理）
  */
 export interface AvatarInfo {
   id: string;
@@ -17,16 +17,16 @@ export interface AvatarInfo {
 }
 
 /**
- * Polly visemeから日本語母音へのマッピング
+ * Polly viseme 到元音的映射
  */
 export const POLLY_VISEME_TO_VOWEL: Record<string, VisemeData['value']> = {
-  // 母音系
+  // 元音类
   'a': 'a', '@': 'a', 'E': 'a',
   'i': 'i', 'I': 'i',
   'u': 'u', 'U': 'u',
   'e': 'e',
   'o': 'o', 'O': 'o',
-  // 子音・無音系 → 閉口
+  // 辅音、静音类 → 闭口
   'sil': 'sil', 'p': 'sil', 't': 'sil', 'S': 'sil', 'T': 'sil',
   'f': 'sil', 'k': 'sil', 'r': 'sil', 's': 'sil', 'd': 'sil',
   'g': 'sil', 'n': 'sil', 'm': 'sil', 'N': 'sil', 'l': 'sil',
@@ -35,7 +35,7 @@ export const POLLY_VISEME_TO_VOWEL: Record<string, VisemeData['value']> = {
 };
 
 /**
- * Visemeデータ（Phase 2: リップシンク用）
+ * Viseme 数据（Phase 2：用于口型同步）
  */
 export interface VisemeData {
   time: number;
@@ -43,7 +43,7 @@ export interface VisemeData {
 }
 
 /**
- * アバターContext状態
+ * 头像 Context 状态
  */
 export interface AvatarContextState {
   currentAvatarId: string | null;
@@ -53,12 +53,12 @@ export interface AvatarContextState {
 }
 
 /**
- * VRM表情名
+ * VRM 表情名
  */
 export type VRMExpressionName = 'happy' | 'angry' | 'sad' | 'relaxed' | 'neutral';
 
 /**
- * 表情ブレンドエントリ（表情名と強度のペア）
+ * 表情混合条目（表情名与强度的配对）
  */
 export interface ExpressionBlendEntry {
   name: string;
@@ -66,8 +66,8 @@ export interface ExpressionBlendEntry {
 }
 
 /**
- * 表情マッピング設定
- * blendで複数表情の組み合わせを指定可能
+ * 表情映射设置
+ * 可通过 blend 指定多个表情的组合
  */
 export interface ExpressionMapping {
   expression: VRMExpressionName;
@@ -76,8 +76,8 @@ export interface ExpressionMapping {
 }
 
 /**
- * EmotionStateからVRM表情へのマッピング
- * angry: angry + blink(0.3) のブレンドで目を細める怒り表現を採用
+ * EmotionState 到 VRM 表情的映射
+ * angry：采用 angry + blink(0.3) 的混合来实现眯眼的愤怒表情
  */
 export const EMOTION_TO_VRM_EXPRESSION: Record<EmotionState, ExpressionMapping> = {
   happy: { expression: 'happy', intensity: 1.0 },
@@ -88,12 +88,12 @@ export const EMOTION_TO_VRM_EXPRESSION: Record<EmotionState, ExpressionMapping> 
 };
 
 /**
- * ジェスチャータイプ
+ * 手势类型
  */
 export type GestureType = 'nod' | 'headTilt' | 'none';
 
 /**
- * VRMAvatarコンポーネントのプロパティ
+ * VRMAvatar 组件的属性
  */
 export interface VRMAvatarProps {
   modelUrl: string;
@@ -107,7 +107,7 @@ export interface VRMAvatarProps {
 }
 
 /**
- * VRMAvatarContainerのプロパティ
+ * VRMAvatarContainer 的属性
  */
 export interface VRMAvatarContainerProps {
   avatarId?: string;

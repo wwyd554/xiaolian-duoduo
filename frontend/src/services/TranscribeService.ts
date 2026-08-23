@@ -1,19 +1,19 @@
 /**
- * Amazon Transcribeストリーミング統合サービス
+ * Amazon Transcribe 流式集成服务
  * 
- * WebSocketを通じて音声をストリーミングし、Amazon Transcribeによるリアルタイム音声認識を
- * 実行するためのサービスクラスです。常時マイク入力を可能にし、無音検出による自動発話終了を
- * サポートします。認証されたWebSocket接続を使用します。
+ * 通过 WebSocket 流式传输语音，使用 Amazon Transcribe 进行实时语音识别，
+ * 是本服务类的目的。支持常开麦克风输入，通过静音检测自动结束发言，
+ * 并使用经过认证的 WebSocket 连接。
  */
 
 /**
- * WebSocket接続状態の定義
+ * WebSocket 连接状态定义
  */
 export enum ConnectionState {
-  DISCONNECTED = 'disconnected',    // 未接続
-  CONNECTING = 'connecting',        // 接続中
-  CONNECTED = 'connected',          // 接続完了
-  CONNECTION_ERROR = 'connection_error'  // 接続エラー
+  DISCONNECTED = 'disconnected',    // 未连接
+  CONNECTING = 'connecting',        // 连接中
+  CONNECTED = 'connected',          // 连接完成
+  CONNECTION_ERROR = 'connection_error'  // 连接错误
 }
 export class TranscribeService {
   private static instance: TranscribeService;
@@ -25,48 +25,48 @@ export class TranscribeService {
   private silenceDetectionTimer: ReturnType<typeof setTimeout> | null = null;
   private lastVoiceActivityTime: number = 0;
 
-  // 接続状態管理
+  // 连接状态管理
   private connectionState: ConnectionState = ConnectionState.DISCONNECTED;
 
-  // 設定パラメータ
-  private silenceThresholdMs: number = 5000;  // 無音判定閾値（ミリ秒）- マイク放置時の安全弁
-  private voiceThreshold: number = 1.5;  // 音声判定閾値（環境ノイズ除外用）
+  // 配置参数
+  private silenceThresholdMs: number = 5000;  // 静音判定阈值（毫秒）- 麦克风长时间无输入时的安全阀
+  private voiceThreshold: number = 1.5;  // 语音判定阈值（用于排除环境噪声）
   private websocketUrl: string = '';
   private language: string = 'zh';  // 语言信息
-  private currentSessionId: string = '';  // 現在のセッションID
+  private currentSessionId: string = '';  // 当前会话 ID
 
-  // 自動再接続とバッファリング
+  // 自动重连与缓冲
   private audioBuffer: Array<{ audio: string, language: string }> = [];
   private isReconnecting: boolean = false;
-  private maxBufferSize: number = 50; // 最大バッファサイズ（約5秒分）
+  private maxBufferSize: number = 50; // 最大缓冲区大小（约 5 秒）
   private reconnectPromise: Promise<void> | null = null;
 
-  // コールバック関数
+  // 回调函数
   private onTranscriptCallback: ((text: string, isFinal: boolean) => void) | null = null;
   private onSilenceDetectedCallback: (() => void) | null = null;
   private onErrorCallback: ((error: Error) => void) | null = null;
   private onConnectionStateChangeCallback: ((state: ConnectionState) => void) | null = null;
 
   /**
-   * コンストラクタ - シングルトンパターン
+   * 构造函数 - 单例模式
    */
   private constructor() {
-    // シングルトン初期化
+    // 单例初始化
   }
 
   /**
-   * WebSocketエンドポイントを設定
+   * 设置 WebSocket 端点
    * 
-   * @param url WebSocketエンドポイントURL
+   * @param url WebSocket 端点 URL
    */
   public setWebSocketEndpoint(url: string): void {
     this.websocketUrl = url;
   }
 
   /**
-   * 無音検出時間を設定
-   * @deprecated UI設定が削除されたため、現在は内部的な安全弁としてのみ使用
-   * @param thresholdMs 無音検出時間（ミリ秒）
+   * 设置静音检测时长
+   * @deprecated 由于 UI 设置已被删除，目前仅作为内部安全阀使用
+   * @param thresholdMs 静音检测时长（毫秒）
    */
   public setSilenceThreshold(thresholdMs: number): void {
     const clampedThreshold = Math.max(500, Math.min(10000, thresholdMs));
@@ -74,35 +74,35 @@ export class TranscribeService {
   }
 
   /**
-   * 現在の無音検出時間を取得
-   * @deprecated UI設定が削除されたため、現在は内部的な安全弁としてのみ使用
-   * @returns {number} 無音検出時間（ミリ秒）
+   * 获取当前静音检测时长
+   * @deprecated 由于 UI 设置已被删除，目前仅作为内部安全阀使用
+   * @returns {number} 静音检测时长（毫秒）
    */
   public getSilenceThreshold(): number {
     return this.silenceThresholdMs;
   }
 
   /**
-   * 音声判定閾値を設定
-   * @param threshold 音声判定閾値（0.1〜10.0）
+   * 设置语音判定阈值
+   * @param threshold 语音判定阈值（0.1〜10.0）
    */
   public setVoiceThreshold(threshold: number): void {
     this.voiceThreshold = Math.max(0.1, Math.min(10.0, threshold));
   }
 
   /**
-   * 接続状態を変更する（内部使用）
+   * 修改连接状态（内部使用）
    * 
    * @private
-   * @param {ConnectionState} newState 新しい接続状態
+   * @param {ConnectionState} newState 新的连接状态
    */
   private setConnectionState(newState: ConnectionState): void {
     if (this.connectionState !== newState) {
       const oldState = this.connectionState;
       this.connectionState = newState;
-      console.warn(`接続状態変更: ${oldState} → ${newState}`);
+      console.warn(`连接状态变更: ${oldState} → ${newState}`);
 
-      // 接続状態変更コールバックを実行
+      // 执行连接状态变更回调
       if (this.onConnectionStateChangeCallback) {
         this.onConnectionStateChangeCallback(newState);
       }
@@ -110,27 +110,27 @@ export class TranscribeService {
   }
 
   /**
-   * 現在の接続状態を取得
+   * 获取当前连接状态
    * 
-   * @returns {ConnectionState} 現在の接続状態
+   * @returns {ConnectionState} 当前连接状态
    */
   public getConnectionState(): ConnectionState {
     return this.connectionState;
   }
 
   /**
-   * 接続状態変更時のコールバックを設定
+   * 设置连接状态变更时的回调
    * 
-   * @param {function} callback 接続状態変更時に呼ばれるコールバック関数
+   * @param {function} callback 连接状态变更时被调用的回调函数
    */
   public setOnConnectionStateChange(callback: (state: ConnectionState) => void | null): void {
     this.onConnectionStateChangeCallback = callback;
   }
 
   /**
-   * シングルトンインスタンスを取得
+   * 获取单例实例
    *
-   * @returns {TranscribeService} シングルトンインスタンス
+   * @returns {TranscribeService} 单例实例
    */
   public static getInstance(): TranscribeService {
     if (!TranscribeService.instance) {
@@ -140,13 +140,13 @@ export class TranscribeService {
   }
 
   /**
-   * WebSocket接続を初期化
+   * 初始化 WebSocket 连接
    *
-   * @param sessionId セッションID
-   * @param language 言語設定 (例: 'ja', 'en')
+   * @param sessionId 会话 ID
+   * @param language 语言设置（例：'ja'、'en'）
    */
   public async initializeConnection(sessionId: string, language?: string): Promise<void> {
-    // セッションIDと言語情報を保存
+    // 保存会话 ID 和语言信息
     this.currentSessionId = sessionId;
     this.language = language || 'zh';
     if (!this.websocketUrl) {
@@ -154,14 +154,14 @@ export class TranscribeService {
       throw new Error('未配置 WebSocket 端点');
     }
 
-    // 既存の接続を閉じる
+    // 关闭现有连接
     this.closeConnection();
 
-    // 接続開始状態に変更
+    // 切换为连接开始状态
     this.setConnectionState(ConnectionState.CONNECTING);
 
     try {
-      // AuthServiceから認証トークンを取得
+      // 从 AuthService 获取认证令牌
       const { AuthService } = await import('./AuthService');
       const authService = AuthService.getInstance();
       const token = await authService.getAuthToken();
@@ -170,7 +170,7 @@ export class TranscribeService {
         throw new Error('无法获取认证令牌');
       }
 
-      // 認証トークン付きの接続URL
+      // 带认证令牌的连接 URL
       const authenticatedUrl = `${this.websocketUrl}?session=${encodeURIComponent(sessionId)}&token=${encodeURIComponent(token)}`;
 
       return new Promise((resolve, reject) => {
@@ -186,12 +186,12 @@ export class TranscribeService {
             try {
               const data = JSON.parse(event.data);
               if (data.transcript && this.onTranscriptCallback) {
-                // isPartial: true=途中認識、false=最終確定（AWS Transcribe APIの標準に準拠）
+                // isPartial: true=中间识别、false=最终确认（遵循 AWS Transcribe API 标准）
                 this.onTranscriptCallback(data.transcript, data.isPartial || false);
               }
 
-              // Lambda側のvoiceActivityは無視（フロントエンド側の音声レベル判定を優先）
-              // 実際の音声レベル検出はaudioProcessor内で行う
+              // 忽略 Lambda 端的 voiceActivity（优先使用前端语音电平判定）
+              // 实际语音电平检测在 audioProcessor 中进行
             } catch (error) {
               console.error('WebSocket消息解析错误:', error);
             }
@@ -206,7 +206,7 @@ export class TranscribeService {
           this.socket.onclose = (event) => {
             console.warn(`WebSocket断开: 代码=${event.code}, wasClean=${event.wasClean}`);
 
-            // 音声認識中だった場合は、次の音声検出時に自動再接続を準備
+            // 若正处于语音识别中，则在下次语音检测时准备自动重连
             if (this.isRecording) {
               console.warn('语音识别中检测到断开，将在下一次语音时重新连接');
             }
@@ -221,20 +221,20 @@ export class TranscribeService {
       console.error('WebSocket连接错误:', error);
       this.setConnectionState(ConnectionState.CONNECTION_ERROR);
       if (this.onErrorCallback) {
-        this.onErrorCallback(error instanceof Error ? error : new Error('WebSocket接続エラー'));
+        this.onErrorCallback(error instanceof Error ? error : new Error('WebSocket 连接错误'));
       }
       throw error;
     }
   }
 
   /**
-   * 自動再接続（既に再接続中の場合は既存のPromiseを返す）
+   * 自动重连（若已在重连中则返回现有 Promise）
    * 
    * @private
-   * @returns {Promise<void>} 再接続完了のPromise
+   * @returns {Promise<void>} 重连完成的 Promise
    */
   private async autoReconnect(): Promise<void> {
-    // 既に再接続中なら、その完了を待つ
+    // 若已在重连中，则等待其完成
     if (this.reconnectPromise) {
       return this.reconnectPromise;
     }
@@ -249,9 +249,9 @@ export class TranscribeService {
     this.reconnectPromise = (async () => {
       try {
         await this.initializeConnection(this.currentSessionId, this.language);
-        console.warn('自動再接続完了');
+        console.warn('自动重连完成');
 
-        // バッファに溜まった音声データを送信
+        // 发送缓冲区中累积的音频数据
         if (this.audioBuffer.length > 0) {
           for (const bufferedData of this.audioBuffer) {
             if (this.socket?.readyState === WebSocket.OPEN) {
@@ -265,7 +265,7 @@ export class TranscribeService {
           this.audioBuffer = [];
         }
       } catch (error) {
-        console.error('❌ 自動再接続失敗:', error);
+        console.error('❌ 自动重连失败:', error);
         throw error;
       } finally {
         this.isReconnecting = false;
@@ -277,11 +277,11 @@ export class TranscribeService {
   }
 
   /**
-   * 音声認識を開始
+   * 开始语音识别
    *
-   * @param onTranscript テキスト認識時のコールバック（text: 認識テキスト, isPartial: true=途中認識/false=最終確定）
-   * @param onSilence 無音検出時のコールバック
-   * @param onError エラー発生時のコールバック
+   * @param onTranscript 文本识别时的回调（text：识别文本，isPartial：true=中间识别/false=最终确认）
+   * @param onSilence 静音检测时的回调
+   * @param onError 发生错误时的回调
    */
   public async startListening(
     onTranscript: (text: string, isPartial: boolean) => void,
@@ -301,18 +301,18 @@ export class TranscribeService {
     this.onErrorCallback = onError || null;
 
     try {
-      // マイクへのアクセスを要求
+      // 请求麦克风访问权限
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           echoCancellation: true,
           noiseSuppression: true,
           autoGainControl: true,
-          sampleRate: 16000,  // Transcribe要求に合わせて16kHzに設定
-          channelCount: 1     // モノラル
+          sampleRate: 16000,  // 按 Transcribe 要求设置为 16kHz
+          channelCount: 1     // 单声道
         }
       });
 
-      // Web Audio APIを使用してPCM形式で処理
+      // 使用 Web Audio API 以 PCM 格式处理
       this.audioContext = new (window.AudioContext || window.webkitAudioContext)({
         sampleRate: 16000
       });
@@ -326,60 +326,60 @@ export class TranscribeService {
           const inputBuffer = event.inputBuffer;
           const inputData = inputBuffer.getChannelData(0);
 
-          // 音声レベルを計算（RMS値）
+          // 计算语音电平（RMS 值）
           let sum = 0;
           for (let i = 0; i < inputData.length; i++) {
             sum += inputData[i] * inputData[i];
           }
           const rms = Math.sqrt(sum / inputData.length);
-          const audioLevel = rms * 100; // 0-100のスケールに変換
+          const audioLevel = rms * 100; // 转换为 0-100 的刻度
 
-          // 音声レベルが閾値を超えている場合のみ音声アクティビティを更新
+          // 仅当语音电平超过阈值时更新语音活动
           const isVoiceDetected = audioLevel > this.voiceThreshold;
 
           if (isVoiceDetected) {
             this.lastVoiceActivityTime = Date.now();
 
-            // 音声検出時に接続が切れていたら自動再接続
+            // 语音检测时若连接已断开则自动重连
             if (!this.isConnected() && !this.isReconnecting && this.currentSessionId) {
               this.autoReconnect().catch(err => {
                 console.error('自动重新连接错误:', err);
                 if (this.onErrorCallback) {
-                  this.onErrorCallback(err instanceof Error ? err : new Error('自動再接続失敗'));
+                  this.onErrorCallback(err instanceof Error ? err : new Error('自动重连失败'));
                 }
               });
             }
           }
 
-          // Float32ArrayをInt16Arrayに変換（PCM 16bit）
+          // 将 Float32Array 转换为 Int16Array（PCM 16bit）
           const pcmData = new Int16Array(inputData.length);
           for (let i = 0; i < inputData.length; i++) {
-            // -1.0から1.0の範囲を-32768から32767の範囲に変換
+            // 将 -1.0 到 1.0 的范围转换为 -32768 到 32767 的范围
             pcmData[i] = Math.max(-32768, Math.min(32767, inputData[i] * 32767));
           }
 
-          // Int16ArrayをUint8Arrayに変換してBase64エンコード
+          // 将 Int16Array 转换为 Uint8Array 并进行 Base64 编码
           const uint8Array = new Uint8Array(pcmData.buffer);
           const base64Audio = this.arrayBufferToBase64(uint8Array.buffer);
 
-          // 接続状態に応じて送信またはバッファリング
+          // 根据连接状态选择发送或缓冲
           if (this.socket?.readyState === WebSocket.OPEN && !this.isReconnecting) {
-            // 接続済み：直接送信
+            // 已连接：直接发送
             this.socket.send(JSON.stringify({
               action: 'sendAudio',
               audio: base64Audio,
-              language: this.language  // 言語情報を追加
+              language: this.language  // 添加语言信息
             }));
           } else if (isVoiceDetected) {
-            // 音声検出中で未接続：バッファに保存
+            // 语音检测中但未连接：存入缓冲区
             this.audioBuffer.push({
               audio: base64Audio,
               language: this.language
             });
 
-            // バッファサイズ制限
+            // 缓冲区大小限制
             if (this.audioBuffer.length > this.maxBufferSize) {
-              this.audioBuffer.shift(); // 古いデータを削除
+              this.audioBuffer.shift(); // 删除旧数据
               console.warn('⚠️ 缓冲区已满，删除旧数据');
             }
           }
@@ -391,7 +391,7 @@ export class TranscribeService {
       source.connect(this.audioProcessor);
       this.audioProcessor.connect(this.audioContext.destination);
 
-      // 無音検出タイマーを設定
+      // 设置静音检测定时器
       this.lastVoiceActivityTime = Date.now();
       this.startSilenceDetection();
 
@@ -399,35 +399,35 @@ export class TranscribeService {
     } catch (error) {
       console.error('语音识别开始错误:', error);
       if (this.onErrorCallback) {
-        this.onErrorCallback(error instanceof Error ? error : new Error('音声認識開始エラー'));
+        this.onErrorCallback(error instanceof Error ? error : new Error('语音识别开始错误'));
       }
       throw error;
     }
   }
 
   /**
-   * 無音検出処理を開始
+   * 开始静音检测处理
    *
    * @private
    */
   private startSilenceDetection(): void {
-    // 既存のタイマーをクリア
+    // 清除现有定时器
     if (this.silenceDetectionTimer) {
       clearInterval(this.silenceDetectionTimer);
     }
 
-    // 定期的に無音状態をチェック
+    // 定期检查静音状态
     this.silenceDetectionTimer = setInterval(() => {
       const now = Date.now();
       const elapsed = now - this.lastVoiceActivityTime;
 
-      // 設定された閾値より長く無音が続いた場合
+      // 当静音持续超过设定阈值时
       if (elapsed > this.silenceThresholdMs) {
 
         if (this.onSilenceDetectedCallback) {
           this.onSilenceDetectedCallback();
 
-          // 無音検出後は検出を一時停止（連続検出を防止）
+          // 静音检测后暂停检测（防止连续触发）
           this.lastVoiceActivityTime = now;
         }
       }
@@ -435,16 +435,16 @@ export class TranscribeService {
   }
 
   /**
-   * 音声認識を停止
+   * 停止语音识别
    */
   public stopListening(): void {
-    // 無音検出タイマーを停止
+    // 停止静音检测定时器
     if (this.silenceDetectionTimer) {
       clearInterval(this.silenceDetectionTimer);
       this.silenceDetectionTimer = null;
     }
 
-    // Web Audio API リソースを停止
+    // 停止 Web Audio API 资源
     if (this.audioProcessor) {
       try {
         this.audioProcessor.disconnect();
@@ -454,7 +454,7 @@ export class TranscribeService {
       }
     }
 
-    // MediaStreamを停止
+    // 停止 MediaStream
     if (this.mediaStream) {
       try {
         this.mediaStream.getTracks().forEach(track => track.stop());
@@ -468,7 +468,7 @@ export class TranscribeService {
   }
 
   /**
-   * WebSocket接続を閉じる
+   * 关闭 WebSocket 连接
    */
   private closeConnection(): void {
     if (this.socket) {
@@ -482,20 +482,20 @@ export class TranscribeService {
       }
       this.socket = null;
     }
-    // 手動で切断した場合は切断状態に設定
+    // 手动断开时设置为断开状态
     if (this.connectionState !== ConnectionState.CONNECTION_ERROR) {
       this.setConnectionState(ConnectionState.DISCONNECTED);
     }
   }
 
   /**
-   * リソースを解放
+   * 释放资源
    */
   public dispose(): void {
     this.stopListening();
     this.closeConnection();
 
-    // バッファをクリア
+    // 清空缓冲区
     this.audioBuffer = [];
     this.isReconnecting = false;
     this.reconnectPromise = null;
@@ -511,28 +511,28 @@ export class TranscribeService {
   }
 
   /**
-   * 現在音声認識中かどうかを取得
+   * 获取当前是否正在语音识别
    *
-   * @returns {boolean} 音声認識中の場合true
+   * @returns {boolean} 正在语音识别时返回 true
    */
   public isListening(): boolean {
     return this.isRecording;
   }
 
   /**
-   * WebSocketが接続されているかを確認
+   * 检查 WebSocket 是否已连接
    *
-   * @returns {boolean} 接続されている場合true
+   * @returns {boolean} 已连接时返回 true
    */
   public isConnected(): boolean {
     return this.socket !== null && this.socket.readyState === WebSocket.OPEN;
   }
 
   /**
-   * ArrayBufferをBase64に変換
+   * 将 ArrayBuffer 转换为 Base64
    *
-   * @param buffer 変換するArrayBuffer
-   * @returns {string} Base64エンコードされた文字列
+   * @param buffer 要转换的 ArrayBuffer
+   * @returns {string} Base64 编码的字符串
    */
   private arrayBufferToBase64(buffer: ArrayBuffer): string {
     const bytes = new Uint8Array(buffer);
@@ -546,7 +546,7 @@ export class TranscribeService {
   }
 }
 
-// WebAudioAPI用の型定義
+// WebAudioAPI 用的类型定义
 declare global {
   interface Window {
     webkitAudioContext: typeof AudioContext;

@@ -9,7 +9,7 @@ import {
 import { useTranslation } from "react-i18next";
 
 /**
- * ステータス表示コンポーネントのプロパティ
+ * 状态展示组件的属性
  */
 interface ReferenceCheckStatusProps {
   isLoading: boolean;
@@ -19,7 +19,7 @@ interface ReferenceCheckStatusProps {
 }
 
 /**
- * リファレンスチェックのステータス表示コンポーネント
+ * 引用检查的状态展示组件
  */
 const ReferenceCheckStatus: React.FC<ReferenceCheckStatusProps> = ({
   isLoading,
@@ -29,7 +29,7 @@ const ReferenceCheckStatus: React.FC<ReferenceCheckStatusProps> = ({
 }) => {
   const { t } = useTranslation();
 
-  // ローディング状態または分析中状態
+  // 加载状态或分析中状态
   if (isLoading || isAnalyzing) {
     return (
       <Box
@@ -42,12 +42,12 @@ const ReferenceCheckStatus: React.FC<ReferenceCheckStatusProps> = ({
       >
         <CircularProgress size={40} sx={{ mb: 2 }} />
         <Typography variant="body1" color="text.secondary">
-          {t("referenceCheck.analyzing", "リファレンスチェックを実行中...")}
+          {t("referenceCheck.analyzing", "正在执行引用检查...")}
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
           {t(
             "referenceCheck.analyzingDescription",
-            "ドキュメントとの整合性を確認しています",
+            "正在确认与文档的一致性",
           )}
         </Typography>
         <Typography
@@ -57,34 +57,34 @@ const ReferenceCheckStatus: React.FC<ReferenceCheckStatusProps> = ({
         >
           {t(
             "referenceCheck.analyzingNote",
-            "※ 処理に時間がかかる場合があります。しばらくお待ちください。",
+            "※ 处理可能需要一些时间，请稍候。",
           )}
         </Typography>
       </Box>
     );
   }
 
-  // エラー状態
+  // 错误状态
   if (error) {
     return (
       <Alert severity="error" sx={{ mb: 3 }}>
-        <AlertTitle>{t("referenceCheck.errorTitle", "エラー")}</AlertTitle>
+        <AlertTitle>{t("referenceCheck.errorTitle", "错误")}</AlertTitle>
         {error}
       </Alert>
     );
   }
 
-  // データがない場合（PDFがアップロードされていないなど）
+  // 无数据的情况（如未上传 PDF）
   if (!hasData) {
     return (
       <Alert severity="info" sx={{ mb: 3 }}>
         <AlertTitle>
-          {t("referenceCheck.noDataTitle", "リファレンスチェックデータなし")}
+          {t("referenceCheck.noDataTitle", "无引用检查数据")}
         </AlertTitle>
         <Typography variant="body2">
           {t(
             "referenceCheck.noData",
-            "このセッションにはリファレンスチェックデータがありません。シナリオにPDF資料がアップロードされている場合のみ、リファレンスチェックが実行されます。",
+            "此会话没有引用检查数据。仅当场景中上传了 PDF 资料时，才会执行引用检查。",
           )}
         </Typography>
       </Alert>

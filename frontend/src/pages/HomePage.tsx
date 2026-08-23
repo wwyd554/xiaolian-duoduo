@@ -45,7 +45,7 @@ const HomePage: React.FC = () => {
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
-      {/* ヘッダーセクション */}
+      {/* 页头区域 */}
       <Box textAlign="center" mb={4}>
         <Typography
           variant="h3"
@@ -70,7 +70,7 @@ const HomePage: React.FC = () => {
         </Typography>
       </Box>
 
-      {/* 特徴セクション */}
+      {/* 特色区域 */}
       <Box
         sx={{
           display: "grid",
@@ -107,7 +107,7 @@ const HomePage: React.FC = () => {
         ))}
       </Box>
 
-      {/* 体験の流れセクション */}
+      {/* 体验流程区域 */}
       <Card sx={{ mb: 4, bgcolor: "primary.main", color: "white" }}>
         <CardContent sx={{ p: 3 }}>
           <Typography variant="h5" gutterBottom>
@@ -161,7 +161,7 @@ const HomePage: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* スタートボタン */}
+      {/* 开始按钮 */}
       <Box textAlign="center" display="flex" gap={2} justifyContent="center" flexWrap="wrap">
         <Button
           variant="contained"

@@ -78,7 +78,7 @@ jobs:
           
       - name: Run Python Tests
         run: |
-          # Python用のテストを検索して実行
+          # 搜索并运行 Python 测试
           if [ -d lambda ]; then
             cd lambda
             pytest -xvs --cov=. --cov-report=xml || echo "No tests found in lambda directory"

@@ -1,10 +1,10 @@
 /**
- * AgentCore Runtime サービス
+ * AgentCore Runtime 服务
  * 
- * フロントエンドからAgentCore Runtimeを直接呼び出すサービス
- * JWT認証（Cognito）を使用してHTTPS直接リクエストを行う
+ * 从前端直接调用 AgentCore Runtime 的服务
+ * 使用 JWT 认证（Cognito）直接发起 HTTPS 请求
  * 
- * 注意: JWT認証を使用する場合、AWS SDKではなくHTTPS直接リクエストを使用する必要がある
+ * 注意：使用 JWT 认证时，必须使用 HTTPS 直接请求而非 AWS SDK
  * https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/runtime-oauth.html
  */
 import { getCurrentUser, fetchAuthSession } from "aws-amplify/auth";
@@ -13,29 +13,29 @@ import type { ComplianceCheck } from "../types/api";
 import { transformComplianceCheck } from "../utils/apiTransformers";
 import { mergeGoalStatus, serializeGoalStatus } from "../utils/goalUtils";
 
-// 環境変数からAgentCore Runtime設定を取得
+// 从环境变量获取 AgentCore Runtime 配置
 const AGENTCORE_ENABLED = import.meta.env.VITE_AGENTCORE_ENABLED === 'true';
 const AWS_REGION = import.meta.env.VITE_AWS_REGION || 'us-west-2';
 
 // AgentCore Runtime ARNs
-// CDKデプロイ時: VITE_AGENTCORE_NPC_CONVERSATION_ARN / VITE_AGENTCORE_REALTIME_SCORING_ARN
-// ローカル開発時: VITE_NPC_CONVERSATION_RUNTIME_ARN / VITE_REALTIME_SCORING_RUNTIME_ARN
+// CDK 部署时：VITE_AGENTCORE_NPC_CONVERSATION_ARN / VITE_AGENTCORE_REALTIME_SCORING_ARN
+// 本地开发时：VITE_NPC_CONVERSATION_RUNTIME_ARN / VITE_REALTIME_SCORING_RUNTIME_ARN
 const NPC_CONVERSATION_RUNTIME_ARN = import.meta.env.VITE_AGENTCORE_NPC_CONVERSATION_ARN || import.meta.env.VITE_NPC_CONVERSATION_RUNTIME_ARN || '';
 const REALTIME_SCORING_RUNTIME_ARN = import.meta.env.VITE_AGENTCORE_REALTIME_SCORING_ARN || import.meta.env.VITE_REALTIME_SCORING_RUNTIME_ARN || '';
 
-// AgentCore Data Plane エンドポイント
+// AgentCore Data Plane 端点
 const AGENTCORE_ENDPOINT = `https://bedrock-agentcore.${AWS_REGION}.amazonaws.com`;
 
-// アクセストークンの先回り更新しきい値（秒）
-// AgentCoreは「あと1分以内に失効するトークン」を拒否するため、
-// それより十分手前（2分）を切ったら更新し、長いペイロード送信中の失効も吸収する
+// Access Token 提前刷新阈值（秒）
+// 由于 AgentCore 会拒绝“1 分钟内即将失效的令牌”，
+// 因此在剩余时间低于该提前量（2 分钟）时刷新，以吸收长负载发送过程中的令牌失效
 const TOKEN_REFRESH_THRESHOLD_SEC = 120;
 
 /**
- * AgentCore Runtimeが401（認証エラー）を返した場合に投げる専用エラー
+ * 当 AgentCore Runtime 返回 401（认证错误）时抛出的专用错误
  *
- * トークン失効・失効間近（"Ineffectual token, will expire within the next minute"）が
- * 主因のため、呼び出し元はこのエラーを検知してトークンを強制更新し、リトライ判定に使う。
+ * 由于令牌失效或即将失效（"Ineffectual token, will expire within the next minute"）是
+ * 主要原因，调用方可检测该错误并强制刷新令牌，用于重试判断。
  */
 class AgentCoreUnauthorizedError extends Error {
   constructor(message: string) {
@@ -45,10 +45,10 @@ class AgentCoreUnauthorizedError extends Error {
 }
 
 /**
- * AgentCore Runtime サービスクラス
+ * AgentCore Runtime 服务类
  * 
- * フロントエンドからAgentCore Runtimeを直接呼び出す
- * JWT認証（Cognito IDトークン）を使用
+ * 从前端直接调用 AgentCore Runtime
+ * 使用 JWT 认证（Cognito ID 令牌）
  */
 export class AgentCoreService {
   private static instance: AgentCoreService;
@@ -56,7 +56,7 @@ export class AgentCoreService {
   private constructor() { }
 
   /**
-   * シングルトンインスタンスを取得
+   * 获取单例实例
    */
   public static getInstance(): AgentCoreService {
     if (!AgentCoreService.instance) {
@@ -66,19 +66,19 @@ export class AgentCoreService {
   }
 
   /**
-   * Cognito Access Tokenを取得
+   * 获取 Cognito Access Token
    *
-   * 注意: AgentCore RuntimeのJWT認証ではAccess Tokenを使用する
-   * （ID Tokenではない）
+   * 注意：AgentCore Runtime 的 JWT 认证使用 Access Token
+   * （不是 ID Token）
    *
-   * AgentCoreは「あと1分以内に失効するトークン」を予防的に拒否する
+   * AgentCore 会预防性地拒绝“1 分钟内即将失效的令牌”
    * （401 "Ineffectual token, will expire within the next minute"）。
-   * Amplifyの fetchAuthSession はトークンが完全失効するまでキャッシュを返すため、
-   * 残り時間がしきい値（TOKEN_REFRESH_THRESHOLD_SEC）を下回る場合は
-   * forceRefresh で先回り更新し、この隙間による401を防ぐ。
+   * 由于 Amplify 的 fetchAuthSession 在令牌完全失效前都返回缓存，
+   * 当剩余时间低于阈值（TOKEN_REFRESH_THRESHOLD_SEC）时
+   * 用 forceRefresh 提前刷新，防止因这一间隙产生 401。
    *
-   * @param forceRefresh trueの場合、残り時間に関わらずトークンを強制更新する
-   *                     （401リトライ時に使用）
+   * @param forceRefresh 为 true 时，无论剩余时间多少都强制刷新令牌
+   *                     （用于 401 重试时）
    */
   private async getAccessToken(forceRefresh = false): Promise<string> {
     try {
@@ -87,7 +87,7 @@ export class AgentCoreService {
         forceRefresh ? { forceRefresh: true } : undefined,
       );
 
-      // 強制更新でない場合は、失効が近ければ先回りで更新する
+      // 非强制刷新时，若接近失效则提前刷新
       if (!forceRefresh) {
         const expSec = authSession.tokens?.accessToken?.payload?.exp;
         if (typeof expSec === "number") {
@@ -110,28 +110,28 @@ export class AgentCoreService {
   }
 
   /**
-   * AgentCore Runtimeが利用可能かチェック
+   * 检查 AgentCore Runtime 是否可用
    */
   public isAvailable(): boolean {
     return AGENTCORE_ENABLED && !!NPC_CONVERSATION_RUNTIME_ARN && !!REALTIME_SCORING_RUNTIME_ARN;
   }
 
   /**
-   * AgentCore Runtimeを直接呼び出す（HTTPS）
+   * 直接调用 AgentCore Runtime（HTTPS）
    * 
-   * JWT認証を使用する場合、AWS SDKではなくHTTPS直接リクエストを使用
-   * タイムアウト: 120秒（API Gatewayの29秒制限を回避）
+   * 使用 JWT 认证时，使用 HTTPS 直接请求而非 AWS SDK
+   * 超时：120 秒（规避 API Gateway 的 29 秒限制）
    *
-   * 401（トークン失効・失効間近）の場合は、トークンを強制更新して1回だけリトライする。
-   * AgentCoreは残り1分以内のトークンを拒否するため、先回り更新（getAccessToken）を
-   * すり抜けたケースの保険となる。
+   * 若返回 401（令牌失效或即将失效），则强制刷新令牌并仅重试一次。
+   * 由于 AgentCore 拒绝剩余 1 分钟内的令牌，作为绕过提前刷新（getAccessToken）
+   * 的保险。
    */
   private async invokeAgentCoreRuntime<T>(
     runtimeArn: string,
     sessionId: string,
     payload: Record<string, unknown>
   ): Promise<T> {
-    // 1回目は通常取得（必要なら内部で先回り更新）
+    // 第一次正常获取（必要时内部提前刷新）
     const accessToken = await this.getAccessToken();
 
     try {
@@ -142,7 +142,7 @@ export class AgentCoreService {
         accessToken,
       );
     } catch (error) {
-      // 401（認証エラー）の場合のみ、トークンを強制更新して1回リトライ
+      // 仅在 401（认证错误）时，强制刷新令牌后重试一次
       if (error instanceof AgentCoreUnauthorizedError) {
         console.warn(
           "AgentCore Runtime 401（令牌可能即将失效）。将强制刷新令牌后重试。",
@@ -160,11 +160,11 @@ export class AgentCoreService {
   }
 
   /**
-   * AgentCore Runtimeへ実際のHTTPSリクエストを送信する
+   * 向 AgentCore Runtime 发送实际的 HTTPS 请求
    *
-   * invokeAgentCoreRuntimeのリトライ機構から、トークンを差し替えて再利用できるよう
-   * 単一リクエストの送信処理を切り出したもの。
-   * 401を受け取った場合は AgentCoreUnauthorizedError を投げ、呼び出し元でリトライ判定する。
+   * 为从 invokeAgentCoreRuntime 的重试机制中替换令牌并复用
+   * 拆分了单次请求的发送处理。
+   * 收到 401 时抛出 AgentCoreUnauthorizedError，由调用方判断重试。
    */
   private async sendAgentCoreRequest<T>(
     runtimeArn: string,
@@ -172,14 +172,14 @@ export class AgentCoreService {
     payload: Record<string, unknown>,
     accessToken: string,
   ): Promise<T> {
-    // ARNをURLエンコード
+    // 对 ARN 进行 URL 编码
     const encodedArn = encodeURIComponent(runtimeArn);
-    // エンドポイント形式: /runtimes/{encodedArn}/invocations
-    // 注意: qualifierパラメータは不要（エンドポイントが見つからないエラーの原因）
+    // 端点格式：/runtimes/{encodedArn}/invocations
+    // 注意：不需要 qualifier 参数（否则会导致端点找不到的错误）
     const url = `${AGENTCORE_ENDPOINT}/runtimes/${encodedArn}/invocations`;
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 120000); // 120秒タイムアウト
+    const timeoutId = setTimeout(() => controller.abort(), 120000); // 120 秒超时
 
     try {
       const response = await fetch(url, {
@@ -198,25 +198,25 @@ export class AgentCoreService {
       if (!response.ok) {
         const errorText = await response.text();
         console.error(`AgentCore Runtime 错误: ${response.status}`, errorText);
-        // 401はトークン失効系のため、呼び出し元でのリトライ対象として専用エラーを投げる
+        // 401 属于令牌失效类，抛出专用错误供调用方重试
         if (response.status === 401) {
           throw new AgentCoreUnauthorizedError(errorText);
         }
         throw new Error(`AgentCore Runtime 调用错误: ${response.status} - ${errorText}`);
       }
 
-      // ストリーミングレスポンスを処理
+      // 处理流式响应
       const contentType = response.headers.get('content-type') || '';
 
       if (contentType.includes('text/event-stream')) {
-        // Server-Sent Events形式のストリーミングレスポンス
+        // Server-Sent Events 格式的流式响应
         return await this.processStreamingResponse<T>(response);
       } else {
-        // 通常のJSONレスポンス
-        // AgentCore Runtimeのレスポンスは {"output": {...}} 形式でラップされている
+        // 普通 JSON 响应
+        // AgentCore Runtime 的响应以 {"output": {...}} 形式包装
         const rawData = await response.json() as { output?: T } | T;
 
-        // outputラッパーを解除
+        // 解除 output 包装
         const data = (rawData && typeof rawData === 'object' && 'output' in rawData && rawData.output)
           ? rawData.output
           : rawData as T;
@@ -235,7 +235,7 @@ export class AgentCoreService {
   }
 
   /**
-   * ストリーミングレスポンスを処理
+   * 处理流式响应
    */
   private async processStreamingResponse<T>(response: Response): Promise<T> {
     const reader = response.body?.getReader();
@@ -253,7 +253,7 @@ export class AgentCoreService {
 
         const chunk = decoder.decode(value, { stream: true });
 
-        // Server-Sent Events形式をパース
+        // 解析 Server-Sent Events 格式
         const lines = chunk.split('\n');
         for (const line of lines) {
           if (line.startsWith('data: ')) {
@@ -264,18 +264,18 @@ export class AgentCoreService {
         }
       }
 
-      // 結合してJSONとしてパース
+      // 拼接后解析为 JSON
       const fullContent = chunks.join('');
 
       try {
         const rawData = JSON.parse(fullContent) as { output?: T } | T;
-        // outputラッパーを解除
+        // 解除 output 包装
         const data = (rawData && typeof rawData === 'object' && 'output' in rawData && rawData.output)
           ? rawData.output
           : rawData as T;
         return data;
       } catch {
-        // JSONパースに失敗した場合、メッセージとして返す
+        // JSON 解析失败时，作为消息返回
         return { message: fullContent } as T;
       }
     } finally {
@@ -284,15 +284,15 @@ export class AgentCoreService {
   }
 
   /**
-   * NPC会話エージェントを呼び出す（直接呼び出し）
+   * 调用 NPC 对话智能体（直接调用）
    * 
-   * 注意: 会話履歴はAgentCore Memoryで管理されるため、previousMessagesは不要です。
-   * Session Managerがセッションごとの会話履歴を自動的に復元・永続化します。
+   * 注意：对话历史由 AgentCore Memory 管理，因此不需要 previousMessages。
+   * Session Manager 会自动恢复并持久化每个会话的对话历史。
    */
   public async chatWithNPC(
     message: string,
     npc: NPC,
-    _previousMessages: Message[], // AgentCore Memoryで管理されるため未使用（互換性のため残す）
+    _previousMessages: Message[], // 由 AgentCore Memory 管理因此未使用（为兼容保留）
     sessionId?: string,
     messageId?: string,
     emotionParams?: {
@@ -311,7 +311,7 @@ export class AgentCoreService {
     const currentSessionId = sessionId || crypto.randomUUID();
     const currentMessageId = messageId || crypto.randomUUID();
 
-    // ユーザーIDを取得（AgentCore Memoryでのデータ分離用）
+    // 获取用户 ID（用于 AgentCore Memory 中的数据隔离）
     let userId: string;
     try {
       const currentUser = await getCurrentUser();
@@ -321,11 +321,11 @@ export class AgentCoreService {
       throw new Error('用户未认证');
     }
 
-    // 会話履歴はAgentCore Memoryで管理されるため、previousMessagesは送信しない
+    // 对话历史由 AgentCore Memory 管理，因此不发送 previousMessages
     const payload = {
       action: 'conversation',
       message,
-      userId: userId, // ユーザーIDを追加（AgentCore MemoryのactorIdとして使用）
+      userId: userId, // 添加用户 ID（用作 AgentCore Memory 的 actorId）
       npcInfo: {
         name: npc.name,
         role: npc.role,
@@ -368,7 +368,7 @@ export class AgentCoreService {
     } catch (error) {
       console.error("与NPC对话智能体调用错误:", error);
       return {
-        response: "申し訳ありません、応答の生成中にエラーが発生しました。少し経ってからもう一度お試しください。",
+        response: "抱歉，生成回复时发生错误。请稍后再试一次。",
         sessionId: currentSessionId,
         messageId: currentMessageId,
       };
@@ -376,14 +376,14 @@ export class AgentCoreService {
   }
 
   /**
-   * リアルタイムスコアリングエージェントを呼び出す（直接呼び出し）
+   * 调用实时评分智能体（直接调用）
    * 
-   * 注意: 会話履歴はAgentCore Memoryで管理されるため、previousMessagesは不要です。
-   * エージェントがセッションIDを使ってMemoryから会話履歴を取得します。
+   * 注意：对话历史由 AgentCore Memory 管理，因此不需要 previousMessages。
+   * 智能体使用会话 ID 从 Memory 获取对话历史。
    */
   public async getRealtimeEvaluation(
     message: string,
-    _previousMessages: Message[], // AgentCore Memoryで管理されるため未使用（互換性のため残す）
+    _previousMessages: Message[], // 由 AgentCore Memory 管理因此未使用（为兼容保留）
     sessionId?: string,
     goalStatuses?: GoalStatus[],
     goals?: Goal[],
@@ -415,7 +415,7 @@ export class AgentCoreService {
 
     const currentSessionId = sessionId || crypto.randomUUID();
 
-    // ユーザーIDを取得（AgentCore Memoryでのデータ分離用）
+    // 获取用户 ID（用于 AgentCore Memory 中的数据隔离）
     let userId: string;
     try {
       const currentUser = await getCurrentUser();
@@ -425,12 +425,12 @@ export class AgentCoreService {
       throw new Error('用户未认证');
     }
 
-    // 会話履歴はAgentCore Memoryで管理されるため、previousMessagesは送信しない
+    // 对话历史由 AgentCore Memory 管理，因此不发送 previousMessages
     const payload = {
       action: 'scoring',
       message,
-      userId: userId, // ユーザーIDを追加（AgentCore MemoryのactorIdとして使用）
-      // 現在のスコアを含める（エージェントが差分を計算するため）
+      userId: userId, // 添加用户 ID（用作 AgentCore Memory 的 actorId）
+      // 包含当前分数（供智能体计算差值）
       currentScores: currentScores || {
         angerLevel: 1,
         trustLevel: 1,
@@ -456,7 +456,7 @@ export class AgentCoreService {
     };
 
     try {
-      // AgentCore Runtimeレスポンス形式:
+      // AgentCore Runtime 响应格式：
       // {
       //   success: boolean,
       //   scores: { angerLevel, trustLevel, progressLevel },
@@ -493,10 +493,10 @@ export class AgentCoreService {
       }
 
       if (result.success !== false) {
-        // goalUpdatesをgoalStatusesに変換（AgentCore Runtime形式: { goalId, achieved, reason }）
+        // 将 goalUpdates 转换为 goalStatuses（AgentCore Runtime 格式：{ goalId, achieved, reason }）
         let convertedGoalStatuses: GoalStatus[] | undefined;
         if (result.goalUpdates && Array.isArray(result.goalUpdates)) {
-          // goalStatusesから現在のprogressを参照し、共通関数でマージする
+          // 从 goalStatuses 引用当前 progress，用公共函数合并
           const currentStatusMap = new Map(
             (goalStatuses || []).map(s => [s.goalId, s])
           );

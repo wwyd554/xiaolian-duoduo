@@ -1,6 +1,6 @@
 /**
- * VRMアバターコンポーネント
- * Three.jsシーンの管理とVRMモデルのレンダリングを担当
+ * VRM 化身组件
+ * 负责 Three.js 场景管理和 VRM 模型渲染
  */
 import React, { useRef, useEffect, useCallback } from 'react';
 import * as THREE from 'three';
@@ -13,13 +13,13 @@ import LipSyncController from './LipSyncController';
 import AnimationController from './AnimationController';
 
 /**
- * 目標フレームレート（30fps）
+ * 目标帧率（30fps）
  */
 const TARGET_FPS = 30;
 const FRAME_INTERVAL = 1000 / TARGET_FPS;
 
 /**
- * カメラ設定 - 上半身全体（頭〜腰）が映るバストショット
+ * 摄像头设置 - 可拍到上半身整体（头至腰部）的半身镜头
  */
 const CAMERA_CONFIG = {
   fov: 30,
@@ -30,7 +30,7 @@ const CAMERA_CONFIG = {
 };
 
 /**
- * ライト設定 - 顔を明るく照らす
+ * 灯光设置 - 照亮面部
  */
 const LIGHT_CONFIG = {
   ambient: { color: 0xffffff, intensity: 0.8 },
@@ -39,15 +39,15 @@ const LIGHT_CONFIG = {
 };
 
 /**
- * VRMアバターコンポーネント
- * Three.jsを使用してVRMモデルをレンダリングする
+ * VRM 化身组件
+ * 使用 Three.js 渲染 VRM 模型
  */
 const VRMAvatar: React.FC<VRMAvatarProps> = ({
   modelUrl,
   emotion,
   isSpeaking,
   visemeData,
-  // directEmotionはVRMAvatarContainerが統合済みのemotionに含まれるため、ここでは使用しない
+  // directEmotion 已包含在 VRMAvatarContainer 整合后的 emotion 中，因此此处不使用
   gesture,
   onLoad,
   onError,
@@ -63,12 +63,12 @@ const VRMAvatar: React.FC<VRMAvatarProps> = ({
   const vrmRef = useRef<VRM | null>(null);
   const vrmLoaderRef = useRef<VRMLoader | null>(null);
 
-  // コントローラー Refs
+  // 控制器 Refs
   const expressionControllerRef = useRef<ExpressionController | null>(null);
   const lipSyncControllerRef = useRef<LipSyncController | null>(null);
   const animationControllerRef = useRef<AnimationController | null>(null);
 
-  // アニメーション Refs
+  // 动画 Refs
   const animationFrameRef = useRef<number | null>(null);
   const lastFrameTimeRef = useRef<number>(0);
   const timerRef = useRef<THREE.Timer>(new THREE.Timer());
@@ -79,19 +79,19 @@ const VRMAvatar: React.FC<VRMAvatarProps> = ({
   const previousEmotionRef = useRef<EmotionState>(emotion);
   const previousIsSpeakingRef = useRef<boolean>(isSpeaking);
 
-  // コールバックをRefで保持（useEffect依存を避ける）
+  // 用 Ref 保持回调（避免 useEffect 依赖）
   const onLoadRef = useRef(onLoad);
   const onErrorRef = useRef(onError);
   onLoadRef.current = onLoad;
   onErrorRef.current = onError;
 
-  // 初期値をRefで保持
+  // 用 Ref 保存初始值
   const modelUrlRef = useRef<string>(modelUrl);
   const initialEmotionRef = useRef<EmotionState>(emotion);
   const initialIsSpeakingRef = useRef<boolean>(isSpeaking);
 
   /**
-   * レンダリングループ（Refで保持して自己参照を回避）
+   * 渲染循环（通过 Ref 保持以避免自引用）
    */
   const renderLoopRef = useRef<() => void>(undefined);
 
@@ -105,17 +105,17 @@ const VRMAvatar: React.FC<VRMAvatarProps> = ({
         timerRef.current.update();
         const deltaTime = timerRef.current.getDelta();
 
-        // コントローラーの更新（vrm.update()より先に実行）
+        // 控制器的更新（在 vrm.update() 之前执行）
         expressionControllerRef.current?.update(deltaTime);
         lipSyncControllerRef.current?.update(deltaTime);
         animationControllerRef.current?.update(deltaTime);
 
-        // VRMの更新
+        // VRM 的更新
         if (vrmRef.current) {
           vrmRef.current.update(deltaTime);
         }
 
-        // レンダリング
+        // 渲染
         if (rendererRef.current && sceneRef.current && cameraRef.current) {
           rendererRef.current.render(sceneRef.current, cameraRef.current);
         }
@@ -126,8 +126,8 @@ const VRMAvatar: React.FC<VRMAvatarProps> = ({
   }, []);
 
   /**
-   * リサイズハンドラー
-   * コンテナサイズが0の場合はスキップ（レイアウト未完了時の対策）
+   * 调整大小处理器
+   * 容器尺寸为 0 时跳过（针对布局未完成的处理）
    */
   const handleResize = useCallback(() => {
     if (!containerRef.current || !cameraRef.current || !rendererRef.current) return;
@@ -140,7 +140,7 @@ const VRMAvatar: React.FC<VRMAvatarProps> = ({
   }, []);
 
   /**
-   * VRMリソースを完全に解放する
+   * 完全释放 VRM 资源
    */
   const disposeVRM = useCallback(() => {
     if (vrmRef.current && sceneRef.current) {
@@ -160,16 +160,16 @@ const VRMAvatar: React.FC<VRMAvatarProps> = ({
   }, []);
 
   /**
-   * 全リソースをクリーンアップする
+   * 清理所有资源
    */
   const cleanup = useCallback(() => {
-    // アニメーションフレームをキャンセル
+    // 取消动画帧
     if (animationFrameRef.current !== null) {
       cancelAnimationFrame(animationFrameRef.current);
       animationFrameRef.current = null;
     }
 
-    // コントローラーを解放
+    // 释放控制器
     expressionControllerRef.current?.dispose();
     expressionControllerRef.current = null;
     lipSyncControllerRef.current?.dispose();
@@ -177,12 +177,12 @@ const VRMAvatar: React.FC<VRMAvatarProps> = ({
     animationControllerRef.current?.dispose();
     animationControllerRef.current = null;
 
-    // VRMリソースを解放
+    // 释放 VRM 资源
     disposeVRM();
     vrmLoaderRef.current?.dispose();
     vrmLoaderRef.current = null;
 
-    // Three.jsリソースを解放
+    // 释放 Three.js 资源
     timerRef.current.dispose();
 
     if (rendererRef.current) {
@@ -199,32 +199,32 @@ const VRMAvatar: React.FC<VRMAvatarProps> = ({
   }, [disposeVRM]);
 
   /**
-   * メインの初期化・クリーンアップ useEffect
-   * 依存配列を空にして、マウント時に1回だけ実行
+   * 主要的初始化与清理 useEffect
+   * 将依赖数组置空，仅在挂载时执行一次
    *
    * StrictMode対策:
-   * React StrictModeでは マウント→クリーンアップ→再マウント の順で実行される。
-   * Three.js/VRMリソースの即時破棄→再生成はコストが高いため、以下の戦略で回避する:
-   * - クリーンアップではsetTimeout(0)で遅延破棄をスケジュール
-   * - 再マウント時にclearTimeoutで遅延破棄をキャンセル
-   * - rendererRef.currentが残っていれば初期化をスキップ
-   * - isMountedRefで非同期処理(loadModel)完了時のアンマウント判定を行う
+   * 在 React StrictMode 下会按 挂载→清理→再挂载 的顺序执行。
+   * Three.js/VRM 资源的立即销毁→再生成成本较高，因此通过以下策略规避：
+   * - 清理时用 setTimeout(0) 安排延迟销毁
+   * - 重新挂载时用 clearTimeout 取消延迟销毁
+   * - 若 rendererRef.current 仍存在则跳过初始化
+   * - 用 isMountedRef 在异步处理（loadModel）完成时进行卸载判定
    */
   useEffect(() => {
     isMountedRef.current = true;
 
-    // StrictMode再マウント時: 遅延クリーンアップをキャンセル
+    // StrictMode 重新挂载时：取消延迟清理
     if (cleanupTimerRef.current !== null) {
       clearTimeout(cleanupTimerRef.current);
       cleanupTimerRef.current = null;
     }
 
-    // 既にRendererが存在する場合はスキップ（StrictMode再マウント対策）
+    // 已存在 Renderer 时跳过（StrictMode 重新挂载对策）
     if (rendererRef.current) {
       if (animationFrameRef.current === null && renderLoopRef.current) {
         animationFrameRef.current = requestAnimationFrame(renderLoopRef.current);
       }
-      // ResizeObserverでコンテナサイズ変化を検知
+      // 用 ResizeObserver 检测容器尺寸变化
       const container = containerRef.current;
       let resizeObserver: ResizeObserver | null = null;
       if (container) {
@@ -248,12 +248,12 @@ const VRMAvatar: React.FC<VRMAvatarProps> = ({
     const width = container.clientWidth;
     const height = container.clientHeight;
 
-    // === シーン初期化 ===
+    // === 场景初始化 ===
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0xf5f5f5);
     sceneRef.current = scene;
 
-    // カメラ
+    // 摄像头
     const camera = new THREE.PerspectiveCamera(
       CAMERA_CONFIG.fov, width / height, CAMERA_CONFIG.near, CAMERA_CONFIG.far
     );
@@ -261,14 +261,14 @@ const VRMAvatar: React.FC<VRMAvatarProps> = ({
     camera.lookAt(CAMERA_CONFIG.lookAt.x, CAMERA_CONFIG.lookAt.y, CAMERA_CONFIG.lookAt.z);
     cameraRef.current = camera;
 
-    // レンダラー
+    // 渲染器
     const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
     renderer.setSize(width, height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     rendererRef.current = renderer;
 
-    // ライト
+    // 灯光
     const ambientLight = new THREE.AmbientLight(LIGHT_CONFIG.ambient.color, LIGHT_CONFIG.ambient.intensity);
     scene.add(ambientLight);
 
@@ -282,10 +282,10 @@ const VRMAvatar: React.FC<VRMAvatarProps> = ({
     fillLight.position.set(LIGHT_CONFIG.fill.position.x, LIGHT_CONFIG.fill.position.y, LIGHT_CONFIG.fill.position.z);
     scene.add(fillLight);
 
-    // Timer: Page Visibility APIを有効化
+    // Timer：启用 Page Visibility API
     timerRef.current.connect(document);
 
-    // === VRMモデル読み込み ===
+    // === VRM 模型加载 ===
     const loadModel = async () => {
       if (!sceneRef.current || !modelUrlRef.current) return;
 
@@ -295,7 +295,7 @@ const VRMAvatar: React.FC<VRMAvatarProps> = ({
 
         const vrm = await loader.load(modelUrlRef.current, () => { });
 
-        // クリーンアップ済みの場合は読み込んだリソースを破棄
+        // 已清理时销毁已加载的资源
         if (!isMountedRef.current) {
           vrm.scene.traverse((object) => {
             if (object instanceof THREE.Mesh) {
@@ -313,61 +313,61 @@ const VRMAvatar: React.FC<VRMAvatarProps> = ({
         vrmRef.current = vrm;
         sceneRef.current.add(vrm.scene);
 
-        // コントローラーを初期化
+        // 初始化控制器
         expressionControllerRef.current = new ExpressionController(vrm);
         lipSyncControllerRef.current = new LipSyncController(vrm);
         animationControllerRef.current = new AnimationController(vrm);
 
-        // AnimationControllerにExpressionControllerの参照を設定（blink競合回避）
+        // 将 ExpressionController 的引用设置到 AnimationController（避免 blink 冲突）
         animationControllerRef.current.setExpressionController(expressionControllerRef.current);
 
-        // 初期感情状態を設定
+        // 设置初始感情状态
         expressionControllerRef.current.setEmotion(initialEmotionRef.current);
 
-        // 待機アニメーション開始
+        // 开始待机动画
         animationControllerRef.current.startIdleAnimations();
 
-        // 発話中の場合はリップシンクを接続
+        // 发言中时连接口型同步
         if (initialIsSpeakingRef.current) {
           lipSyncControllerRef.current.connectToAudioService();
         }
 
-        // 読み込み完了コールバック
+        // 加载完成回调
         onLoadRef.current?.();
       } catch (error) {
         console.error('VRM模型加载错误:', error);
         const errorObj = error instanceof Error
           ? error
-          : new Error('VRMモデルの読み込みに失敗しました');
+          : new Error('VRM 模型加载失败');
         onErrorRef.current?.(errorObj);
       }
     };
 
     loadModel();
 
-    // レンダリングループ開始
+    // 开始渲染循环
     if (renderLoopRef.current) {
       animationFrameRef.current = requestAnimationFrame(renderLoopRef.current);
     }
 
-    // ResizeObserverでコンテナサイズ変化を検知（window.resizeより正確）
+    // 用 ResizeObserver 检测容器尺寸变化（比 window.resize 更准确）
     const resizeObserver = new ResizeObserver(() => handleResize());
     resizeObserver.observe(container);
 
-    // クリーンアップ
+    // 清理
     return () => {
       isMountedRef.current = false;
       resizeObserver.disconnect();
 
-      // アニメーションフレームをキャンセル
+      // 取消动画帧
       if (animationFrameRef.current !== null) {
         cancelAnimationFrame(animationFrameRef.current);
         animationFrameRef.current = null;
       }
 
-      // StrictMode対策: setTimeout(0)で遅延クリーンアップをスケジュール。
-      // 再マウント時にclearTimeoutでキャンセルされるため、StrictModeの偽アンマウントでは
-      // リソースが破棄されず、実際のアンマウント時のみcleanup()が実行される。
+      // StrictMode 对策：用 setTimeout(0) 安排延迟清理。
+      // 重新挂载时会用 clearTimeout 取消，因此在 StrictMode 的伪卸载中
+      // 资源不会被销毁，仅在真正卸载时执行 cleanup()。
       const currentRenderer = rendererRef.current;
       cleanupTimerRef.current = setTimeout(() => {
         if (rendererRef.current === currentRenderer) {
@@ -375,13 +375,13 @@ const VRMAvatar: React.FC<VRMAvatarProps> = ({
         }
       }, 0);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- マウント時に1回だけ実行。rendererRef.currentのガードでStrictModeの二重初期化を防止
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- 仅在挂载时执行一次。用 rendererRef.current 的守卫防止 StrictMode 的双重初始化
   }, []);
 
-  // 感情状態の変更を監視
-  // ※ VRMAvatarContainerが既にdirectEmotionとメトリクスを統合した
-  //    currentEmotionをemotion propとして渡しているため、ここでは
-  //    directEmotionによる再オーバーライドは行わない
+  // 监听感情状态的变化
+  // ※ VRMAvatarContainer 已经整合了 directEmotion 和指标
+  //    由于已将 currentEmotion 作为 emotion prop 传入，此处
+  //    不再通过 directEmotion 重新覆盖
   useEffect(() => {
     if (emotion !== previousEmotionRef.current) {
       expressionControllerRef.current?.setEmotion(emotion);
@@ -389,7 +389,7 @@ const VRMAvatar: React.FC<VRMAvatarProps> = ({
     }
   }, [emotion]);
 
-  // visemeデータの変更を監視
+  // 监听 viseme 数据的变化
   useEffect(() => {
     if (visemeData && visemeData.length > 0 && lipSyncControllerRef.current) {
       lipSyncControllerRef.current.setVisemeData(visemeData as Array<{ time: number; type: string; value: string }>);
@@ -397,7 +397,7 @@ const VRMAvatar: React.FC<VRMAvatarProps> = ({
     }
   }, [visemeData]);
 
-  // 発話状態の変更を監視
+  // 监听发言状态的变化
   useEffect(() => {
     if (isSpeaking !== previousIsSpeakingRef.current) {
       if (isSpeaking) {
@@ -405,13 +405,13 @@ const VRMAvatar: React.FC<VRMAvatarProps> = ({
       } else {
         lipSyncControllerRef.current?.disconnect();
       }
-      // AnimationControllerに発話状態を通知（アイドルモーション抑制用）
+      // 向 AnimationController 通知发言状态（用于抑制待机动作）
       animationControllerRef.current?.setIsSpeaking(isSpeaking);
       previousIsSpeakingRef.current = isSpeaking;
     }
   }, [isSpeaking]);
 
-  // ジェスチャーの変更を監視
+  // 监听手势的变化
   useEffect(() => {
     if (gesture && gesture !== 'none' && animationControllerRef.current) {
       animationControllerRef.current.triggerGesture(gesture);
@@ -435,7 +435,7 @@ const VRMAvatar: React.FC<VRMAvatarProps> = ({
           width: '100%',
           height: '100%',
         }}
-        aria-label="3Dアバター表示エリア"
+        aria-label="3D化身显示区域"
         role="img"
       />
     </div>
