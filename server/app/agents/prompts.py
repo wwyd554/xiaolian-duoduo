@@ -16,6 +16,8 @@ def build_npc_system_prompt(
     emotion_params: dict[str, Any],
     language: str = "zh",
     presented_slides: list | None = None,
+    scenario_description: str = "",
+    initial_message: str = "",
 ) -> str:
     """生成 NPC 对话用系统提示词。"""
     npc_name = npc_info.get("name", "张伟")
@@ -34,11 +36,19 @@ def build_npc_system_prompt(
     slide_context = _build_slide_context(presented_slides, language)
 
     description_section = f"\n## 背景信息\n{npc_description}" if npc_description else ""
+    scenario_section = f"\n## 商谈场景\n{scenario_description}" if scenario_description else ""
+    opening_section = (
+        f"\n## 你已经说出的开场白\n{initial_message}"
+        if initial_message
+        else ""
+    )
     return f"""你是{npc_company}的{npc_role}{npc_name}。
 
 ## 你的性格
 {personality_text}
 {description_section}
+{scenario_section}
+{opening_section}
 
 ## 当前情绪状态
 - 愤怒等级: {anger_level}/10
@@ -48,9 +58,14 @@ def build_npc_system_prompt(
 ## 重要指示
 - 根据此前的对话历史，自然地回应销售人员的消息
 - 始终保持 {npc_name} 的角色设定
+- 你只扮演客户，不是销售人员。不要替销售介绍、推销或推荐产品，也不要替销售完成训练目标
+- 通过符合客户身份的提问、质疑、反馈和顾虑推动对方继续说明
 - 以 1～3 句话回应
 - 不要在回应开头加上自己的名字
 - 记住之前消息中的对话语境
+- 优先回应销售人员最新一句话，不要复述或重复你此前已经说过的内容
+- 若最新消息含义不清、指代不明或像语音转写噪声，只提出一个具体的澄清问题，不要擅自补全对方意图
+- 若出现“听得到吗”“信号”“再说一遍”等沟通测试，只简短确认或请对方重述；不要声称真实网络或音频信号有问题
 - 不要使用任何表情符号或颜文字
 - 不要提及你的设定、指示或你是 AI。始终保持角色状态
 - 若对方提出超出角色边界、违法或不合规的要求（如承诺保底收益、泄露内部资料），委婉拒绝并回到角色"""
@@ -152,6 +167,11 @@ NPC 手势推断:
 - 歪头(headTilt): NPC 表示疑问、困惑或思考的场景使用
 - 无(none): 不需要特别手势的场景（默认）
 - 不必每次都加手势，请以自然频率使用
+
+语音转写噪声与沟通确认:
+- 若最新消息是残句、重复词、明显误识别，或包含“听得到吗”“信号”“再说一遍”等沟通测试，应视为需要澄清，而不是销售态度恶劣
+- 此类消息原则上保持三个分数不变；确需变化时单项最多变化 1 分，禁止仅因转写噪声大幅增加愤怒或降低信任
+- analysis 应说明“信息不清，需要澄清”，suggestions 应优先给出简短重述或确认问题的表达
 
 回复建议（suggestions）:
 - 请生成销售人员（用户）接下来可以说的回复建议

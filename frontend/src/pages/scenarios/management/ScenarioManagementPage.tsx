@@ -74,17 +74,11 @@ const ScenarioManagementPage: React.FC = () => {
   // 获取当前用户信息
   const fetchCurrentUser = useCallback(async () => {
     try {
-      // 从 AWS Cognito 获取当前用户信息
-      const { getCurrentUser } = await import("aws-amplify/auth");
-      const user = await getCurrentUser();
-
-      // 设置用户 ID（使用 Cognito 的 sub 属性）
-      if (user && user.userId) {
-        setCurrentUserId(user.userId);
-      }
+      const authService = AuthService.getInstance();
+      const user = await authService.getCurrentUser();
+      setCurrentUserId(user?.userId ?? null);
 
       // 确认是否属于管理员组
-      const authService = AuthService.getInstance();
       const adminStatus = await authService.isAdmin();
       setIsAdmin(adminStatus);
     } catch (err) {

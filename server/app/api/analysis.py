@@ -37,6 +37,22 @@ def analysis_status(
     return {"status": report.get_analysis_status(session_id)}
 
 
+@router.post("/{session_id}/analysis-retry")
+def retry_analysis(
+    session_id: str,
+    user: UserInfo = Depends(get_current_user),
+):
+    """重新生成失败的复盘报告；对生成中或已完成报告保持幂等。"""
+    _assert_owner(session_id, user)
+    report.trigger_async(session_id)
+    return {
+        "success": True,
+        "sessionId": session_id,
+        "status": "processing",
+        "message": "复盘报告已重新开始生成",
+    }
+
+
 @router.get("/{session_id}/analysis-results")
 def analysis_results(
     session_id: str,

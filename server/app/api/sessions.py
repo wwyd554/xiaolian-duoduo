@@ -13,7 +13,13 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from ..auth.jwt import UserInfo, get_current_user
 from ..database import db
-from ..models import CreateSessionRequest, CreateSessionResponse, SendMessageRequest
+from ..models import (
+    CompleteSessionResponse,
+    CreateSessionRequest,
+    CreateSessionResponse,
+    SendMessageRequest,
+)
+from ..services import report
 from ..services.conversation import run_conversation_turn
 
 router = APIRouter(prefix="/sessions", tags=["sessions"])
@@ -23,42 +29,115 @@ def _now() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
+def _json_object(value: str | None) -> dict:
+    if not value:
+        return {}
+    try:
+        parsed = json.loads(value)
+    except (json.JSONDecodeError, TypeError):
+        return {}
+    return parsed if isinstance(parsed, dict) else {}
+
+
+def _duration_seconds(created_at: str, updated_at: str) -> int:
+    try:
+        start = datetime.fromisoformat(created_at.replace("Z", "+00:00"))
+        end = datetime.fromisoformat(updated_at.replace("Z", "+00:00"))
+        return max(0, int((end - start).total_seconds()))
+    except (TypeError, ValueError):
+        return 0
+
+
+def _serialize_session(row) -> dict:
+    item = {
+        "sessionId": row["id"],
+        "userId": row["user_id"],
+        "scenarioId": row["scenario_id"],
+        "title": row["title"],
+        "createdAt": row["created_at"],
+        "updatedAt": row["updated_at"],
+        "startTime": row["created_at"],
+        "status": row["status"],
+        "messageCount": row["message_count"],
+        "duration": _duration_seconds(row["created_at"], row["updated_at"]),
+    }
+    if row["status"] == "completed":
+        item["endTime"] = row["updated_at"]
+
+    npc_info = _json_object(row["npc_info"])
+    if npc_info:
+        item["npcInfo"] = npc_info
+
+    scenario = _json_object(row["scenario_data"])
+    scenario_name = scenario.get("title") or scenario.get("name")
+    if scenario_name:
+        item["scenarioName"] = scenario_name
+
+    latest_metrics = _json_object(row["latest_metrics"])
+    if latest_metrics:
+        item["metrics"] = latest_metrics
+
+    report_data = _json_object(row["report_json"])
+    scores = report_data.get("feedback", {}).get("scores", {})
+    if isinstance(scores, dict) and scores:
+        item["scores"] = {
+            "overall": scores.get("overall", 0),
+            "communication": scores.get("communication", 0),
+            "trustBuilding": scores.get("trustBuilding", 0),
+        }
+
+    return item
+
+
 @router.get("")
 def list_sessions(
     limit: int = 20,
+    nextToken: str | None = None,
     scenarioId: str | None = None,
     user: UserInfo = Depends(get_current_user),
 ):
     limit = 20 if limit < 1 or limit > 100 else limit
+    try:
+        offset = max(0, int(nextToken or "0"))
+    except ValueError as exc:
+        raise HTTPException(400, "无效的分页令牌") from exc
+
+    # 复盘列表默认排除尚未产生任何对话的 active 会话。它们通常来自用户
+    # 进入预览后直接退出，保留数据库记录但不让其污染可复盘历史。
+    where = (
+        "WHERE s.user_id = ? "
+        "AND (s.status = 'completed' OR EXISTS ("
+        "SELECT 1 FROM messages visible_m WHERE visible_m.session_id = s.id"
+        "))"
+    )
+    params: list[object] = [user.user_id]
+    if scenarioId:
+        where += " AND s.scenario_id = ?"
+        params.append(scenarioId)
+
     with db() as conn:
-        if scenarioId:
-            rows = conn.execute(
-                "SELECT * FROM sessions WHERE user_id = ? AND scenario_id = ? "
-                "ORDER BY updated_at DESC LIMIT ?",
-                (user.user_id, scenarioId, limit),
-            ).fetchall()
-        else:
-            rows = conn.execute(
-                "SELECT * FROM sessions WHERE user_id = ? ORDER BY updated_at DESC LIMIT ?",
-                (user.user_id, limit),
-            ).fetchall()
+        total = conn.execute(
+            f"SELECT COUNT(*) AS count FROM sessions s {where}", params
+        ).fetchone()["count"]
+        rows = conn.execute(
+            "SELECT s.*, "
+            "(SELECT COUNT(*) FROM messages m WHERE m.session_id = s.id) AS message_count, "
+            "(SELECT m.metrics FROM messages m WHERE m.session_id = s.id "
+            " AND m.role = 'npc' AND m.metrics IS NOT NULL "
+            " ORDER BY m.created_at DESC, m.rowid DESC LIMIT 1) AS latest_metrics, "
+            "(SELECT ar.report_json FROM analysis_reports ar WHERE ar.session_id = s.id "
+            " AND ar.status = 'completed' LIMIT 1) AS report_json, "
+            "(SELECT sc.data FROM scenarios sc WHERE sc.id = s.scenario_id LIMIT 1) AS scenario_data "
+            f"FROM sessions s {where} ORDER BY s.updated_at DESC, s.id DESC LIMIT ? OFFSET ?",
+            [*params, limit, offset],
+        ).fetchall()
 
-    sessions = []
-    for row in rows:
-        item = {
-            "sessionId": row["id"],
-            "userId": row["user_id"],
-            "scenarioId": row["scenario_id"],
-            "title": row["title"],
-            "createdAt": row["created_at"],
-            "updatedAt": row["updated_at"],
-            "status": row["status"],
-        }
-        if row["npc_info"]:
-            item["npcInfo"] = json.loads(row["npc_info"])
-        sessions.append(item)
-
-    return {"sessions": sessions, "nextToken": None}
+    next_token = str(offset + limit) if offset + len(rows) < total else None
+    return {
+        "sessions": [_serialize_session(row) for row in rows],
+        "nextToken": next_token,
+        "totalCount": total,
+    }
 
 
 @router.get("/{session_id}")
@@ -127,6 +206,35 @@ def create_session(body: CreateSessionRequest, user: UserInfo = Depends(get_curr
             ),
         )
         return CreateSessionResponse(success=True, sessionId=session_id, message="会话已创建", isNew=True)
+
+
+@router.post("/{session_id}/complete", response_model=CompleteSessionResponse)
+def complete_session(
+    session_id: str,
+    user: UserInfo = Depends(get_current_user),
+):
+    """完成一场陪练并启动复盘报告生成（幂等）。"""
+    now = _now()
+    with db() as conn:
+        session = conn.execute(
+            "SELECT id, status FROM sessions WHERE id = ? AND user_id = ?",
+            (session_id, user.user_id),
+        ).fetchone()
+        if session is None:
+            raise HTTPException(404, f"会话不存在: {session_id}")
+
+        conn.execute(
+            "UPDATE sessions SET status = 'completed', updated_at = ? WHERE id = ?",
+            (now, session_id),
+        )
+
+    report.trigger_async(session_id)
+    return CompleteSessionResponse(
+        success=True,
+        sessionId=session_id,
+        status="completed",
+        message="会话已完成，复盘生成中",
+    )
 
 
 @router.get("/{session_id}/messages")

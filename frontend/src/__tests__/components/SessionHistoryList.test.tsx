@@ -34,6 +34,7 @@ jest.mock("../../services/ApiService", () => {
               status: "active",
               createdAt: "2025-06-29T09:00:00Z",
               updatedAt: "2025-06-29T09:15:00Z",
+              messageCount: 4,
               npcInfo: {
                 name: "王大川",
                 role: "证券销售",
@@ -94,6 +95,10 @@ jest.mock("react-i18next", () => ({
           "history.startNewSession": "请开始新的会话",
           "history.completed": "已完成",
           "history.active": "进行中",
+          "history.viewReview": "查看复盘",
+          "history.repeatPractice": "再练一次",
+          "history.completeAndReview": "结束并复盘",
+          "history.completing": "正在结束...",
           "history.unknownNPC": "未知NPC",
         };
         return translations[key] || key;
@@ -141,6 +146,9 @@ describe("SessionHistoryPage 组件", () => {
     const activeChip = screen.getByText("进行中");
     expect(completedChip).toBeInTheDocument();
     expect(activeChip).toBeInTheDocument();
+    expect(screen.getByText("查看复盘")).toBeInTheDocument();
+    expect(screen.getByText("结束并复盘")).toBeInTheDocument();
+    expect(screen.getAllByText("再练一次")).toHaveLength(2);
   });
 
   test("搜索功能正常运作", async () => {

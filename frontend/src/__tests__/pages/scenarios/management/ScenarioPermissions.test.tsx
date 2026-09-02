@@ -55,6 +55,10 @@ jest.mock("aws-amplify/auth", () => ({
 jest.mock("../../../../services/AuthService", () => ({
   AuthService: {
     getInstance: jest.fn().mockReturnValue({
+      getCurrentUser: jest.fn().mockResolvedValue({
+        userId: "test-user-id",
+        username: "testuser",
+      }),
       isAdmin: jest.fn().mockImplementation(() => Promise.resolve(mockIsAdmin)),
     }),
   },

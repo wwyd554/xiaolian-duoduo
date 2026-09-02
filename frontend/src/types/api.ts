@@ -3,7 +3,7 @@
  *
  * 设计方针：
  * - 前端类型始终表示已解析的值（统一为 number 类型）
- * - DynamoDB 来源的原始数据（string 型指标等）用 SessionCompleteDataResponse 表示，
+ * - 兼容旧接口的 string 型指标等数据用 SessionCompleteDataResponse 表示，
  *   在 API 服务层转换为前端用的类型（number 型等）
  * - 将共通概念（状态、sender 等）抽取为 type alias，消除重复
  * - 以 MetricsInfo 为基本类型，在所有指标相关字段中复用
@@ -27,9 +27,6 @@ export type SenderType = "user" | "npc" | "system";
 
 /** 合规严重程度 */
 export type ComplianceSeverity = "high" | "medium" | "low";
-
-/** 排行榜周期 */
-export type RankingPeriod = "daily" | "weekly" | "monthly";
 
 /** 提案资料转换状态 */
 export type PresentationStatus = "uploading" | "converting" | "ready" | "error";
@@ -394,6 +391,7 @@ export interface ScenarioInfo {
 export interface SessionListResponse {
   sessions: SessionInfo[];
   nextToken?: string;
+  totalCount?: number;
 }
 
 /**
@@ -425,33 +423,6 @@ export interface ApiResponse<T> {
   message?: string;
   data?: T;
   error?: string;
-}
-
-// ============================================================
-// 排行榜相关
-// ============================================================
-
-/**
- * 排行榜条目的类型
- */
-export interface RankingEntry {
-  rank: number;
-  username: string;
-  userDisplayName?: string;
-  sessionId: string;
-  score: number;
-  scenarioId: string;
-  timestamp: string;
-}
-
-/**
- * 排行榜 API 响应的类型
- */
-export interface RankingResponse {
-  scenarioId: string;
-  period: RankingPeriod;
-  rankings: RankingEntry[];
-  totalCount: number;
 }
 
 // ============================================================
@@ -584,12 +555,11 @@ export interface ImportResponse {
 }
 
 // ============================================================
-// 会话完整数据（DynamoDB 原始数据支持）
+// 会话完整数据（兼容旧接口数据）
 // ============================================================
 
 /**
- * DynamoDB 原始数据用的指标类型（string 版）
- * 因 DynamoDB 的 Number 类型在 Decimal→JSON 转换时可能变为 string，故定义
+ * 旧接口数据使用的指标类型（string 版）。
  */
 export interface RawMetricsInfo {
   angerLevel: string;
@@ -598,14 +568,14 @@ export interface RawMetricsInfo {
 }
 
 /**
- * DynamoDB 原始数据用的指标类型（带分析文本）
+ * 旧接口数据使用的指标类型（带分析文本）
  */
 export interface RawMetricsWithAnalysis extends RawMetricsInfo {
   analysis: string;
 }
 
 /**
- * DynamoDB 原始数据用的目标达成情况
+ * 旧接口数据使用的目标达成情况
  */
 export interface RawGoalStatus {
   goalId: string;
@@ -617,7 +587,7 @@ export interface RawGoalStatus {
 /**
  * 会话完整数据的 API 响应类型定义
  *
- * 表示从 DynamoDB 返回的原始数据的类型。
+ * 表示旧接口返回的完整会话数据类型。
  * 指标值定义为 string 类型。
  * 前端使用时请用 safeParseMetric() 安全转换。
  */

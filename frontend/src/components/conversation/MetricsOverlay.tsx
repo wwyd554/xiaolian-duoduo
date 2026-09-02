@@ -1,6 +1,12 @@
 import React from "react";
-import { Box, Typography, LinearProgress } from "@mui/material";
-import { Metrics } from "../../types/index";
+import {
+  Box,
+  CircularProgress,
+  LinearProgress,
+  Typography,
+} from "@mui/material";
+import PsychologyAltRoundedIcon from "@mui/icons-material/PsychologyAltRounded";
+import type { Metrics } from "../../types/index";
 import { useTranslation } from "react-i18next";
 
 interface MetricsOverlayProps {
@@ -10,12 +16,17 @@ interface MetricsOverlayProps {
   visible: boolean;
 }
 
+const clampMetric = (value: number) =>
+  Number.isFinite(value) ? Math.min(10, Math.max(0, value)) : 0;
+
 /**
- * 指标覆盖层组件
- * 以半透明背景 + 模糊效果显示在左上角的紧凑指标展示
+ * 实时指标组件。
+ * 采用平铺信息行，便于在紧凑侧栏内快速扫读，不再表现为悬浮覆盖卡片。
  */
 const MetricsOverlay: React.FC<MetricsOverlayProps> = ({
   currentMetrics,
+  prevMetrics,
+  metricsUpdating,
   visible,
 }) => {
   const { t } = useTranslation();
@@ -24,104 +35,267 @@ const MetricsOverlay: React.FC<MetricsOverlayProps> = ({
 
   const metrics = [
     {
+      key: "anger",
       label: t("metrics.angerMeter"),
-      value: currentMetrics.angerLevel,
-      color: "#ef4444",
-      ariaLabel: t("metrics.angerMeterTooltip"),
+      hint: t("conversation.workspace.lowerIsBetter"),
+      value: clampMetric(currentMetrics.angerLevel),
+      previousValue: prevMetrics ? clampMetric(prevMetrics.angerLevel) : null,
+      higherIsBetter: false,
+      color: "#e05a47",
+      trackColor: "#f9e8e5",
     },
     {
+      key: "trust",
       label: t("metrics.trustLevel"),
-      value: currentMetrics.trustLevel,
-      color: "#3b82f6",
-      ariaLabel: t("metrics.trustLevelTooltip"),
+      hint: t("conversation.workspace.trustHint"),
+      value: clampMetric(currentMetrics.trustLevel),
+      previousValue: prevMetrics ? clampMetric(prevMetrics.trustLevel) : null,
+      higherIsBetter: true,
+      color: "#2b59d1",
+      trackColor: "#e6ecfb",
     },
     {
+      key: "progress",
       label: t("metrics.progressLevel"),
-      value: currentMetrics.progressLevel,
-      color: "#10b981",
-      ariaLabel: t("metrics.progressLevelTooltip"),
+      hint: t("conversation.workspace.progressHint"),
+      value: clampMetric(currentMetrics.progressLevel),
+      previousValue: prevMetrics
+        ? clampMetric(prevMetrics.progressLevel)
+        : null,
+      higherIsBetter: true,
+      color: "#16836f",
+      trackColor: "#e3f3ef",
     },
   ];
 
   return (
     <Box
-      sx={{
-        position: "relative",
-        top: "auto",
-        left: "auto",
-        background: "rgba(255, 255, 255, 0.92)",
-        backdropFilter: "blur(8px)",
-        borderRadius: 3,
-        p: 1.25,
-        boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
-        zIndex: 20,
-        display: "flex",
-        flexDirection: "column",
-        gap: 0.75,
-        minWidth: 160,
-        maxWidth: 220,
-        m: 1.5,
-        transition: "opacity 0.2s",
-        "@media (prefers-reduced-motion: reduce)": {
-          transition: "none",
-        },
-      }}
       role="region"
       aria-label={t("metrics.overlay.title")}
+      aria-busy={metricsUpdating}
     >
-      {metrics.map((metric) => (
-        <Box
-          key={metric.label}
-          sx={{ display: "flex", alignItems: "center", gap: 1 }}
-        >
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 1,
+          mb: 1.25,
+        }}
+      >
+        <Box>
+          <Typography
+            component="h3"
+            sx={{ fontSize: "0.875rem", fontWeight: 700, lineHeight: 1.35 }}
+          >
+            {t("conversation.workspace.metricsTitle")}
+          </Typography>
           <Typography
             sx={{
+              mt: 0.25,
+              color: "text.secondary",
               fontSize: "0.6875rem",
-              fontWeight: 700,
-              whiteSpace: "nowrap",
-              flexShrink: 0,
-              color: metric.color,
+              lineHeight: 1.45,
             }}
-            aria-hidden="true"
           >
-            {metric.label}
+            {t("conversation.workspace.metricsSubtitle")}
           </Typography>
-          <LinearProgress
-            variant="determinate"
-            value={metric.value * 10}
-            role="progressbar"
-            aria-valuenow={metric.value}
-            aria-valuemin={0}
-            aria-valuemax={10}
-            aria-label={metric.label}
-            sx={{
-              flex: 1,
-              height: 6,
-              borderRadius: 3,
-              backgroundColor: "rgba(0,0,0,0.06)",
-              "& .MuiLinearProgress-bar": {
-                backgroundColor: metric.color,
-                borderRadius: 3,
-                transition: "transform 0.5s ease",
-                "@media (prefers-reduced-motion: reduce)": {
-                  transition: "none",
-                },
-              },
-            }}
+        </Box>
+
+        <Box
+          sx={{
+            minWidth: 64,
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "flex-end",
+            gap: 0.75,
+            color: metricsUpdating ? "primary.main" : "text.secondary",
+          }}
+        >
+          {metricsUpdating ? (
+            <CircularProgress size={11} thickness={5} aria-hidden="true" />
+          ) : (
+            <Box
+              sx={{
+                width: 6,
+                height: 6,
+                borderRadius: "50%",
+                bgcolor: "#2fa77e",
+              }}
+              aria-hidden="true"
+            />
+          )}
+          <Typography sx={{ fontSize: "0.6875rem", fontWeight: 600 }}>
+            {metricsUpdating
+              ? t("conversation.workspace.updating")
+              : t("conversation.workspace.synced")}
+          </Typography>
+        </Box>
+      </Box>
+
+      <Box component="ul" sx={{ p: 0, m: 0, listStyle: "none" }}>
+        {metrics.map((metric, index) => {
+          const delta =
+            metric.previousValue === null
+              ? null
+              : metric.value - metric.previousValue;
+          const isImprovement =
+            delta !== null &&
+            delta !== 0 &&
+            (metric.higherIsBetter ? delta > 0 : delta < 0);
+
+          return (
+            <Box
+              component="li"
+              key={metric.key}
+              sx={{
+                py: 1.5,
+                borderTop: index === 0 ? "1px solid" : 0,
+                borderBottom: "1px solid",
+                borderColor: "divider",
+              }}
+            >
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "baseline",
+                  gap: 1,
+                  mb: 0.75,
+                }}
+              >
+                <Box
+                  sx={{
+                    minWidth: 0,
+                    display: "flex",
+                    alignItems: "baseline",
+                    gap: 0.75,
+                  }}
+                >
+                  <Typography sx={{ fontSize: "0.8125rem", fontWeight: 650 }}>
+                    {metric.label}
+                  </Typography>
+                  <Typography
+                    sx={{
+                      color: "text.secondary",
+                      fontSize: "0.625rem",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {metric.hint}
+                  </Typography>
+                </Box>
+
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "baseline",
+                    gap: 0.5,
+                    flexShrink: 0,
+                  }}
+                >
+                  {delta !== null && delta !== 0 ? (
+                    <Typography
+                      component="span"
+                      sx={{
+                        color: isImprovement ? "#16836f" : "#d15242",
+                        fontSize: "0.625rem",
+                        fontWeight: 700,
+                      }}
+                      aria-label={t(
+                        delta > 0
+                          ? "conversation.workspace.deltaUp"
+                          : "conversation.workspace.deltaDown",
+                        { value: Math.abs(delta) },
+                      )}
+                    >
+                      {delta > 0 ? "+" : ""}
+                      {delta}
+                    </Typography>
+                  ) : null}
+                  <Typography
+                    component="span"
+                    sx={{
+                      color: metric.color,
+                      fontSize: "1rem",
+                      fontWeight: 750,
+                    }}
+                  >
+                    {metric.value}
+                  </Typography>
+                  <Typography
+                    component="span"
+                    sx={{ color: "text.disabled", fontSize: "0.625rem" }}
+                  >
+                    / 10
+                  </Typography>
+                </Box>
+              </Box>
+
+              <LinearProgress
+                variant="determinate"
+                value={metric.value * 10}
+                aria-label={metric.label}
+                aria-valuemin={0}
+                aria-valuemax={10}
+                aria-valuenow={metric.value}
+                sx={{
+                  height: 5,
+                  borderRadius: 999,
+                  bgcolor: metric.trackColor,
+                  "& .MuiLinearProgress-bar": {
+                    borderRadius: 999,
+                    bgcolor: metric.color,
+                    transition: "transform 420ms ease",
+                  },
+                  "@media (prefers-reduced-motion: reduce)": {
+                    "& .MuiLinearProgress-bar": { transition: "none" },
+                  },
+                }}
+              />
+            </Box>
+          );
+        })}
+      </Box>
+
+      <Box
+        sx={{
+          mt: 2,
+          px: 1.5,
+          py: 1.25,
+          borderLeft: "3px solid",
+          borderColor: "primary.main",
+          bgcolor: "rgba(43, 89, 209, 0.055)",
+        }}
+        aria-live="polite"
+      >
+        <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, mb: 0.5 }}>
+          <PsychologyAltRoundedIcon
+            sx={{ width: 16, height: 16, color: "primary.main" }}
+            aria-hidden="true"
           />
           <Typography
             sx={{
-              fontSize: "0.75rem",
-              fontWeight: 700,
-              width: 16,
-              textAlign: "right",
-              color: "text.secondary",
+              color: "primary.main",
+              fontSize: "0.6875rem",
+              fontWeight: 750,
+              letterSpacing: "0.06em",
             }}
           >
-            {metric.value}
+            {t("conversation.workspace.coachObservation")}
           </Typography>
         </Box>
-      ))}
+        <Typography
+          sx={{
+            color: currentMetrics.analysis ? "text.primary" : "text.secondary",
+            fontSize: "0.75rem",
+            lineHeight: 1.65,
+          }}
+        >
+          {currentMetrics.analysis ||
+            t("conversation.workspace.coachObservationEmpty")}
+        </Typography>
+      </Box>
     </Box>
   );
 };

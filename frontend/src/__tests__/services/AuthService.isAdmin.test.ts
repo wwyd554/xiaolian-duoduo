@@ -16,6 +16,12 @@ jest.mock("aws-amplify/auth", () => ({
   fetchUserAttributes: jest.fn(),
 }));
 
+// 本测试只覆盖旧 Cognito 回退分支；隔离使用 Vite import.meta.env 的本地认证模块。
+jest.mock("../../services/LocalAuth", () => ({
+  loadAuth: jest.fn(() => null),
+  clearAuth: jest.fn(),
+}));
+
 import { AuthService } from "../../services/AuthService";
 
 describe("AuthService.isAdmin", () => {

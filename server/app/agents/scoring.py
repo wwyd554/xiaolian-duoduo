@@ -71,7 +71,10 @@ def _extract_json(text: str) -> dict | None:
     return None
 
 
-def parse_scoring_output(model_text: str) -> dict[str, Any]:
+def parse_scoring_output(
+    model_text: str,
+    fallback_scores: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     """解析评分输出，字段缺失/非法时回退默认值。
 
     Returns:
@@ -87,8 +90,8 @@ def parse_scoring_output(model_text: str) -> dict[str, Any]:
     """
     data = _extract_json(model_text)
     if data is None:
-        logger.warning("评分输出无法解析为 JSON，使用默认值。原始输出: %s", model_text[:200])
-        return _empty_result()
+        logger.warning("评分输出无法解析为 JSON，沿用当前分数。原始输出: %s", model_text[:200])
+        return _empty_result(fallback_scores)
 
     scores = {
         "angerLevel": _clamp_int(data.get("angerLevel"), DEFAULT_SCORES["angerLevel"]),
@@ -136,9 +139,13 @@ def parse_scoring_output(model_text: str) -> dict[str, Any]:
     }
 
 
-def _empty_result() -> dict[str, Any]:
+def _empty_result(fallback_scores: dict[str, Any] | None = None) -> dict[str, Any]:
+    source = fallback_scores or DEFAULT_SCORES
     return {
-        "scores": dict(DEFAULT_SCORES),
+        "scores": {
+            key: _clamp_int(source.get(key), default)
+            for key, default in DEFAULT_SCORES.items()
+        },
         "analysis": "",
         "goalUpdates": [],
         "npcEmotion": "neutral",

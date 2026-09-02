@@ -33,14 +33,130 @@
     }
   },
   "home": {
-    "title": "AI Sales Role-Play",
+    "title": "销练多多",
     "subtitle": "Improve Your Sales Skills Through AI Conversations",
     "description": "Experience AI-driven simulations of real sales scenarios to enhance your skills in a safe environment. Engage with various industry clients with different personalities.",
     "startButton": "Start Sales Role-Play",
-    "audioAnalysisButton": "Audio Analysis",
+    "reviewButton": "Coaching Review",
+    "audioAnalysisButton": "Recording Review",
     "recentScenarios": "Recent Scenarios",
     "noRecentScenarios": "No recent scenarios played",
     "viewAllScenarios": "View All Scenarios",
+    "hero": {
+      "eyebrow": "Xiaolian Duoduo · AI Sales Coaching",
+      "titleLine1": "Every practice",
+      "titleLine2": "brings you closer to the <highlight>close</highlight>.",
+      "description": "Practice discovery, objection handling, and deal progression through repeat conversations with AI customers across different roles, personalities, and industries—without the pressure of a live customer.",
+      "proofs": {
+        "scenarios": "17 real-world scenarios",
+        "emotionFeedback": "Live sentiment feedback",
+        "reviewDimensions": "12-dimension AI review"
+      }
+    },
+    "showcase": {
+      "tabs": {
+        "practice": {
+          "label": "Start practice",
+          "eyebrow": "Roleplay"
+        },
+        "score": {
+          "label": "Live scoring",
+          "eyebrow": "Score"
+        },
+        "coach": {
+          "label": "Coaching review",
+          "eyebrow": "Coach"
+        },
+        "repeat": {
+          "label": "Practice again",
+          "eyebrow": "Repeat"
+        }
+      },
+      "workspaceTitle": "app.xiaolian.work / Coaching workspace",
+      "flowAria": "Xiaolian Duoduo practice flow",
+      "metricAria": "{{label}} {{value}}%",
+      "stageSwitchHint": "Select a stage above to explore the flow",
+      "sidePanel": {
+        "practice": {
+          "eyebrow": "Live status",
+          "title": "Customer is thinking",
+          "body": "Confirm the current solution, then ask about decision criteria.",
+          "score": "+8"
+        },
+        "score": {
+          "eyebrow": "Performance change",
+          "title": "Trust is rising",
+          "body": "You handled the budget objection well, and the customer wants to continue.",
+          "score": "+12"
+        },
+        "coach": {
+          "eyebrow": "AI coach",
+          "title": "Probe for business value",
+          "body": "Spend less time on features and invite the customer to describe the impact.",
+          "score": "Tip"
+        },
+        "repeat": {
+          "eyebrow": "Next focus",
+          "title": "Confirm decision criteria",
+          "body": "The system has adjusted the next practice goal based on this round.",
+          "score": "Lv.2"
+        },
+        "insightLabel": "Insight for this round",
+        "updating": "Analysis updates continuously"
+      },
+      "practice": {
+        "simulatedCustomer": "AI customer",
+        "listening": "Listening",
+        "avatarAlt": "Cartoon avatar of AI customer Ethan Lin",
+        "customerName": "Ethan Lin",
+        "customerRoleCompany": "Sales Director · Stellar Technologies",
+        "discoveryTag": "Discovery",
+        "languageTag": "English",
+        "personalityTag": "Cautious and analytical",
+        "customerQuote": "“What is the real advantage of your solution over the system we use today?”",
+        "inProgress": "Conversation in progress",
+        "endPractice": "End practice"
+      },
+      "score": {
+        "overallPerformance": "Overall performance",
+        "eyebrow": "Live status update",
+        "title": "The customer is warming to your solution",
+        "body": "You addressed the budget concern clearly and built credibility with a customer story. Next, confirm the decision timeline.",
+        "metrics": {
+          "trust": {
+            "label": "Trust",
+            "helper": "Trending upward"
+          },
+          "anger": {
+            "label": "Frustration",
+            "helper": "Low risk"
+          },
+          "progress": {
+            "label": "Deal progress",
+            "helper": "Confirming the solution"
+          }
+        }
+      },
+      "coach": {
+        "eyebrow": "AI Coach",
+        "title": "Key coaching review",
+        "recommendationLabel": "Try this follow-up next time:",
+        "recommendedQuestion": "“If we could cut the training cycle in half within three months, what would that mean for your team?”",
+        "strengthTitle": "What worked well",
+        "strengthBody": "You restated the customer’s pain point and translated features into business value.",
+        "improvementTitle": "Next improvement",
+        "improvementBody": "Confirm decision criteria earlier and spend less time presenting the product one way."
+      },
+      "repeat": {
+        "eyebrow": "Next practice recommendation",
+        "title": "Practice again with one clear focus",
+        "body": "The system has generated a new goal from this round. Focus next on confirming decision criteria and see whether you can earn commitment faster.",
+        "difficultyTag": "Difficulty +1",
+        "goalTag": "Goal: Move the decision forward",
+        "durationTag": "About 8 minutes",
+        "cta": "Practice again"
+      }
+    },
     "experienceFlow": {
       "title": "How It Works",
       "step1": {
@@ -80,8 +196,8 @@
     }
   },
   "audioAnalysis": {
-    "title": "Audio Analysis",
-    "description": "Upload actual business audio data and analyze it with the selected scenario.",
+    "title": "Recording Review",
+    "description": "Upload a real sales-call recording for transcription, scoring, and actionable coaching.",
     "settings": "Analysis Settings",
     "language": "Language Settings",
     "selectScenario": "Select Analysis Scenario",
@@ -209,7 +325,8 @@
       "send": "Send message",
       "startVoice": "Start voice input",
       "stopVoice": "Stop voice input",
-      "continueVoice": "Continue voice input (existing text will be preserved)"
+      "continueVoice": "Continue voice input (existing text will be preserved)",
+      "doneSpeaking": "I'm done"
     },
     "suggestion": {
       "label": "Reply suggestions",
@@ -258,6 +375,74 @@
       "recordingOff": "Video Recording OFF",
       "recordingNote": "* When recording is off, the camera is not used and video analysis is unavailable",
       "recordingLockedNote": "* Recording settings can only be changed before the conversation starts"
+    },
+    "workspace": {
+      "turns": "{{current}} / {{max}} turns",
+      "ariaLabel": "Roleplay conversation workspace",
+      "preflightBadge": "AI customer · Ready to begin",
+      "duration": "About 5–15 minutes",
+      "noRecording": "No video recording",
+      "starting": "Connecting...",
+      "stageSpeaking": "Customer is speaking",
+      "stageThinking": "Customer is thinking",
+      "simulatedCustomer": "AI customer",
+      "connectedMessage": "You are connected. I will act as the customer for this sales practice.",
+      "transcript": "Conversation transcript",
+      "messageCount": "{{count}} messages",
+      "you": "You",
+      "me": "Me",
+      "messageAria": "Message from {{speaker}}",
+      "slideAria": "View slide {{page}}",
+      "inputConnecting": "Connecting microphone",
+      "inputListening": "Listening — click “I'm done” when finished",
+      "inputResponding": "AI customer is responding",
+      "yourTurn": "Your turn",
+      "inputHelp": "The microphone starts automatically · click “I'm done” when finished, or switch to typing",
+      "showHint": "Give me a hint",
+      "hideHint": "Hide hint",
+      "coach": "AI coach",
+      "replyIdeas": "View AI response ideas",
+      "replyIdeasNote": "A choice is inserted into the input so you can edit it before sending.",
+      "fillSuggestion": "Insert suggestion: {{text}}",
+      "assistant": "AI training assistant",
+      "assistantActive": "Roleplay active · Live analysis on",
+      "assistantAnalyzing": "Understanding customer response",
+      "assistantClose": "Close training assistant",
+      "assistantTabsAria": "Training assistant sections",
+      "assistantLive": "Live status",
+      "assistantGoals": "Goals",
+      "assistantProfile": "Customer",
+      "metricsHidden": "Live status is hidden in session settings",
+      "metricsTitle": "Live customer response",
+      "metricsSubtitle": "Updates after each conversation turn",
+      "lowerIsBetter": "Lower is better",
+      "trustHint": "Customer confidence",
+      "progressHint": "Goal progress",
+      "updating": "Updating",
+      "synced": "Synced",
+      "deltaUp": "Up {{value}} from last turn",
+      "deltaDown": "Down {{value}} from last turn",
+      "coachObservation": "AI coach observation",
+      "coachObservationEmpty": "The AI coach will add a live observation after the next turn.",
+      "goalsSubtitle": "Complete key actions to move the practice forward",
+      "goalsCompletedAria": "{{achieved}} of {{total}} goals completed",
+      "goalsCompleted": "{{achieved}}/{{total}} complete",
+      "goalsOverallAria": "Overall training goal progress",
+      "goalPriority": "Priority",
+      "goalProgressAria": "Progress for {{goal}}",
+      "goalsEmpty": "No training goals have been set for this scenario",
+      "personaAria": "Customer personality traits",
+      "difficultyEasy": "Starter",
+      "difficultyNormal": "Standard",
+      "difficultyHard": "Advanced",
+      "difficultyExpert": "Expert",
+      "leaveConfirmTitle": "Leave this roleplay?",
+      "leaveConfirmBody": "This roleplay is still in progress. Leaving now may discard unsaved progress.",
+      "endConfirmTitle": "End this roleplay?",
+      "endConfirmBody": "Your conversation will be saved and the coaching review will open.",
+      "cancel": "Keep practicing",
+      "confirmLeave": "Leave",
+      "confirmEnd": "End and review"
     }
   },
   "metrics": {
@@ -315,9 +500,10 @@
     "back": "Back",
     "homeNav": "Home",
     "scenariosNav": "Scenarios",
-    "history": "History",
+    "history": "Coaching Review",
     "settingsNav": "Settings",
-    "profileNav": "Profile"
+    "profileNav": "Profile",
+    "openMenu": "Open navigation menu"
   },
   "rightPanels": {
     "scenarioTitle": "Scenario",
@@ -376,6 +562,30 @@
     "objectivesCount": " items",
     "searchPlaceholder": "Search scenarios...",
     "showingItems": "Showing {{count}} items",
+    "workspace": {
+      "libraryTitle": "Practice scenario library",
+      "librarySubtitle": "Choose the skill you want to improve today",
+      "viewAria": "Scenario views",
+      "allScenarios": "All scenarios",
+      "myFavorites": "My favorites",
+      "practiceAdviceTitle": "Practice tip",
+      "practiceAdvice": "Start with beginner scenarios and increase the difficulty gradually. Focus on one goal at a time for a clearer review.",
+      "eyebrow": "Practice workspace",
+      "heading": "Choose a practice scenario",
+      "difficultyFilterAria": "Filter by difficulty",
+      "categoryFilterAria": "Filter by industry",
+      "sortAria": "Sort scenarios",
+      "clearFilters": "Clear",
+      "loading": "Preparing practice scenarios…",
+      "customBadge": "Custom",
+      "removeFavoriteAria": "Remove from favorites",
+      "addFavoriteAria": "Add scenario to favorites",
+      "goalCount": "{{count}} goals",
+      "estimatedDuration": "About {{minutes}} min",
+      "defaultDuration": "About 5–15 min",
+      "startAria": "Start practice: {{title}}",
+      "startButton": "Start practice"
+    },
     "management": {
       "title": "Scenario Management",
       "subtitle": "Edit, delete, import, and export your scenarios",
@@ -728,6 +938,8 @@
     "analysisInProgress": "Analysis in progress...",
     "analysisCompleted": "Analysis completed",
     "analysisError": "An error occurred during analysis",
+    "retryAnalysis": "Generate review again",
+    "retryAnalysisFailed": "Failed to generate the review again. Please try later.",
     "sessionStats": "Conversation Time: {{duration}} minutes | Message Count: {{count}} times",
     "feedback": "Feedback",
     "sessionNotFound": "Session not found",
@@ -829,23 +1041,28 @@
     "improvement": "Areas for Improvement"
   },
   "history": {
-    "title": "Session History",
-    "description": "View your past sales roleplay session history",
+    "title": "Coaching Review",
+    "description": "Review every AI practice session, key metric, and coaching recommendation.",
     "search": "Search",
     "searchPlaceholder": "Search by session name or NPC name...",
     "scenarioFilter": "Scenario Filter",
     "allScenarios": "All Scenarios",
-    "noSessions": "No session history available",
-    "startNewSession": "Please start a new session",
+    "noSessions": "No practice sessions yet",
+    "startNewSession": "Complete an AI practice session and its review will appear here.",
     "completed": "Completed",
-    "active": "Active",
+    "active": "Incomplete",
+    "viewReview": "View review",
+    "repeatPractice": "Practice again",
+    "completeAndReview": "Finish and review",
+    "completing": "Finishing...",
     "unknownNPC": "Unknown NPC",
     "untitledSession": "Untitled Session",
     "sessionDetail": "Session Detail",
     "backToList": "Back to List",
     "error": {
       "loadFailed": "Failed to load session history",
-      "userLoadFailed": "Failed to get user information"
+      "userLoadFailed": "Failed to get user information",
+      "completeFailed": "Failed to finish the session. Please try again."
     }
   },
   "errors": {

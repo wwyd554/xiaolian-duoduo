@@ -1,16 +1,16 @@
 {
-  "name": "AI Sales Coach",
-  "short_name": "SalesCoach",
-  "description": "AI-powered sales role-playing training system",
+  "name": "销练多多",
+  "short_name": "销练多多",
+  "description": "AI 销售情景陪练与智能复盘平台",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#1976d2",
+  "theme_color": "#2563eb",
   "icons": [
     {
-      "src": "/vite.svg",
+      "src": "/brand/xiaolian-duoduo-logo-v1.png",
       "sizes": "any",
-      "type": "image/svg+xml"
+      "type": "image/png"
     }
   ]
 }

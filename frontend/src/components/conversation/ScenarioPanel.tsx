@@ -1,46 +1,98 @@
-import React from "react";
+import React, { useId } from "react";
 import { Box, Typography } from "@mui/material";
-import { Scenario } from "../../types/index";
+import FlagOutlinedIcon from "@mui/icons-material/FlagOutlined";
+import type { Scenario } from "../../types/index";
 import { useTranslation } from "react-i18next";
 
 interface ScenarioPanelProps {
   scenario: Scenario;
 }
 
-/**
- * 场景说明面板组件
- * 在右侧覆盖层内显示场景说明文字
- */
+const difficultyLabelKeys: Record<Scenario["difficulty"], string> = {
+  easy: "conversation.workspace.difficultyEasy",
+  normal: "conversation.workspace.difficultyNormal",
+  hard: "conversation.workspace.difficultyHard",
+  expert: "conversation.workspace.difficultyExpert",
+};
+
+/** 当前训练情境摘要。与客户资料组合使用，不包含独立卡片外壳。 */
 const ScenarioPanel: React.FC<ScenarioPanelProps> = ({ scenario }) => {
   const { t } = useTranslation();
+  const headingId = `${useId().replaceAll(":", "")}-scenario-panel-heading`;
 
   return (
-    <Box
-      sx={{
-        background: "rgba(255, 255, 255, 0.92)",
-        backdropFilter: "blur(8px)",
-        borderRadius: 3,
-        p: "12px 16px",
-        boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
-      }}
-      role="region"
-      aria-label={t("rightPanels.scenarioTitle")}
-    >
+    <Box component="section" role="region" aria-labelledby={headingId}>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, mb: 1 }}>
+        <FlagOutlinedIcon
+          sx={{ width: 17, height: 17, color: "text.secondary" }}
+          aria-hidden="true"
+        />
+        <Typography
+          component="h3"
+          id={headingId}
+          sx={{ fontSize: "0.75rem", fontWeight: 700 }}
+        >
+          {t("rightPanels.scenarioTitle")}
+        </Typography>
+      </Box>
+
       <Typography
         sx={{
+          mb: 0.75,
+          color: "text.primary",
           fontSize: "0.8125rem",
           fontWeight: 700,
-          mb: 0.75,
-          color: "text.secondary",
+          lineHeight: 1.45,
         }}
       >
-        {t("rightPanels.scenarioTitle")}
+        {scenario.title}
       </Typography>
+
+      <Box
+        sx={{
+          display: "flex",
+          flexWrap: "wrap",
+          alignItems: "center",
+          gap: 0.75,
+          mb: 1.1,
+        }}
+      >
+        {scenario.industry ? (
+          <Box
+            component="span"
+            sx={{
+              px: 0.75,
+              py: 0.25,
+              bgcolor: "#f0f2f5",
+              color: "text.secondary",
+              fontSize: "0.625rem",
+              fontWeight: 600,
+            }}
+          >
+            {scenario.industry}
+          </Box>
+        ) : null}
+        <Box
+          component="span"
+          sx={{
+            px: 0.75,
+            py: 0.25,
+            bgcolor: "rgba(43, 89, 209, 0.07)",
+            color: "primary.main",
+            fontSize: "0.625rem",
+            fontWeight: 650,
+          }}
+        >
+          {t(difficultyLabelKeys[scenario.difficulty])}
+        </Box>
+      </Box>
+
       <Typography
         sx={{
-          fontSize: "0.8125rem",
-          lineHeight: 1.6,
-          color: "text.primary",
+          color: "text.secondary",
+          fontSize: "0.75rem",
+          lineHeight: 1.65,
+          whiteSpace: "pre-line",
         }}
       >
         {scenario.description}

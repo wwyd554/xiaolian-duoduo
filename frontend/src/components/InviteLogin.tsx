@@ -57,9 +57,18 @@ const InviteLogin: React.FC<InviteLoginProps> = ({ onSuccess }) => {
     >
       <Card sx={{ width: "100%", maxWidth: 420, borderRadius: 3 }}>
         <CardContent sx={{ p: 4 }}>
-          <Typography variant="h5" fontWeight={600} gutterBottom>
-            销售陪练助手
-          </Typography>
+          <Box
+            component="img"
+            src="/brand/xiaolian-duoduo-logo-horizontal-v1-300w.webp"
+            alt="销练多多"
+            sx={{
+              display: "block",
+              width: 230,
+              maxWidth: "82%",
+              height: "auto",
+              mb: 1.5,
+            }}
+          />
           <Typography variant="body2" color="text.secondary" mb={3}>
             使用邀请码登录，开始你的销售实战演练
           </Typography>

@@ -12,6 +12,7 @@ jest.mock("react-i18next", () => ({
         "conversation.input.startVoice": "开始语音输入",
         "conversation.input.stopVoice": "停止语音输入",
         "conversation.input.continueVoice": "继续语音输入（保留现有文本）",
+        "conversation.input.doneSpeaking": "说完了",
       };
       return translations[key] || key;
     },
@@ -40,6 +41,7 @@ describe("MessageInput", () => {
     isListening: false,
     speechRecognitionError: null,
     startSpeechRecognition: jest.fn(),
+    finishSpeechRecognition: jest.fn(),
     switchToTextInput: jest.fn(),
     handleKeyDown: jest.fn(),
     sessionStarted: true,
@@ -114,34 +116,44 @@ describe("MessageInput", () => {
   });
 
   test("监听中输入字段被禁用", () => {
-    render(<MessageInput {...defaultProps} isListening={true} userInput="测试语音输入" />);
+    render(
+      <MessageInput
+        {...defaultProps}
+        isListening={true}
+        userInput="测试语音输入"
+      />,
+    );
 
     const textField = screen.getByPlaceholderText("请输入消息...");
     expect(textField).toBeDisabled();
 
-    // 监听中只要文本存在发送按钮即可用（用户可手动发送）
-    const sendButton = screen.getByRole("button", { name: "发送消息" });
-    expect(sendButton).toBeEnabled();
+    const doneButton = screen.getByRole("button", { name: "说完了" });
+    expect(doneButton).toBeEnabled();
 
     // isListening=true 时按钮标签变为「停止语音输入」，作为停止按钮可用
     const micButton = screen.getByRole("button", { name: "停止语音输入" });
     expect(micButton).toBeEnabled();
   });
 
-  test("监听中有文本时也可点击发送按钮", () => {
-    render(<MessageInput {...defaultProps} isListening={true} userInput="测试语音输入" />);
+  test("监听中点击说完了会结束语音输入并提交", () => {
+    render(
+      <MessageInput
+        {...defaultProps}
+        isListening={true}
+        userInput="测试语音输入"
+      />,
+    );
 
-    const sendButton = screen.getByRole("button", { name: "发送消息" });
-    expect(sendButton).toBeEnabled();
-    fireEvent.click(sendButton);
-    expect(defaultProps.sendMessage).toHaveBeenCalledTimes(1);
+    const doneButton = screen.getByRole("button", { name: "说完了" });
+    fireEvent.click(doneButton);
+    expect(defaultProps.finishSpeechRecognition).toHaveBeenCalledTimes(1);
   });
 
-  test("监听中文本为空时发送按钮禁用", () => {
+  test("监听中文本为空时仍可点击说完了停止收音", () => {
     render(<MessageInput {...defaultProps} isListening={true} userInput="" />);
 
-    const sendButton = screen.getByRole("button", { name: "发送消息" });
-    expect(sendButton).toBeDisabled();
+    const doneButton = screen.getByRole("button", { name: "说完了" });
+    expect(doneButton).toBeEnabled();
   });
 
   test("键盘事件（Enter）被正确处理", () => {

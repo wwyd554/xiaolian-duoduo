@@ -4,9 +4,9 @@
 - **Project Type**: Brownfield
 - **Start Date**: 2026-02-10T10:00:00Z
 - **Current Stage**: CONSTRUCTION - Build and Test 完了（全ステージ完了）
-- **Feature**: AWS Summit デモ展示向け機能強化（サジェスト返答ボタン）
+- **Feature**: 本地化销售陪练系统收尾维护
 
-## 進行中フィーチャー: AWS Summit デモ展示向け機能強化
+## 最近完了したフィーチャー: AWS Summit デモ展示向け機能強化
 - **概要**: AI営業ロールプレイをAWS Summit Japanのデモ展示で使用。観客の注目を集め高評価を得るための機能強化を検討し、サジェスト返答ボタン（AI動的生成）の追加に確定
 - **INCEPTION - Workspace Detection**: 完了（Brownfield、全機能実装済み）
 - **INCEPTION - Requirements Analysis**: 完了（要件定義書作成済み、承認済み）
@@ -87,7 +87,7 @@
 - CONSTRUCTION - Code Generation: 完了
 - CONSTRUCTION - Build and Test: 完了
 
-### 提案資料スライド連動ロールプレイ機能 🔄 進行中
+### 提案資料スライド連動ロールプレイ機能 ✅ 完了
 - INCEPTION - Workspace Detection: 完了
 - INCEPTION - Requirements Analysis: 完了
 - INCEPTION - User Stories: スキップ（既存ユーザータイプ、要件明確）
@@ -106,13 +106,13 @@
 - **Lifecycle Phase**: CONSTRUCTION
 - **Current Stage**: Build and Test 完了
 - **Next Stage**: Operations（プレースホルダー）
-- **Feature**: 提案資料スライド連動ロールプレイ機能
+- **Feature**: 本地化销售陪练系统收尾维护
 - **Status**: 全ステージ完了
 
 ## Notes
 - AI営業ロールプレイアプリケーション
 - フロントエンド: React 19 + TypeScript + Material UI + Vite
-- バックエンド: AWS CDK + Lambda (Python/TypeScript) + DynamoDB + S3
-- AI/ML: Amazon Bedrock, Amazon Nova Premiere, Amazon Polly, Amazon Transcribe
+- 当前后端: FastAPI + SQLite（`cdk/` 仅保留为旧 AWS 参考实现）
+- 当前 AI/语音: DeepSeek 兼容接口 + edge-tts + faster-whisper
 - 3Dアバター: three.js + @pixiv/three-vrm
-- 全フェーズ（Phase 1〜3 + VRMアップロード + 音声選択 + 会話UI + AgentCore移行）完了済み
+- 历史功能阶段均已完成；当前进入本地化实现的维护与清理阶段

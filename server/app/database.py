@@ -1,4 +1,4 @@
-"""SQLite 数据层：连接管理 + 建表（users / invite_codes / scenarios / sessions / messages / rankings）。
+"""SQLite 数据层：连接管理 + 建表（users / invite_codes / scenarios / sessions / messages / reports）。
 
 - WAL 模式：读写并发友好
 - 每请求独立连接（FastAPI 多线程安全）
@@ -60,15 +60,6 @@ CREATE TABLE IF NOT EXISTS messages (
   created_at  TEXT NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS rankings (
-  id         TEXT PRIMARY KEY,
-  user_id    TEXT NOT NULL,
-  session_id TEXT NOT NULL,
-  score      REAL NOT NULL,
-  rank       INTEGER,
-  created_at TEXT NOT NULL
-);
-
 CREATE TABLE IF NOT EXISTS analysis_reports (
   session_id  TEXT PRIMARY KEY,
   status      TEXT NOT NULL,        -- pending / processing / completed / failed
@@ -118,6 +109,15 @@ def _migrate(conn: sqlite3.Connection) -> None:
     cols = {row["name"] for row in conn.execute("PRAGMA table_info(messages)")}
     if "meta" not in cols:
         conn.execute("ALTER TABLE messages ADD COLUMN meta TEXT")
+
+    # 旧版本在手动结束陪练时只生成报告，没有同步更新 sessions.status。
+    # 已有完整报告可以证明该场会话已经结束，因此在启动时安全回填状态。
+    conn.execute(
+        "UPDATE sessions SET status = 'completed' "
+        "WHERE status = 'active' AND id IN ("
+        "SELECT session_id FROM analysis_reports WHERE status = 'completed'"
+        ")"
+    )
 
 
 def init_db() -> None:

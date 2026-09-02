@@ -33,14 +33,109 @@
     }
   },
   "home": {
-    "title": "AI営業ロールプレイ",
+    "title": "销练多多",
     "subtitle": "AIと対話しながら営業スキルを磨こう",
     "description": "実際の営業シーンを模したAI対話で、安全な環境で営業スキルを向上させましょう。様々な業界・性格の顧客との商談を体験できます。",
     "startButton": "営業ロールプレイを開始",
-    "audioAnalysisButton": "音声分析",
+    "reviewButton": "練習レビュー",
+    "audioAnalysisButton": "録音レビュー",
     "recentScenarios": "最近のシナリオ",
     "noRecentScenarios": "最近プレイしたシナリオはありません",
     "viewAllScenarios": "すべてのシナリオを表示",
+    "hero": {
+      "eyebrow": "销练多多 · AI営業コーチング",
+      "titleLine1": "練習を重ねるたび、",
+      "titleLine2": "<highlight>成約</highlight>へ、また一歩。",
+      "description": "さまざまな性格・業界・役職のAI顧客との対話を繰り返し、実際の顧客対応のプレッシャーなしで、ニーズの深掘り、反論対応、成約への進め方を練習できます。",
+      "proofs": {
+        "scenarios": "17の実践シナリオ",
+        "emotionFeedback": "リアルタイム感情フィードバック",
+        "reviewDimensions": "12項目のAI振り返り"
+      }
+    },
+    "showcase": {
+      "tabs": {
+        "practice": { "label": "練習開始", "eyebrow": "ロールプレイ" },
+        "score": { "label": "リアルタイム評価", "eyebrow": "スコア" },
+        "coach": { "label": "練習の振り返り", "eyebrow": "コーチ" },
+        "repeat": { "label": "再練習", "eyebrow": "リピート" }
+      },
+      "workspaceTitle": "app.xiaolian.work / 練習ワークスペース",
+      "flowAria": "销练多多の体験フロー",
+      "metricAria": "{{label}} {{value}}％",
+      "stageSwitchHint": "上のステージを選んで体験フローを切り替えられます",
+      "sidePanel": {
+        "practice": {
+          "eyebrow": "リアルタイム",
+          "title": "顧客が考えています",
+          "body": "現在の解決策を確認してから、意思決定基準を質問しましょう。",
+          "score": "+8"
+        },
+        "score": {
+          "eyebrow": "変化",
+          "title": "信頼が高まりました",
+          "body": "予算への反論対応が効果的で、顧客は対話を続けようとしています。",
+          "score": "+12"
+        },
+        "coach": {
+          "eyebrow": "AIコーチ",
+          "title": "事業価値を深掘り",
+          "body": "機能説明を減らし、変化の影響を顧客自身に語ってもらいましょう。",
+          "score": "提案"
+        },
+        "repeat": {
+          "eyebrow": "次回の重点",
+          "title": "意思決定基準を確認",
+          "body": "今回の結果に合わせて次の練習目標を調整しました。",
+          "score": "Lv.2"
+        },
+        "insightLabel": "今回のAIインサイト",
+        "updating": "分析は継続的に更新"
+      },
+      "practice": {
+        "simulatedCustomer": "AI模擬顧客",
+        "listening": "聞き取り中",
+        "avatarAlt": "AI模擬顧客・林 嘉誠のイラスト",
+        "customerName": "林 嘉誠",
+        "customerRoleCompany": "営業部長 · 星辰テクノロジー",
+        "discoveryTag": "ニーズ発掘",
+        "languageTag": "日本語",
+        "personalityTag": "慎重・論理的",
+        "customerQuote": "「現在使っているシステムと比べて、御社の提案の本当の強みは何ですか？」",
+        "inProgress": "対話中",
+        "endPractice": "練習を終了"
+      },
+      "score": {
+        "overallPerformance": "総合評価",
+        "eyebrow": "リアルタイム更新",
+        "title": "顧客が提案を評価し始めました",
+        "body": "予算への懸念に的確に答え、顧客事例で信頼性を高めました。次は意思決定の時期を確認しましょう。",
+        "metrics": {
+          "trust": { "label": "信頼度", "helper": "上昇中" },
+          "anger": { "label": "不満度", "helper": "リスクは低め" },
+          "progress": { "label": "商談進捗", "helper": "提案確認へ" }
+        }
+      },
+      "coach": {
+        "eyebrow": "AIコーチ",
+        "title": "今回の重要ポイント",
+        "recommendationLabel": "次回はこう質問してみましょう：",
+        "recommendedQuestion": "「3か月以内に研修期間を半分にできたら、チームにどんな変化がありますか？」",
+        "strengthTitle": "良かった点",
+        "strengthBody": "顧客の課題を言い換え、機能を事業価値へ置き換えられました。",
+        "improvementTitle": "次の改善点",
+        "improvementBody": "意思決定基準を早めに確認し、一方的な製品説明の時間を減らしましょう。"
+      },
+      "repeat": {
+        "eyebrow": "次回の練習提案",
+        "title": "一つの重点を持って、もう一度",
+        "body": "今回の結果から新しい練習目標を作成しました。次は意思決定基準の確認に集中し、より早く合意を得られるか試しましょう。",
+        "difficultyTag": "難易度 +1",
+        "goalTag": "目標：意思決定を前進",
+        "durationTag": "約8分",
+        "cta": "もう一度練習"
+      }
+    },
     "experienceFlow": {
       "title": "体験の流れ",
       "step1": {
@@ -80,8 +175,8 @@
     }
   },
   "audioAnalysis": {
-    "title": "音声分析",
-    "description": "実際の商談音声データをアップロードして、選択したシナリオで分析を行います。",
+    "title": "録音レビュー",
+    "description": "実際の営業通話録音をアップロードし、文字起こし・採点・改善提案を確認します。",
     "settings": "分析設定",
     "language": "言語設定",
     "selectScenario": "分析シナリオを選択",
@@ -209,7 +304,8 @@
       "send": "メッセージを送信",
       "startVoice": "音声入力を開始",
       "stopVoice": "音声入力を停止",
-      "continueVoice": "音声入力を継続（既存のテキストは保持されます）"
+      "continueVoice": "音声入力を継続（既存のテキストは保持されます）",
+      "doneSpeaking": "話し終えました"
     },
     "suggestion": {
       "label": "返答候補",
@@ -258,6 +354,74 @@
       "recordingOff": "ビデオ録画 OFF",
       "recordingNote": "※ 録画をオフにすると、カメラを使用せず、動画分析機能は利用できません",
       "recordingLockedNote": "※ 録画設定は商談開始前のみ変更できます"
+    },
+    "workspace": {
+      "turns": "{{current}} / {{max}} ターン",
+      "ariaLabel": "ロールプレイ会話ワークスペース",
+      "preflightBadge": "AI顧客 · まもなく開始",
+      "duration": "約5〜15分",
+      "noRecording": "録画なし",
+      "starting": "接続中...",
+      "stageSpeaking": "顧客が発話中",
+      "stageThinking": "顧客が考えています",
+      "simulatedCustomer": "AI顧客",
+      "connectedMessage": "接続しました。今回の営業練習では顧客役を担当します。",
+      "transcript": "会話記録",
+      "messageCount": "{{count}}件",
+      "you": "あなた",
+      "me": "自分",
+      "messageAria": "{{speaker}}の発言",
+      "slideAria": "資料の{{page}}ページを表示",
+      "inputConnecting": "マイクに接続中",
+      "inputListening": "聞き取り中です。話し終えたら「話し終えました」を押してください",
+      "inputResponding": "AI顧客が応答中",
+      "yourTurn": "あなたの番です",
+      "inputHelp": "マイクは自動で開始します。話し終えたらボタンを押すか、文字入力に切り替えられます",
+      "showHint": "ヒントをもらう",
+      "hideHint": "ヒントを閉じる",
+      "coach": "AIコーチ",
+      "replyIdeas": "AIの応答アイデアを見る",
+      "replyIdeasNote": "選択内容は入力欄に入るだけなので、編集してから送信できます。",
+      "fillSuggestion": "提案を入力欄に追加：{{text}}",
+      "assistant": "AIトレーニングアシスタント",
+      "assistantActive": "練習中 · リアルタイム分析オン",
+      "assistantAnalyzing": "顧客の反応を分析中",
+      "assistantClose": "トレーニングアシスタントを閉じる",
+      "assistantTabsAria": "トレーニングアシスタントの分類",
+      "assistantLive": "リアルタイム",
+      "assistantGoals": "練習目標",
+      "assistantProfile": "顧客情報",
+      "metricsHidden": "リアルタイム状態はセッション設定で非表示になっています",
+      "metricsTitle": "顧客のリアルタイム反応",
+      "metricsSubtitle": "直近の会話ターンごとに更新",
+      "lowerIsBetter": "低いほど良好",
+      "trustHint": "顧客の信頼",
+      "progressHint": "目標の進捗",
+      "updating": "更新中",
+      "synced": "同期済み",
+      "deltaUp": "前回より{{value}}上昇",
+      "deltaDown": "前回より{{value}}低下",
+      "coachObservation": "AIコーチの所見",
+      "coachObservationEmpty": "次の会話後にAIコーチのリアルタイム所見が表示されます。",
+      "goalsSubtitle": "重要な行動を完了し、練習を前に進めます",
+      "goalsCompletedAria": "{{total}}項目中{{achieved}}項目を完了",
+      "goalsCompleted": "{{achieved}}/{{total}} 完了",
+      "goalsOverallAria": "練習目標の全体進捗",
+      "goalPriority": "重要",
+      "goalProgressAria": "{{goal}}の進捗",
+      "goalsEmpty": "このシナリオには練習目標が設定されていません",
+      "personaAria": "顧客の性格特性",
+      "difficultyEasy": "入門",
+      "difficultyNormal": "標準",
+      "difficultyHard": "上級",
+      "difficultyExpert": "エキスパート",
+      "leaveConfirmTitle": "この練習から退出しますか？",
+      "leaveConfirmBody": "練習はまだ終了していません。今退出すると未保存の進捗が失われる可能性があります。",
+      "endConfirmTitle": "この練習を終了しますか？",
+      "endConfirmBody": "現在の会話を保存し、振り返り画面へ移動します。",
+      "cancel": "練習を続ける",
+      "confirmLeave": "退出する",
+      "confirmEnd": "終了して振り返る"
     }
   },
   "metrics": {
@@ -315,9 +479,10 @@
     "back": "戻る",
     "homeNav": "ホーム",
     "scenariosNav": "シナリオ一覧",
-    "history": "履歴",
+    "history": "練習レビュー",
     "settingsNav": "設定",
-    "profileNav": "プロフィール"
+    "profileNav": "プロフィール",
+    "openMenu": "ナビゲーションメニューを開く"
   },
   "rightPanels": {
     "scenarioTitle": "シナリオ",
@@ -376,6 +541,30 @@
     "objectivesCount": "項目",
     "searchPlaceholder": "シナリオを検索...",
     "showingItems": "{{count}} 件表示中",
+    "workspace": {
+      "libraryTitle": "練習シナリオ集",
+      "librarySubtitle": "今日伸ばしたいスキルを選択",
+      "viewAria": "シナリオ表示",
+      "allScenarios": "すべてのシナリオ",
+      "myFavorites": "お気に入り",
+      "practiceAdviceTitle": "練習のヒント",
+      "practiceAdvice": "初級シナリオから始め、少しずつ難易度を上げましょう。一度に一つの目標へ集中すると、振り返りが明確になります。",
+      "eyebrow": "練習ワークスペース",
+      "heading": "練習シナリオを選択",
+      "difficultyFilterAria": "難易度で絞り込む",
+      "categoryFilterAria": "業界で絞り込む",
+      "sortAria": "シナリオを並べ替える",
+      "clearFilters": "クリア",
+      "loading": "練習シナリオを準備中…",
+      "customBadge": "自作",
+      "removeFavoriteAria": "お気に入りから削除",
+      "addFavoriteAria": "シナリオをお気に入りに追加",
+      "goalCount": "目標 {{count}} 件",
+      "estimatedDuration": "約{{minutes}}分",
+      "defaultDuration": "約5〜15分",
+      "startAria": "練習を開始：{{title}}",
+      "startButton": "練習開始"
+    },
     "management": {
       "title": "シナリオ管理",
       "subtitle": "シナリオの編集、削除、インポート、エクスポートができます",
@@ -728,6 +917,8 @@
     "analysisInProgress": "分析を実行中...",
     "analysisCompleted": "分析が完了しました",
     "analysisError": "分析中にエラーが発生しました",
+    "retryAnalysis": "レビューを再生成",
+    "retryAnalysisFailed": "レビューの再生成に失敗しました。しばらくしてからお試しください。",
     "sessionStats": "商談時間: {{duration}}分 | メッセージ数: {{count}}回",
     "feedback": "フィードバック",
     "sessionNotFound": "セッションが見つかりません",
@@ -829,23 +1020,28 @@
     "improvement": "改善点"
   },
   "history": {
-    "title": "セッション履歴",
-    "description": "過去の営業ロールプレイセッションの履歴を確認できます",
+    "title": "練習レビュー",
+    "description": "AI練習ごとの会話、主要指標、改善提案を振り返ります。",
     "search": "検索",
     "searchPlaceholder": "セッション名やNPC名で検索...",
     "scenarioFilter": "シナリオフィルター",
     "allScenarios": "すべてのシナリオ",
-    "noSessions": "セッション履歴がありません",
-    "startNewSession": "新しいセッションを開始してください",
+    "noSessions": "練習履歴はまだありません",
+    "startNewSession": "AI練習を完了すると、ここにレビューが表示されます。",
     "completed": "完了",
-    "active": "進行中",
+    "active": "未完了",
+    "viewReview": "レビューを見る",
+    "repeatPractice": "もう一度練習",
+    "completeAndReview": "終了してレビュー",
+    "completing": "終了処理中...",
     "unknownNPC": "不明なNPC",
     "untitledSession": "無題のセッション",
     "sessionDetail": "セッション詳細",
     "backToList": "一覧に戻る",
     "error": {
       "loadFailed": "セッション履歴の読み込みに失敗しました",
-      "userLoadFailed": "ユーザー情報の取得に失敗しました"
+      "userLoadFailed": "ユーザー情報の取得に失敗しました",
+      "completeFailed": "セッションの終了に失敗しました。もう一度お試しください。"
     }
   },
   "errors": {

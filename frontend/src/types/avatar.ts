@@ -4,7 +4,7 @@
 import { EmotionState } from './index';
 
 /**
- * 头像信息（DynamoDB 管理）
+ * 头像信息
  */
 export interface AvatarInfo {
   id: string;

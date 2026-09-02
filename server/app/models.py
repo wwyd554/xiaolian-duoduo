@@ -35,6 +35,13 @@ class CreateSessionResponse(BaseModel):
     isNew: bool
 
 
+class CompleteSessionResponse(BaseModel):
+    success: bool
+    sessionId: str
+    status: str
+    message: str
+
+
 # ---------- 对话 ----------
 class SendMessageRequest(BaseModel):
     content: str

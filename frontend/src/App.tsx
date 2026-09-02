@@ -22,26 +22,59 @@ import { LanguageService } from "./services/LanguageService";
 let theme = createTheme({
   palette: {
     primary: {
-      main: "#1976d2",
+      main: "#2b59d1",
+      contrastText: "#f6f3f1",
     },
     secondary: {
-      main: "#dc004e",
+      main: "#17181a",
     },
     background: {
-      default: "#f5f5f5",
+      default: "#f7f7f8",
+      paper: "#ffffff",
+    },
+    text: {
+      primary: "#17181a",
+      secondary: "rgba(23, 24, 26, 0.62)",
+    },
+    divider: "rgba(23, 24, 26, 0.1)",
+    action: {
+      hover: "rgba(36, 36, 36, 0.05)",
     },
   },
   typography: {
-    fontFamily: "Roboto, Arial, sans-serif",
+    fontFamily:
+      'Roboto, "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif',
+    h1: {
+      fontWeight: 750,
+      letterSpacing: "-0.035em",
+    },
+    h2: {
+      fontWeight: 750,
+      letterSpacing: "-0.03em",
+    },
+    h3: {
+      fontWeight: 750,
+      letterSpacing: "-0.025em",
+    },
     h4: {
-      fontWeight: 600,
+      fontWeight: 750,
+      letterSpacing: "-0.02em",
     },
     h5: {
+      fontWeight: 700,
+      letterSpacing: "-0.015em",
+    },
+    h6: {
+      fontWeight: 700,
+      letterSpacing: "-0.01em",
+    },
+    button: {
       fontWeight: 500,
+      letterSpacing: "0.02em",
     },
     // 统一语言切换组件等处的字体
     allVariants: {
-      fontFamily: "Roboto, Arial, sans-serif",
+      fontFamily: "inherit",
     },
   },
   components: {
@@ -54,6 +87,7 @@ let theme = createTheme({
           width: "100%",
           minHeight: "100vh",
           overflow: "auto",
+          backgroundColor: "#f7f7f8",
         },
         "#root": {
           width: "100%",
@@ -67,22 +101,23 @@ let theme = createTheme({
     MuiSelect: {
       styleOverrides: {
         select: {
-          fontFamily: "Roboto, Arial, sans-serif",
+          fontFamily: "inherit",
         },
       },
     },
     MuiMenuItem: {
       styleOverrides: {
         root: {
-          fontFamily: "Roboto, Arial, sans-serif",
+          fontFamily: "inherit",
         },
       },
     },
     MuiCard: {
       styleOverrides: {
         root: {
-          boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-          borderRadius: 12,
+          boxShadow: "none",
+          border: "1px solid #e1e5ed",
+          borderRadius: 24,
         },
       },
     },
@@ -90,7 +125,34 @@ let theme = createTheme({
       styleOverrides: {
         root: {
           textTransform: "none",
-          borderRadius: 8,
+          borderRadius: 14,
+          padding: "12px 24px",
+          boxShadow: "none",
+          "&:hover": {
+            boxShadow: "none",
+          },
+        },
+        outlined: {
+          borderColor: "#242424",
+          color: "#242424",
+          "&:hover": {
+            borderColor: "#242424",
+            backgroundColor: "rgba(36,36,36,.05)",
+          },
+        },
+      },
+    },
+    MuiOutlinedInput: {
+      styleOverrides: {
+        root: {
+          borderRadius: 14,
+          backgroundColor: "#ffffff",
+          "& .MuiOutlinedInput-notchedOutline": {
+            borderColor: "#dfe3eb",
+          },
+          "&:hover .MuiOutlinedInput-notchedOutline": {
+            borderColor: "#b8c0cf",
+          },
         },
       },
     },
@@ -152,9 +214,7 @@ function App() {
     // 从本地存储读取已保存的语言设置
     languageService
       .loadLanguageSettingFromUserProfile()
-      .catch((error) =>
-        console.error("语言设置加载失败:", error),
-      );
+      .catch((error) => console.error("语言设置加载失败:", error));
 
     // 开发环境下 i18n 状态的调试日志
     if (process.env.NODE_ENV === "development") {

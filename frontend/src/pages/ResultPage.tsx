@@ -17,6 +17,7 @@ import {
   Alert,
   AlertTitle,
   Divider,
+  Stack,
 } from "@mui/material";
 import GoalResultsSection from "../components/conversation/GoalResultsSection";
 import {
@@ -173,6 +174,7 @@ const ResultPage: React.FC = () => {
   const [analysisStatus, setAnalysisStatus] = useState<string>("not_started");
   const [analysisProgress, setAnalysisProgress] = useState<string>("");
   const [isPolling, setIsPolling] = useState<boolean>(false);
+  const [isRetryingAnalysis, setIsRetryingAnalysis] = useState<boolean>(false);
 
   // 获取 API 服务实例
   const apiService = ApiService.getInstance();
@@ -283,6 +285,24 @@ const ResultPage: React.FC = () => {
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
+  };
+
+  const handleRetryAnalysis = async () => {
+    if (!sessionId || isRetryingAnalysis) return;
+    setIsRetryingAnalysis(true);
+    setError(null);
+    try {
+      await apiService.retrySessionAnalysis(sessionId);
+      setAnalysisStatus("processing");
+      setAnalysisProgress(t("results.analysisInProgress"));
+      setIsPolling(true);
+    } catch (err) {
+      console.error("重新生成复盘失败:", err);
+      setAnalysisStatus("failed");
+      setError(t("results.retryAnalysisFailed"));
+    } finally {
+      setIsRetryingAnalysis(false);
+    }
   };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -609,28 +629,40 @@ const ResultPage: React.FC = () => {
 
   if (loading) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
-        <Box
+      <Container
+        maxWidth="lg"
+        sx={{ minHeight: "calc(100dvh - 108px)", display: "grid", placeItems: "center", py: 4 }}
+      >
+        <Paper
+          elevation={0}
           sx={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            my: 4,
+            width: "100%",
+            maxWidth: 620,
+            p: { xs: 3, sm: 5 },
+            textAlign: "center",
+            borderRadius: 5,
+            border: "1px solid",
+            borderColor: "divider",
+            bgcolor: "background.paper",
+            boxShadow: "0 24px 70px rgba(30,36,48,.08)",
           }}
           role="status"
           aria-live="polite"
         >
-          <Typography variant="h6" color="text.secondary" mb={2}>
+          <Avatar sx={{ width: 64, height: 64, mx: "auto", mb: 2.5, bgcolor: "rgba(43,89,209,.10)", color: "primary.main" }}>
+            <AssessmentIcon sx={{ fontSize: 32 }} />
+          </Avatar>
+          <Typography variant="h4" sx={{ fontSize: { xs: 24, sm: 30 }, mb: 1 }}>
             {t("results.loadingAnalysis")}
           </Typography>
           <LinearProgress
-            sx={{ width: "50%", mb: 2 }}
+            sx={{ width: "100%", mt: 3, mb: 2, height: 8, borderRadius: 999 }}
             aria-label={t("results.loadingAnalysis")}
           />
-          <Typography variant="body2" color="text.secondary" mt={2}>
+          <Typography variant="body2" color="text.secondary">
             {t("results.loadingSessionData")}
           </Typography>
-        </Box>
+        </Paper>
       </Container>
     );
   }
@@ -638,37 +670,56 @@ const ResultPage: React.FC = () => {
   // 分析中的 UI
   if (isPolling && analysisStatus === "processing") {
     return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
-        <Box
+      <Container
+        maxWidth="lg"
+        sx={{ minHeight: "calc(100dvh - 108px)", display: "grid", placeItems: "center", py: 4 }}
+      >
+        <Paper
+          elevation={0}
           sx={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            my: 4,
+            width: "100%",
+            maxWidth: 660,
+            p: { xs: 3, sm: 5 },
+            textAlign: "center",
+            borderRadius: 5,
+            border: "1px solid",
+            borderColor: "divider",
+            background:
+              "radial-gradient(circle at 88% 8%, rgba(43,89,209,.11), transparent 30%), #ffffff",
+            boxShadow: "0 24px 70px rgba(30,36,48,.09)",
           }}
           role="status"
           aria-live="polite"
         >
-          <Typography variant="h5" color="primary" mb={3}>
+          <Avatar sx={{ width: 72, height: 72, mx: "auto", mb: 2.5, bgcolor: "rgba(43,89,209,.10)", color: "primary.main" }}>
+            <AssessmentIcon sx={{ fontSize: 36 }} />
+          </Avatar>
+          <Typography variant="h4" sx={{ fontSize: { xs: 25, sm: 32 }, mb: 1 }}>
             {t("results.analysisInProgressTitle")}
           </Typography>
+          <Typography color="text.secondary" sx={{ lineHeight: 1.7 }}>
+            {t("results.analysisInProgressDescription")}
+          </Typography>
           <LinearProgress
-            sx={{ width: "60%", mb: 3, height: 8, borderRadius: 4 }}
+            sx={{ width: "100%", mt: 3.5, mb: 2.5, height: 8, borderRadius: 999 }}
             aria-label={t("results.analysisInProgress")}
           />
-          <Alert severity="info" sx={{ mb: 3, maxWidth: 500 }}>
-            <AlertTitle>{t("results.analysisInProgressTitle")}</AlertTitle>
-            {t("results.analysisInProgressDescription")}
-          </Alert>
+          <Stack direction="row" useFlexGap flexWrap="wrap" justifyContent="center" gap={1} sx={{ mb: 2.5 }}>
+            <Chip label="对话反馈" size="small" variant="outlined" />
+            <Chip label="目标完成度" size="small" variant="outlined" />
+            <Chip label="改进建议" size="small" variant="outlined" />
+          </Stack>
           <Typography variant="body2" color="text.secondary">
             {analysisProgress}
           </Typography>
-        </Box>
+        </Paper>
       </Container>
     );
   }
 
   if (error) {
+    const canRetryAnalysis =
+      analysisStatus === "failed" || analysisStatus === "timeout";
     return (
       <Container maxWidth="lg" sx={{ py: 4 }}>
         <Alert severity="error" sx={{ mb: 4 }}>
@@ -678,9 +729,16 @@ const ResultPage: React.FC = () => {
           <Button
             variant="contained"
             startIcon={<RefreshIcon />}
-            onClick={() => window.location.reload()}
+            disabled={isRetryingAnalysis}
+            onClick={
+              canRetryAnalysis
+                ? handleRetryAnalysis
+                : () => window.location.reload()
+            }
           >
-            {t("results.reloadPage")}
+            {canRetryAnalysis
+              ? t("results.retryAnalysis")
+              : t("results.reloadPage")}
           </Button>
           <Button
             variant="outlined"

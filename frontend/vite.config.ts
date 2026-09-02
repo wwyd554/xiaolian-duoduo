@@ -4,6 +4,12 @@ import react from "@vitejs/plugin-react";
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  resolve: {
+    // Ensure React and Emotion keep one runtime instance during Vite dev/HMR.
+    // Multiple instances can produce inconsistent MUI styles even when npm
+    // has already deduplicated the packages on disk.
+    dedupe: ["react", "react-dom", "@emotion/react", "@emotion/styled"],
+  },
   // 设置环境变量的前缀
   envPrefix: "VITE_",
   build: {

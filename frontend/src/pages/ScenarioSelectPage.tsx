@@ -6,41 +6,49 @@ import {
   Typography,
   Card,
   CardContent,
-  CardActions,
   Button,
   Box,
-  Chip,
   Avatar,
-  Divider,
   TextField,
   InputAdornment,
   FormControl,
   MenuItem,
   Select,
-  Switch,
-  FormControlLabel,
   IconButton,
   CircularProgress,
   Alert,
   Tooltip,
+  Paper,
+  Stack,
 } from "@mui/material";
 import { useTranslation } from "react-i18next";
-import {
-  PlayArrow as PlayIcon,
-  Business as BusinessIcon,
-  TrendingUp as TrendingUpIcon,
-  Search as SearchIcon,
-  FilterList as FilterIcon,
-  Sort as SortIcon,
-  StarBorder as StarBorderIcon,
-  Star as StarIcon,
-  Refresh as RefreshIcon,
-  Add as AddIcon,
-  Settings as SettingsIcon,
-} from "@mui/icons-material";
+import PlayArrowRoundedIcon from "@mui/icons-material/PlayArrowRounded";
+import BusinessOutlinedIcon from "@mui/icons-material/BusinessOutlined";
+import TrendingUpRoundedIcon from "@mui/icons-material/TrendingUpRounded";
+import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
+import TuneRoundedIcon from "@mui/icons-material/TuneRounded";
+import SortRoundedIcon from "@mui/icons-material/SortRounded";
+import StarBorderRoundedIcon from "@mui/icons-material/StarBorderRounded";
+import StarRoundedIcon from "@mui/icons-material/StarRounded";
+import RefreshRoundedIcon from "@mui/icons-material/RefreshRounded";
+import AddRoundedIcon from "@mui/icons-material/AddRounded";
+import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
+import GridViewRoundedIcon from "@mui/icons-material/GridViewRounded";
+import ChevronRightRoundedIcon from "@mui/icons-material/ChevronRightRounded";
+import AccessTimeRoundedIcon from "@mui/icons-material/AccessTimeRounded";
+import SchoolOutlinedIcon from "@mui/icons-material/SchoolOutlined";
 
 import { ApiService } from "../services/ApiService";
+import { AuthService } from "../services/AuthService";
 import type { ScenarioInfo, DifficultyLevel } from "../types/api";
+
+const isImageSource = (avatar?: string) =>
+  Boolean(
+    avatar &&
+    (/^(https?:)?\/\//.test(avatar) ||
+      avatar.startsWith("/") ||
+      avatar.startsWith("data:image/")),
+  );
 
 const ScenarioSelectPage: React.FC = () => {
   const { t } = useTranslation();
@@ -86,15 +94,14 @@ const ScenarioSelectPage: React.FC = () => {
     expert: t("scenarios.advanced"),
   };
 
-  // 难度颜色映射
-  const DIFFICULTY_COLOR_MAPPING: Record<
+  const DIFFICULTY_TONE_MAPPING: Record<
     DifficultyLevel,
-    "success" | "warning" | "error" | "default"
+    { color: string; backgroundColor: string }
   > = {
-    easy: "success",
-    normal: "warning",
-    hard: "error",
-    expert: "error",
+    easy: { color: "#28765a", backgroundColor: "#e7f4ed" },
+    normal: { color: "#846019", backgroundColor: "#f9f0d9" },
+    hard: { color: "#a3473e", backgroundColor: "#f8e8e5" },
+    expert: { color: "#843e69", backgroundColor: "#f3e6ef" },
   };
 
   // 从 API 获取场景数据的函数
@@ -126,12 +133,9 @@ const ScenarioSelectPage: React.FC = () => {
   // 获取当前用户 ID 的函数
   const fetchCurrentUser = React.useCallback(async () => {
     try {
-      // 从 AWS Cognito 获取当前用户信息
-      const { getCurrentUser } = await import("aws-amplify/auth");
-      const user = await getCurrentUser();
-
-      // 设置用户 ID（使用 Cognito 的 sub 属性）
-      setCurrentUserId(user.userId);
+      // 统一从认证服务读取，兼容当前的邀请码/JWT 本地认证和旧 Cognito 模式。
+      const user = await AuthService.getInstance().getCurrentUser();
+      setCurrentUserId(user?.userId ?? null);
     } catch (err) {
       console.error("用户信息获取错误:", err);
       // 未认证时设置为 null
@@ -171,10 +175,9 @@ const ScenarioSelectPage: React.FC = () => {
       setFavoriteScenarios(JSON.parse(storedFavorites));
     }
 
-    // 先获取当前用户信息，再获取场景数据
+    // 用户信息与场景列表互不依赖，可并行加载。
     const initializeData = async () => {
-      await fetchCurrentUser();
-      await fetchScenarios();
+      await Promise.all([fetchCurrentUser(), fetchScenarios()]);
     };
 
     initializeData();
@@ -260,10 +263,7 @@ const ScenarioSelectPage: React.FC = () => {
           hard: 2,
           expert: 3,
         };
-        return (
-          (difficultyOrder[a.difficulty] || 1) -
-          (difficultyOrder[b.difficulty] || 1)
-        );
+        return difficultyOrder[a.difficulty] - difficultyOrder[b.difficulty];
       }
       case "industry":
         return (a.category || "").localeCompare(b.category || "");
@@ -274,461 +274,988 @@ const ScenarioSelectPage: React.FC = () => {
     }
   });
 
-  const getDifficultyColor = (difficulty: DifficultyLevel) => {
-    return DIFFICULTY_COLOR_MAPPING[difficulty] || "default";
+  const hasActiveFilters =
+    searchQuery !== "" ||
+    difficultyFilter !== "all" ||
+    categoryFilter !== "all" ||
+    showFavoritesOnly;
+
+  const resetFilters = () => {
+    setSearchQuery("");
+    setDifficultyFilter("all");
+    setCategoryFilter("all");
+    setShowFavoritesOnly(false);
   };
 
   return (
-    <>
-      <Container maxWidth="lg" sx={{ py: 4 }}>
-        <Box
-          mb={4}
-          display="flex"
-          justifyContent="space-between"
-          alignItems="center"
-        >
-          <Box>
-            <Typography
-              variant="h4"
-              component="h1"
-              gutterBottom
-              color="primary"
-              fontWeight="bold"
-            >
-              {t("scenarios.title")}
-            </Typography>
-            <Typography variant="body1" color="text.secondary">
-              {t("scenarios.subtitle")}
-            </Typography>
-          </Box>
-          {/* 按钮组 */}
-          <Box sx={{ display: "flex", gap: 1 }}>
-            {/* 刷新按钮 */}
-            <Tooltip title={t("common.refresh")}>
-              <IconButton
-                onClick={() => fetchScenarios()}
-                disabled={loading}
-                color="primary"
-                size="medium"
-                sx={{
-                  width: 48,
-                  height: 48,
-                  color: "primary.main",
-                  border: "none",
-                  boxShadow: "none",
-                  backgroundColor: "transparent",
-                  "&:hover": {
-                    backgroundColor: "primary.main",
-                    color: "white",
-                  },
-                  "&:disabled": {
-                    color: "action.disabled",
-                    backgroundColor: "transparent",
-                  },
-                }}
-              >
-                <RefreshIcon />
-              </IconButton>
-            </Tooltip>
-
-            {/* 创建场景按钮 */}
-            <Tooltip title={t("scenarios.create.button")}>
-              <IconButton
-                onClick={() => navigate("/scenarios/create")}
-                color="primary"
-                size="medium"
-                sx={{
-                  width: 48,
-                  height: 48,
-                  color: "primary.main",
-                  border: "none",
-                  boxShadow: "none",
-                  backgroundColor: "transparent",
-                  "&:hover": {
-                    backgroundColor: "primary.main",
-                    color: "white",
-                  },
-                }}
-              >
-                <AddIcon />
-              </IconButton>
-            </Tooltip>
-
-            {/* 场景管理按钮 */}
-            <Tooltip title={t("scenarios.management.button")}>
-              <IconButton
-                onClick={() => navigate("/scenarios/manage")}
-                color="primary"
-                size="medium"
-                sx={{
-                  width: 48,
-                  height: 48,
-                  color: "primary.main",
-                  border: "none",
-                  boxShadow: "none",
-                  backgroundColor: "transparent",
-                  "&:hover": {
-                    backgroundColor: "primary.main",
-                    color: "white",
-                  },
-                }}
-              >
-                <SettingsIcon />
-              </IconButton>
-            </Tooltip>
-          </Box>
-        </Box>
-        {/* 加载提示 */}
-        {loading && (
-          <Box display="flex" justifyContent="center" my={4}>
-            <CircularProgress />
-          </Box>
-        )}
-
-        {/* 错误提示 */}
-        {error && (
-          <Alert
-            severity="error"
-            sx={{ mb: 3 }}
-            action={
-              <Button
-                color="inherit"
-                size="small"
-                onClick={() => fetchScenarios()}
-              >
-                {t("common.retry")}
-              </Button>
-            }
-          >
-            {error}
-          </Alert>
-        )}
-
-        {/* 搜索与筛选 */}
+    <Box
+      sx={{
+        position: "relative",
+        minHeight: { xs: "calc(100dvh - 64px)", sm: "100dvh" },
+        overflow: "hidden",
+        bgcolor: "#f5f6f2",
+        "&::before": {
+          content: '""',
+          position: "absolute",
+          width: 520,
+          height: 520,
+          top: -250,
+          right: -180,
+          borderRadius: "50%",
+          background:
+            "radial-gradient(circle, rgba(43,89,209,.10) 0%, rgba(43,89,209,0) 70%)",
+          pointerEvents: "none",
+        },
+      }}
+    >
+      <Container
+        maxWidth={false}
+        sx={{
+          position: "relative",
+          zIndex: 1,
+          maxWidth: 1540,
+          px: { xs: 2, sm: 3, lg: 4 },
+          py: { xs: 2.5, md: 4 },
+        }}
+      >
         <Box
           sx={{
-            mb: 4,
             display: "flex",
-            flexWrap: "wrap",
-            gap: 2,
-            alignItems: "center",
+            flexDirection: "column",
+            gap: { xs: 2.5, lg: 3 },
           }}
         >
-          <TextField
-            placeholder={t("scenarios.searchPlaceholder")}
-            variant="outlined"
-            size="small"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            sx={{ flexGrow: 1, minWidth: "250px" }}
-            slotProps={{
-              input: {
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon color="action" />
-                  </InputAdornment>
-                ),
-              },
-            }}
-          />
-
-          <FormControl size="small" sx={{ minWidth: "120px" }}>
-            <Select
-              value={difficultyFilter}
-              onChange={handleDifficultyFilterChange}
-              displayEmpty
-              startAdornment={<FilterIcon fontSize="small" sx={{ mr: 0.5 }} />}
-            >
-              {DIFFICULTY_FILTER_OPTIONS.map((option) => (
-                <MenuItem key={option.value} value={option.value}>
-                  {option.label}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-
-          <FormControl size="small" sx={{ minWidth: "150px" }}>
-            <Select
-              value={categoryFilter}
-              onChange={handleCategoryFilterChange}
-              displayEmpty
-              startAdornment={
-                <BusinessIcon fontSize="small" sx={{ mr: 0.5 }} />
-              }
-            >
-              <MenuItem value="all">
-                {t("scenarios.filters.allIndustries")}
-              </MenuItem>
-              {categories.map((category) => (
-                <MenuItem key={category} value={category}>
-                  {category}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-
-          <FormControl size="small" sx={{ minWidth: "120px" }}>
-            <Select
-              value={sortOrder}
-              onChange={handleSortOrderChange}
-              displayEmpty
-              startAdornment={<SortIcon fontSize="small" sx={{ mr: 0.5 }} />}
-            >
-              <MenuItem value="difficulty">
-                {t("scenarios.sort.byDifficulty")}
-              </MenuItem>
-              <MenuItem value="industry">
-                {t("scenarios.sort.byIndustry")}
-              </MenuItem>
-              <MenuItem value="title">{t("scenarios.sort.byTitle")}</MenuItem>
-            </Select>
-          </FormControl>
-
-          <FormControlLabel
-            control={
-              <Switch
-                checked={showFavoritesOnly}
-                onChange={() => setShowFavoritesOnly(!showFavoritesOnly)}
-                color="warning"
-                size="small"
-              />
-            }
-            label={
-              <Box sx={{ display: "flex", alignItems: "center" }}>
-                <StarIcon
-                  fontSize="small"
-                  sx={{ color: "warning.main", mr: 0.5 }}
-                />
-                <Typography variant="body2">
-                  {t("scenarios.filters.favoritesOnly")}
-                </Typography>
-              </Box>
-            }
-          />
-
-          <Box sx={{ ml: "auto", display: "flex", alignItems: "center" }}>
-            <Typography variant="body2" color="text.secondary" mr={1}>
-              {t("scenarios.showingItems", { count: sortedScenarios.length })}
-            </Typography>
-          </Box>
-        </Box>
-
-        {/* 未找到场景时 */}
-        {!loading && !error && filteredScenarios.length === 0 && (
-          <Box sx={{ textAlign: "center", py: 5 }}>
-            <Typography variant="h6" color="text.secondary">
-              {t("scenarios.noMatchingScenarios")}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              {t("scenarios.noMatchingScenariosHint")}
-            </Typography>
-            <Button
-              variant="contained"
-              color="primary"
-              size="medium"
-              sx={{
-                mt: 2,
-                minHeight: 40,
-                px: 3,
-              }}
-              onClick={() => {
-                setSearchQuery("");
-                setDifficultyFilter("all");
-                setCategoryFilter("all");
-              }}
-            >
-              {t("scenarios.resetFilters")}
-            </Button>
-          </Box>
-        )}
-
-        {/* 场景列表 - 加载中和出错时不显示 */}
-        {!loading && !error && (
-          <Box
+          <Paper
+            component="section"
+            aria-label={t("scenarios.workspace.libraryTitle")}
+            elevation={0}
             sx={{
               display: "flex",
               flexWrap: "wrap",
-              gap: 3,
-              justifyContent: "center",
+              alignItems: "center",
+              gap: { xs: 1.5, md: 2 },
+              p: { xs: 1.5, md: 1.75 },
+              border: "1px solid",
+              borderColor: "rgba(30,36,48,.08)",
+              borderRadius: "18px",
+              bgcolor: "rgba(250,251,248,.9)",
+              boxShadow: "0 8px 24px rgba(30,36,48,.03)",
             }}
           >
-            {sortedScenarios.map((scenario) => (
-              <Card
-                key={scenario.scenarioId}
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 1.2,
+                flex: { xs: "1 1 100%", sm: "0 0 210px" },
+              }}
+            >
+              <Box
                 sx={{
-                  width: { xs: "100%", sm: "45%", lg: "30%" },
-                  display: "flex",
-                  flexDirection: "column",
-                  transition: "transform 0.2s, box-shadow 0.2s",
-                  border: favoriteScenarios.includes(scenario.scenarioId)
-                    ? "1px solid"
-                    : "none",
-                  borderColor: "warning.main",
-                  "&:hover": {
-                    transform: "translateY(-4px)",
-                    boxShadow: 4,
-                  },
+                  width: 38,
+                  height: 38,
+                  display: "grid",
+                  placeItems: "center",
+                  borderRadius: "12px",
+                  color: "primary.main",
+                  bgcolor: "rgba(43,89,209,.09)",
+                }}
+                aria-hidden="true"
+              >
+                <GridViewRoundedIcon sx={{ fontSize: 20 }} />
+              </Box>
+              <Box>
+                <Typography
+                  sx={{ fontSize: 15, fontWeight: 750, lineHeight: 1.35 }}
+                >
+                  {t("scenarios.workspace.libraryTitle")}
+                </Typography>
+                <Typography
+                  sx={{ mt: 0.15, color: "text.secondary", fontSize: 11 }}
+                >
+                  {t("scenarios.workspace.librarySubtitle")}
+                </Typography>
+              </Box>
+            </Box>
+
+            <Box
+              component="nav"
+              aria-label={t("scenarios.workspace.viewAria")}
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 0.5,
+                flex: { xs: "1 1 100%", sm: "1 1 300px", lg: "0 1 330px" },
+                minWidth: 0,
+                p: 0.5,
+                borderRadius: "14px",
+                bgcolor: "rgba(30,36,48,.035)",
+              }}
+            >
+              <Button
+                disableRipple
+                aria-pressed={!showFavoritesOnly}
+                onClick={() => setShowFavoritesOnly(false)}
+                sx={{
+                  flex: 1,
+                  width: "auto",
+                  minWidth: 0,
+                  minHeight: 42,
+                  px: 1.25,
+                  py: 0.75,
+                  justifyContent: "space-between",
+                  borderRadius: "11px",
+                  color: !showFavoritesOnly ? "text.primary" : "text.secondary",
+                  bgcolor: !showFavoritesOnly
+                    ? "rgba(43,89,209,.075)"
+                    : "transparent",
+                  "&:hover": { bgcolor: "rgba(43,89,209,.075)" },
                 }}
               >
-                <CardContent sx={{ flexGrow: 1 }}>
-                  {/* 场景头部 */}
-                  <Box
-                    display="flex"
-                    justifyContent="space-between"
-                    alignItems="flex-start"
-                    mb={2}
-                  >
-                    <Box
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        flexGrow: 1,
-                      }}
-                    >
-                      <IconButton
-                        size="small"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleFavorite(scenario.scenarioId);
-                        }}
-                        sx={{ mr: 1, color: "warning.main" }}
-                      >
-                        {favoriteScenarios.includes(scenario.scenarioId) ? (
-                          <StarIcon />
-                        ) : (
-                          <StarBorderIcon />
-                        )}
-                      </IconButton>
-                      <Typography variant="h6" component="h2" gutterBottom>
-                        {scenario.title}
-                      </Typography>
-                    </Box>
-                    <Box
-                      sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
-                    >
-                      <Chip
-                        label={getDifficultyLabel(scenario.difficulty)}
-                        color={getDifficultyColor(scenario.difficulty)}
-                        size="small"
-                      />
-                      {/* 管理页面的链接（仅所有者可见） */}
-                      {isScenarioOwner(scenario) && (
-                        <>
-                          {/* 改为在场景管理页面进行编辑、删除 */}
-                        </>
-                      )}
-                    </Box>
-                  </Box>
-
-                  {/* 场景说明 */}
-                  <Typography variant="body2" color="text.secondary" mb={2}>
-                    {scenario.description}
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  <GridViewRoundedIcon
+                    sx={{ fontSize: 17 }}
+                    aria-hidden="true"
+                  />
+                  <Typography sx={{ fontSize: 13, fontWeight: 650 }}>
+                    {t("scenarios.workspace.allScenarios")}
                   </Typography>
+                </Box>
+                <Typography
+                  sx={{
+                    color: "text.secondary",
+                    fontSize: 11,
+                    fontWeight: 700,
+                  }}
+                >
+                  {scenarios.length}
+                </Typography>
+              </Button>
+              <Button
+                disableRipple
+                aria-pressed={showFavoritesOnly}
+                onClick={() => setShowFavoritesOnly(true)}
+                sx={{
+                  flex: 1,
+                  width: "auto",
+                  minWidth: 0,
+                  minHeight: 42,
+                  px: 1.25,
+                  py: 0.75,
+                  justifyContent: "space-between",
+                  borderRadius: "11px",
+                  color: showFavoritesOnly ? "text.primary" : "text.secondary",
+                  bgcolor: showFavoritesOnly
+                    ? "rgba(43,89,209,.075)"
+                    : "transparent",
+                  "&:hover": { bgcolor: "rgba(43,89,209,.075)" },
+                }}
+              >
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  <StarRoundedIcon sx={{ fontSize: 17 }} aria-hidden="true" />
+                  <Typography sx={{ fontSize: 13, fontWeight: 650 }}>
+                    {t("scenarios.workspace.myFavorites")}
+                  </Typography>
+                </Box>
+                <Typography
+                  sx={{
+                    color: "text.secondary",
+                    fontSize: 11,
+                    fontWeight: 700,
+                  }}
+                >
+                  {favoriteScenarios.length}
+                </Typography>
+              </Button>
+            </Box>
 
-                  {/* 行业与目标 */}
-                  <Box mb={2}>
-                    <Box display="flex" alignItems="center" gap={1} mb={1}>
-                      <BusinessIcon fontSize="small" color="action" />
-                      <Typography variant="caption" color="text.secondary">
-                        {t("scenarios.industry")}: {scenario.category || "-"}
-                      </Typography>
-                    </Box>
-                    <Box display="flex" alignItems="center" gap={1}>
-                      <TrendingUpIcon fontSize="small" color="action" />
-                      <Typography variant="caption" color="text.secondary">
-                        {t("scenarios.objectives")}:{" "}
-                        {scenario.goals?.length || 0}
-                        {t("scenarios.objectivesCount")}
-                      </Typography>
-                    </Box>
-                  </Box>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 0.75,
+                flex: { xs: "1 1 100%", md: "0 0 auto" },
+                ml: { lg: "auto" },
+              }}
+            >
+              <Button
+                variant="contained"
+                startIcon={<AddRoundedIcon />}
+                onClick={() => navigate("/scenarios/create")}
+                sx={{
+                  flex: { xs: 1, md: "0 0 auto" },
+                  minHeight: 42,
+                  borderRadius: "12px",
+                  fontSize: 12.5,
+                }}
+              >
+                {t("scenarios.create.button")}
+              </Button>
+              <Button
+                variant="text"
+                startIcon={<SettingsOutlinedIcon />}
+                onClick={() => navigate("/scenarios/manage")}
+                sx={{
+                  flex: { xs: 1, md: "0 0 auto" },
+                  minHeight: 40,
+                  color: "text.secondary",
+                  borderRadius: "10px",
+                  fontSize: 12.5,
+                }}
+              >
+                {t("scenarios.management.button")}
+              </Button>
+            </Box>
 
-                  <Divider sx={{ my: 2 }} />
+            <Box
+              sx={{
+                display: { xs: "none", xl: "block" },
+                flex: "1 1 260px",
+                minWidth: 240,
+                pl: 2,
+                borderLeft: "1px solid",
+                borderColor: "divider",
+              }}
+            >
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 0.8,
+                  mb: 0.75,
+                }}
+              >
+                <SchoolOutlinedIcon
+                  sx={{ color: "primary.main", fontSize: 17 }}
+                  aria-hidden="true"
+                />
+                <Typography sx={{ fontSize: 11.5, fontWeight: 700 }}>
+                  {t("scenarios.workspace.practiceAdviceTitle")}
+                </Typography>
+              </Box>
+              <Typography
+                sx={{ color: "text.secondary", fontSize: 11, lineHeight: 1.65 }}
+              >
+                {t("scenarios.workspace.practiceAdvice")}
+              </Typography>
+            </Box>
+          </Paper>
 
-                  {/* NPC 信息 */}
-                  {scenario.npcInfo && (
-                    <Box>
-                      <Typography variant="subtitle2" gutterBottom>
-                        {t("scenarios.npcPartner")}
-                      </Typography>
-                      <Box display="flex" alignItems="center" gap={2} mb={1}>
-                        <Avatar
-                          sx={{ width: 32, height: 32, fontSize: "1rem" }}
-                        >
-                          {scenario.npcInfo?.avatar ||
-                            scenario.npcInfo?.role?.charAt(0) ||
-                            "👤"}
-                        </Avatar>
-                        <Box>
-                          <Typography variant="body2" fontWeight="medium">
-                            {scenario.npcInfo.name}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            {scenario.npcInfo.role} - {scenario.npcInfo.company}
-                          </Typography>
-                        </Box>
-                      </Box>
+          <Box
+            component="section"
+            aria-labelledby="scenario-library-heading"
+            sx={{ minWidth: 0 }}
+          >
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: { xs: "flex-start", sm: "center" },
+                justifyContent: "space-between",
+                gap: 2,
+                mb: 2.5,
+              }}
+            >
+              <Box sx={{ minWidth: 0 }}>
+                <Typography
+                  sx={{
+                    color: "primary.main",
+                    fontSize: 10.5,
+                    fontWeight: 800,
+                    letterSpacing: ".14em",
+                    textTransform: "uppercase",
+                    mb: 0.75,
+                  }}
+                >
+                  {t("scenarios.workspace.eyebrow")}
+                </Typography>
+                <Typography
+                  id="scenario-library-heading"
+                  component="h1"
+                  sx={{
+                    color: "text.primary",
+                    fontSize: { xs: 28, md: 36 },
+                    fontWeight: 760,
+                    letterSpacing: "-.025em",
+                    lineHeight: 1.15,
+                  }}
+                >
+                  {t("scenarios.workspace.heading")}
+                </Typography>
+                <Typography
+                  sx={{
+                    mt: 0.8,
+                    maxWidth: 680,
+                    color: "text.secondary",
+                    fontSize: { xs: 13, md: 14 },
+                    lineHeight: 1.65,
+                  }}
+                >
+                  {t("scenarios.subtitle")}
+                </Typography>
+              </Box>
 
-                      {/* NPC 性格 */}
-                      <Box display="flex" flexWrap="wrap" gap={0.5} mt={1}>
-                        {scenario.npcInfo?.personality
-                          ?.slice(0, 3)
-                          .map((trait, index) => (
-                            <Chip
-                              key={index}
-                              label={trait}
-                              size="small"
-                              variant="outlined"
-                              sx={{
-                                fontSize: "0.7rem",
-                                height: "auto",
-                                py: 0.5,
-                              }}
-                            />
-                          )) || []}
-                      </Box>
-                    </Box>
-                  )}
-                </CardContent>
-
-                <CardActions sx={{ justifyContent: "center", pb: 2 }}>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    size="medium"
-                    fullWidth
-                    startIcon={<PlayIcon />}
-                    onClick={() =>
-                      navigate(`/conversation/${scenario.scenarioId}`)
-                    }
+              <Tooltip title={t("common.refresh")}>
+                <span>
+                  <IconButton
+                    onClick={() => fetchScenarios()}
+                    disabled={loading}
+                    aria-label={t("common.refresh")}
                     sx={{
-                      mx: 2,
-                      minHeight: 40,
-                      fontWeight: "medium",
+                      width: 42,
+                      height: 42,
+                      border: "1px solid",
+                      borderColor: "divider",
+                      borderRadius: "12px",
+                      bgcolor: "rgba(255,255,255,.8)",
+                      color: "text.secondary",
+                      "&:hover": {
+                        bgcolor: "background.paper",
+                        color: "primary.main",
+                      },
                     }}
                   >
-                    {t("scenarios.startWithScenario")}
+                    <RefreshRoundedIcon sx={{ fontSize: 19 }} />
+                  </IconButton>
+                </span>
+              </Tooltip>
+            </Box>
+            {error ? (
+              <Alert
+                severity="error"
+                sx={{ mb: 2.5, borderRadius: "14px" }}
+                action={
+                  <Button
+                    color="inherit"
+                    size="small"
+                    onClick={() => fetchScenarios()}
+                  >
+                    {t("common.retry")}
                   </Button>
-                </CardActions>
-              </Card>
-            ))}
-          </Box>
-        )}
+                }
+              >
+                {error}
+              </Alert>
+            ) : null}
 
-        {/* 页脚信息 */}
-        <Box textAlign="center" mt={6} pt={3} borderTop="1px solid #eee">
-          <Typography variant="body2" color="text.secondary" mb={1}>
-            {t("scenarios.hints.title")}
-          </Typography>
-          <Typography variant="body2" color="text.secondary" mb={1}>
-            {t("scenarios.hints.beginnerRecommendation")}
-          </Typography>
-          <Typography variant="caption" color="text.secondary">
-            {t("scenarios.hints.duration")}
-          </Typography>
+            {!loading && !error ? (
+              <Paper
+                elevation={0}
+                sx={{
+                  mb: 2.5,
+                  display: "flex",
+                  flexWrap: "wrap",
+                  alignItems: "center",
+                  gap: 1,
+                  p: 1.25,
+                  border: "1px solid",
+                  borderColor: "rgba(30,36,48,.08)",
+                  borderRadius: "18px",
+                  bgcolor: "rgba(255,255,255,.78)",
+                  boxShadow: "0 8px 24px rgba(30,36,48,.025)",
+                }}
+              >
+                <TextField
+                  placeholder={t("scenarios.searchPlaceholder")}
+                  variant="outlined"
+                  size="small"
+                  value={searchQuery}
+                  onChange={(event) => setSearchQuery(event.target.value)}
+                  sx={{
+                    flex: "1 1 300px",
+                    minWidth: { xs: "100%", sm: 240 },
+                    "& .MuiOutlinedInput-root": {
+                      height: 42,
+                      borderRadius: 999,
+                      bgcolor: "#f5f6f3",
+                    },
+                  }}
+                  slotProps={{
+                    htmlInput: {
+                      "aria-label": t("scenarios.searchPlaceholder"),
+                    },
+                    input: {
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <SearchRoundedIcon
+                            sx={{ color: "text.secondary", fontSize: 19 }}
+                          />
+                        </InputAdornment>
+                      ),
+                    },
+                  }}
+                />
+
+                <FormControl
+                  size="small"
+                  sx={{
+                    minWidth: 132,
+                    flex: { xs: "1 1 132px", md: "0 0 auto" },
+                    "& .MuiOutlinedInput-root": {
+                      height: 42,
+                      borderRadius: 999,
+                      bgcolor: "#f5f6f3",
+                    },
+                  }}
+                >
+                  <Select
+                    value={difficultyFilter}
+                    onChange={handleDifficultyFilterChange}
+                    displayEmpty
+                    inputProps={{
+                      "aria-label": t(
+                        "scenarios.workspace.difficultyFilterAria",
+                      ),
+                    }}
+                    startAdornment={
+                      <TuneRoundedIcon
+                        sx={{ mr: 0.75, color: "text.secondary", fontSize: 17 }}
+                      />
+                    }
+                  >
+                    {DIFFICULTY_FILTER_OPTIONS.map((option) => (
+                      <MenuItem key={option.value} value={option.value}>
+                        {option.label}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+
+                <FormControl
+                  size="small"
+                  sx={{
+                    minWidth: 148,
+                    flex: { xs: "1 1 148px", md: "0 0 auto" },
+                    "& .MuiOutlinedInput-root": {
+                      height: 42,
+                      borderRadius: 999,
+                      bgcolor: "#f5f6f3",
+                    },
+                  }}
+                >
+                  <Select
+                    value={categoryFilter}
+                    onChange={handleCategoryFilterChange}
+                    displayEmpty
+                    inputProps={{
+                      "aria-label": t("scenarios.workspace.categoryFilterAria"),
+                    }}
+                    startAdornment={
+                      <BusinessOutlinedIcon
+                        sx={{ mr: 0.75, color: "text.secondary", fontSize: 17 }}
+                      />
+                    }
+                  >
+                    <MenuItem value="all">
+                      {t("scenarios.filters.allIndustries")}
+                    </MenuItem>
+                    {categories.map((category) => (
+                      <MenuItem key={category} value={category}>
+                        {category}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+
+                <FormControl
+                  size="small"
+                  sx={{
+                    minWidth: 126,
+                    flex: { xs: "1 1 126px", md: "0 0 auto" },
+                    "& .MuiOutlinedInput-root": {
+                      height: 42,
+                      borderRadius: 999,
+                      bgcolor: "#f5f6f3",
+                    },
+                  }}
+                >
+                  <Select
+                    value={sortOrder}
+                    onChange={handleSortOrderChange}
+                    displayEmpty
+                    inputProps={{
+                      "aria-label": t("scenarios.workspace.sortAria"),
+                    }}
+                    startAdornment={
+                      <SortRoundedIcon
+                        sx={{ mr: 0.75, color: "text.secondary", fontSize: 17 }}
+                      />
+                    }
+                  >
+                    <MenuItem value="difficulty">
+                      {t("scenarios.sort.byDifficulty")}
+                    </MenuItem>
+                    <MenuItem value="industry">
+                      {t("scenarios.sort.byIndustry")}
+                    </MenuItem>
+                    <MenuItem value="title">
+                      {t("scenarios.sort.byTitle")}
+                    </MenuItem>
+                  </Select>
+                </FormControl>
+
+                <Button
+                  variant={showFavoritesOnly ? "contained" : "outlined"}
+                  size="small"
+                  startIcon={
+                    showFavoritesOnly ? (
+                      <StarRoundedIcon />
+                    ) : (
+                      <StarBorderRoundedIcon />
+                    )
+                  }
+                  aria-pressed={showFavoritesOnly}
+                  onClick={() => setShowFavoritesOnly((current) => !current)}
+                  sx={{
+                    minHeight: 42,
+                    px: 1.5,
+                    borderRadius: 999,
+                    borderColor: showFavoritesOnly ? "primary.main" : "divider",
+                    color: showFavoritesOnly
+                      ? "primary.contrastText"
+                      : "text.secondary",
+                    fontSize: 12,
+                  }}
+                >
+                  {t("scenarios.filters.favoritesOnly")}
+                </Button>
+
+                <Box
+                  sx={{
+                    ml: { md: "auto" },
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 0.5,
+                    px: 0.75,
+                  }}
+                >
+                  {hasActiveFilters ? (
+                    <Button
+                      size="small"
+                      onClick={resetFilters}
+                      sx={{
+                        minWidth: 0,
+                        px: 1,
+                        color: "text.secondary",
+                        fontSize: 11.5,
+                      }}
+                    >
+                      {t("scenarios.workspace.clearFilters")}
+                    </Button>
+                  ) : null}
+                  <Typography
+                    sx={{
+                      color: "text.secondary",
+                      fontSize: 11.5,
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {t("scenarios.showingItems", {
+                      count: sortedScenarios.length,
+                    })}
+                  </Typography>
+                </Box>
+              </Paper>
+            ) : null}
+
+            {loading ? (
+              <Paper
+                elevation={0}
+                role="status"
+                aria-live="polite"
+                sx={{
+                  minHeight: 360,
+                  display: "grid",
+                  placeItems: "center",
+                  border: "1px solid",
+                  borderColor: "rgba(30,36,48,.08)",
+                  borderRadius: "18px",
+                  bgcolor: "rgba(255,255,255,.68)",
+                }}
+              >
+                <Stack alignItems="center" spacing={1.25}>
+                  <CircularProgress size={28} thickness={4} />
+                  <Typography sx={{ color: "text.secondary", fontSize: 12.5 }}>
+                    {t("scenarios.workspace.loading")}
+                  </Typography>
+                </Stack>
+              </Paper>
+            ) : null}
+
+            {!loading && !error && filteredScenarios.length === 0 ? (
+              <Paper
+                elevation={0}
+                sx={{
+                  minHeight: 320,
+                  display: "grid",
+                  placeItems: "center",
+                  px: 3,
+                  border: "1px dashed",
+                  borderColor: "rgba(98,105,120,.28)",
+                  borderRadius: "18px",
+                  bgcolor: "rgba(255,255,255,.55)",
+                  textAlign: "center",
+                }}
+              >
+                <Box>
+                  <SearchRoundedIcon
+                    sx={{ mb: 1.25, color: "text.disabled", fontSize: 34 }}
+                    aria-hidden="true"
+                  />
+                  <Typography sx={{ fontSize: 16, fontWeight: 700 }}>
+                    {t("scenarios.noMatchingScenarios")}
+                  </Typography>
+                  <Typography
+                    sx={{ mt: 0.6, color: "text.secondary", fontSize: 12.5 }}
+                  >
+                    {t("scenarios.noMatchingScenariosHint")}
+                  </Typography>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={resetFilters}
+                    sx={{ mt: 2, minHeight: 38, px: 2.25, borderRadius: 999 }}
+                  >
+                    {t("scenarios.resetFilters")}
+                  </Button>
+                </Box>
+              </Paper>
+            ) : null}
+
+            {!loading && !error && sortedScenarios.length > 0 ? (
+              <Box
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns:
+                    "repeat(auto-fill, minmax(min(100%, 300px), 1fr))",
+                  gap: { xs: 1.5, md: 2 },
+                }}
+              >
+                {sortedScenarios.map((scenario) => {
+                  const isFavorite = favoriteScenarios.includes(
+                    scenario.scenarioId,
+                  );
+                  const npc = scenario.npcInfo ?? scenario.npc;
+                  const difficultyTone =
+                    DIFFICULTY_TONE_MAPPING[scenario.difficulty];
+
+                  return (
+                    <Card
+                      key={scenario.scenarioId}
+                      component="article"
+                      sx={{
+                        minWidth: 0,
+                        display: "flex",
+                        flexDirection: "column",
+                        border: "1px solid",
+                        borderColor: isFavorite
+                          ? "rgba(43,89,209,.28)"
+                          : "rgba(30,36,48,.085)",
+                        borderRadius: "18px",
+                        bgcolor: "rgba(255,255,255,.92)",
+                        boxShadow: isFavorite
+                          ? "0 8px 24px rgba(43,89,209,.065)"
+                          : "0 6px 20px rgba(30,36,48,.035)",
+                        transition:
+                          "transform .2s ease, box-shadow .2s ease, border-color .2s ease",
+                        "&:hover": {
+                          transform: "translateY(-2px)",
+                          borderColor: "rgba(43,89,209,.26)",
+                          boxShadow: "0 13px 32px rgba(30,36,48,.075)",
+                        },
+                        "@media (prefers-reduced-motion: reduce)": {
+                          transition: "none",
+                          "&:hover": { transform: "none" },
+                        },
+                      }}
+                    >
+                      <CardContent
+                        sx={{
+                          flex: 1,
+                          display: "flex",
+                          flexDirection: "column",
+                          p: { xs: 2, md: 2.25 },
+                          "&:last-child": { pb: { xs: 2, md: 2.25 } },
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            gap: 1,
+                            mb: 1.5,
+                          }}
+                        >
+                          <Box
+                            sx={{
+                              display: "flex",
+                              flexWrap: "wrap",
+                              gap: 0.65,
+                            }}
+                          >
+                            <Box
+                              component="span"
+                              sx={{
+                                px: 0.9,
+                                py: 0.35,
+                                borderRadius: 999,
+                                bgcolor: "#f0f2ef",
+                                color: "text.secondary",
+                                fontSize: 10,
+                                fontWeight: 650,
+                                lineHeight: 1.4,
+                              }}
+                            >
+                              {scenario.category || t("scenarios.industry")}
+                            </Box>
+                            <Box
+                              component="span"
+                              sx={{
+                                px: 0.9,
+                                py: 0.35,
+                                borderRadius: 999,
+                                color: difficultyTone.color,
+                                bgcolor: difficultyTone.backgroundColor,
+                                fontSize: 10,
+                                fontWeight: 750,
+                                lineHeight: 1.4,
+                              }}
+                            >
+                              {getDifficultyLabel(scenario.difficulty)}
+                            </Box>
+                            {isScenarioOwner(scenario) ? (
+                              <Box
+                                component="span"
+                                sx={{
+                                  px: 0.9,
+                                  py: 0.35,
+                                  borderRadius: 999,
+                                  color: "primary.main",
+                                  bgcolor: "rgba(43,89,209,.07)",
+                                  fontSize: 10,
+                                  fontWeight: 700,
+                                  lineHeight: 1.4,
+                                }}
+                              >
+                                {t("scenarios.workspace.customBadge")}
+                              </Box>
+                            ) : null}
+                          </Box>
+
+                          <IconButton
+                            size="small"
+                            onClick={() => toggleFavorite(scenario.scenarioId)}
+                            aria-label={
+                              isFavorite
+                                ? t("scenarios.workspace.removeFavoriteAria")
+                                : t("scenarios.workspace.addFavoriteAria")
+                            }
+                            aria-pressed={isFavorite}
+                            sx={{
+                              width: 32,
+                              height: 32,
+                              flexShrink: 0,
+                              color: isFavorite ? "#c38a20" : "text.disabled",
+                              bgcolor: isFavorite ? "#fbf4df" : "transparent",
+                              "&:hover": {
+                                bgcolor: "#fbf4df",
+                                color: "#c38a20",
+                              },
+                            }}
+                          >
+                            {isFavorite ? (
+                              <StarRoundedIcon sx={{ fontSize: 18 }} />
+                            ) : (
+                              <StarBorderRoundedIcon sx={{ fontSize: 18 }} />
+                            )}
+                          </IconButton>
+                        </Box>
+
+                        <Typography
+                          component="h2"
+                          sx={{
+                            color: "text.primary",
+                            fontSize: 18,
+                            fontWeight: 750,
+                            lineHeight: 1.4,
+                            letterSpacing: "-.012em",
+                          }}
+                        >
+                          {scenario.title}
+                        </Typography>
+                        <Typography
+                          sx={{
+                            mt: 0.75,
+                            minHeight: 58,
+                            color: "text.secondary",
+                            fontSize: 12.5,
+                            lineHeight: 1.6,
+                            display: "-webkit-box",
+                            WebkitBoxOrient: "vertical",
+                            WebkitLineClamp: 3,
+                            overflow: "hidden",
+                          }}
+                        >
+                          {scenario.description}
+                        </Typography>
+
+                        {npc ? (
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 1.1,
+                              mt: 2,
+                              py: 1.35,
+                              borderTop: "1px solid",
+                              borderBottom: "1px solid",
+                              borderColor: "divider",
+                            }}
+                          >
+                            <Avatar
+                              src={
+                                isImageSource(npc.avatar)
+                                  ? npc.avatar
+                                  : undefined
+                              }
+                              sx={{
+                                width: 36,
+                                height: 36,
+                                flexShrink: 0,
+                                border: "1px solid",
+                                borderColor: "divider",
+                                bgcolor: "#eef1f7",
+                                color: "text.primary",
+                                fontSize: 17,
+                              }}
+                            >
+                              {isImageSource(npc.avatar)
+                                ? null
+                                : npc.avatar || npc.role?.charAt(0) || "👤"}
+                            </Avatar>
+                            <Box sx={{ minWidth: 0, flex: 1 }}>
+                              <Typography
+                                noWrap
+                                sx={{
+                                  fontSize: 12.5,
+                                  fontWeight: 700,
+                                  lineHeight: 1.45,
+                                }}
+                              >
+                                {npc.name}
+                              </Typography>
+                              <Typography
+                                noWrap
+                                sx={{
+                                  mt: 0.1,
+                                  color: "text.secondary",
+                                  fontSize: 10.5,
+                                }}
+                              >
+                                {[npc.role, npc.company]
+                                  .filter(Boolean)
+                                  .join(" · ")}
+                              </Typography>
+                            </Box>
+                            {npc.personality?.[0] ? (
+                              <Typography
+                                sx={{
+                                  flexShrink: 0,
+                                  maxWidth: 76,
+                                  color: "text.secondary",
+                                  fontSize: 10,
+                                  overflow: "hidden",
+                                  textOverflow: "ellipsis",
+                                  whiteSpace: "nowrap",
+                                }}
+                              >
+                                {npc.personality[0]}
+                              </Typography>
+                            ) : null}
+                          </Box>
+                        ) : null}
+
+                        <Box
+                          sx={{
+                            display: "flex",
+                            flexWrap: "wrap",
+                            alignItems: "center",
+                            gap: 1.5,
+                            mt: 1.4,
+                            mb: 2,
+                            color: "text.secondary",
+                          }}
+                        >
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 0.55,
+                            }}
+                          >
+                            <TrendingUpRoundedIcon
+                              sx={{ fontSize: 15 }}
+                              aria-hidden="true"
+                            />
+                            <Typography sx={{ fontSize: 10.5 }}>
+                              {t("scenarios.workspace.goalCount", {
+                                count: scenario.goals?.length || 0,
+                              })}
+                            </Typography>
+                          </Box>
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 0.55,
+                            }}
+                          >
+                            <AccessTimeRoundedIcon
+                              sx={{ fontSize: 15 }}
+                              aria-hidden="true"
+                            />
+                            <Typography sx={{ fontSize: 10.5 }}>
+                              {scenario.estimatedDuration
+                                ? t("scenarios.workspace.estimatedDuration", {
+                                    minutes: scenario.estimatedDuration,
+                                  })
+                                : t("scenarios.workspace.defaultDuration")}
+                            </Typography>
+                          </Box>
+                        </Box>
+
+                        <Button
+                          variant="contained"
+                          fullWidth
+                          startIcon={<PlayArrowRoundedIcon />}
+                          endIcon={<ChevronRightRoundedIcon />}
+                          onClick={() =>
+                            navigate(`/conversation/${scenario.scenarioId}`)
+                          }
+                          aria-label={t("scenarios.workspace.startAria", {
+                            title: scenario.title,
+                          })}
+                          sx={{
+                            mt: "auto",
+                            minHeight: 42,
+                            borderRadius: "12px",
+                            fontSize: 12.5,
+                            fontWeight: 700,
+                            "& .MuiButton-endIcon": { ml: "auto" },
+                          }}
+                        >
+                          {t("scenarios.workspace.startButton")}
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </Box>
+            ) : null}
+          </Box>
         </Box>
       </Container>
-    </>
+    </Box>
   );
 };
 

@@ -99,16 +99,28 @@ def _get_current_metrics(conn, session_id: str, scenario_doc: dict) -> dict:
 
 
 def _build_llm_history(conn, session_id: str) -> list[dict]:
+    # 先倒序取最近 N 条，再恢复为正序。直接 ASC LIMIT 会在长会话中一直
+    # 把最早的消息送给模型，导致模型看不到最新上下文。
     rows = conn.execute(
-        "SELECT role, content FROM messages WHERE session_id = ? "
-        "AND role IN ('user','npc') ORDER BY created_at ASC LIMIT ?",
+        "SELECT role, content FROM ("
+        "SELECT rowid, role, content, created_at FROM messages WHERE session_id = ? "
+        "AND role IN ('user','npc') ORDER BY created_at DESC, rowid DESC LIMIT ?"
+        ") ORDER BY created_at ASC, rowid ASC",
         (session_id, HISTORY_LIMIT),
     ).fetchall()
     return [{"sender": r["role"], "content": r["content"]} for r in rows]
 
 
 def _run_npc_turn(npc_system_prompt: str, history: list[dict], user_message: str) -> str:
-    messages = [{"role": "user", "content": m["content"]} for m in history]
+    # Messages API 中，销售人员是 user，NPC 客户是 assistant。此前把两者
+    # 全部标成 user，会让模型把自己上一轮的回复误认为销售发言。
+    messages = [
+        {
+            "role": "assistant" if m["sender"] == "npc" else "user",
+            "content": m["content"],
+        }
+        for m in history
+    ]
     messages.append({"role": "user", "content": user_message})
     return call_model(
         system=npc_system_prompt,
@@ -139,10 +151,10 @@ def _run_scoring(
         system="你是一个严谨的销售对话评分引擎。",
         messages=[{"role": "user", "content": prompt}],
         model=settings.llm_chat_model,
-        max_tokens=1024,
+        max_tokens=2048,
         label="realtime-scoring",
     )
-    return parse_scoring_output(model_text)
+    return parse_scoring_output(model_text, fallback_scores=current_scores)
 
 
 def run_conversation_turn(conn, session_row, body, user_id: str) -> dict:
@@ -188,6 +200,7 @@ def run_conversation_turn(conn, session_row, body, user_id: str) -> dict:
         goals = _merge_goal_statuses(goals, body.goalStatuses)
 
     scenario_description = body.scenarioDescription or scenario_doc.get("description") or ""
+    initial_message = scenario_doc.get("initialMessage") or ""
     language = body.language or "zh"
 
     # ---- 历史 & 提示词 ----
@@ -196,8 +209,15 @@ def run_conversation_turn(conn, session_row, body, user_id: str) -> dict:
         npc_info=npc_info,
         emotion_params=current_metrics,
         language=language,
+        scenario_description=scenario_description,
+        initial_message=initial_message,
     )
     user_message = body.content
+    scoring_history = history
+    if initial_message:
+        # 开场白目前由前端直接展示，数据库中没有这条 NPC 消息；评分模型需要
+        # 看见它，才能正确理解销售人员第一轮是在回答什么。
+        scoring_history = [{"sender": "npc", "content": initial_message}, *history]
 
     # ---- 并行调用：NPC 回复 + 实时评分 ----
     with ThreadPoolExecutor(max_workers=2) as pool:
@@ -205,7 +225,7 @@ def run_conversation_turn(conn, session_row, body, user_id: str) -> dict:
         scoring_future = pool.submit(
             _run_scoring,
             user_message,
-            history,
+            scoring_history,
             current_metrics,
             goals,
             scenario_description,

@@ -33,7 +33,36 @@ import PdfFilesStep from "./creation/PdfFilesStep";
 import PresentationStep from "./creation/PresentationStep";
 import SharingStep from "./creation/SharingStep";
 import PreviewStep from "./creation/PreviewStep";
-import { ScenarioInfo, DifficultyLevel } from "../../types/api";
+import { ScenarioInfo, DifficultyLevel, MetricsInfo } from "../../types/api";
+
+interface GeneratedGoalDraft {
+  id?: string;
+  description?: string;
+  isRequired?: boolean;
+  priority?: number;
+  criteria?: string[];
+}
+
+interface GeneratedScenarioDraft {
+  title?: string;
+  description?: string;
+  category?: string;
+  difficulty?: string;
+  language?: string;
+  initialMessage?: string;
+  npc?: {
+    name?: string;
+    role?: string;
+    company?: string;
+    personality?: string[];
+    description?: string;
+    voiceId?: string;
+  };
+  objectives?: string | string[];
+  goals?: GeneratedGoalDraft[];
+  initialMetrics?: MetricsInfo;
+  maxTurns?: number;
+}
 
 /**
  * 场景创建页面
@@ -100,7 +129,7 @@ const ScenarioCreatePage: React.FC = () => {
         difficulty: genDifficulty || undefined,
         category: genCategory || undefined,
       });
-      const draft = (res.draft || {}) as Record<string, any>;
+      const draft = (res.draft || {}) as GeneratedScenarioDraft;
       const diffMap: Record<string, DifficultyLevel> = {
         初级: "easy",
         中级: "normal",
@@ -109,7 +138,7 @@ const ScenarioCreatePage: React.FC = () => {
         资深: "expert",
       };
       const mappedDiff = diffMap[draft.difficulty as string] ?? "normal";
-      const npc = (draft.npc || {}) as Record<string, any>;
+      const npc = draft.npc || {};
       setFormData((prev) => ({
         ...prev,
         title: draft.title ?? prev.title,
@@ -132,7 +161,7 @@ const ScenarioCreatePage: React.FC = () => {
               ? draft.objectives
               : prev.objectives,
         goals: Array.isArray(draft.goals)
-          ? draft.goals.map((g: Record<string, any>, i: number) => ({
+          ? draft.goals.map((g, i) => ({
               id: g.id ?? `goal-${i + 1}`,
               description: g.description ?? "",
               isRequired: g.isRequired ?? false,

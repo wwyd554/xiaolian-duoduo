@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Typography } from "@mui/material";
+import { Box } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import { VRMAvatarContainer } from "../avatar";
 import type { EmotionState } from "../../types/index";
@@ -16,8 +16,6 @@ interface AvatarStageProps {
   directEmotion?: EmotionState;
   gesture?: GestureType;
   onEmotionChange?: (emotion: EmotionState) => void;
-  // NPC情報
-  npcName: string;
 }
 
 /**
@@ -35,7 +33,6 @@ const AvatarStage: React.FC<AvatarStageProps> = ({
   directEmotion,
   gesture,
   onEmotionChange,
-  npcName,
 }) => {
   const { t } = useTranslation();
 
@@ -50,8 +47,6 @@ const AvatarStage: React.FC<AvatarStageProps> = ({
       role="region"
       aria-label={t("avatarStage.label")}
     >
-      {/* NPC 名称标签（隐藏） */}
-
       {/* VRM 化身 */}
       <Box
         sx={{
@@ -120,4 +115,4 @@ const AvatarStage: React.FC<AvatarStageProps> = ({
   );
 };
 
-export default AvatarStage;
+export default React.memo(AvatarStage);

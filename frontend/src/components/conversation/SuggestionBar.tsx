@@ -1,78 +1,110 @@
-import React from "react";
-import { Box, Chip, Typography } from "@mui/material";
-import { Lightbulb as LightbulbIcon } from "@mui/icons-material";
+import React, { useState } from "react";
+import { Box, Button, Chip, Collapse, Paper, Typography } from "@mui/material";
+import {
+  LightbulbOutlined,
+  KeyboardArrowDownRounded,
+  KeyboardArrowUpRounded,
+} from "@mui/icons-material";
 import { useTranslation } from "react-i18next";
 
 interface SuggestionBarProps {
-  /** AI 生成的应答候选列表 */
   suggestions: string[];
-  /** 选择候选时的回调（传入所选文本） */
   onSelect: (text: string) => void;
-  /** 无效状态（处理中、发言中等） */
   disabled: boolean;
 }
 
-/**
- * 建议应答按钮组件
- *
- * 根据 NPC 上一句发言由 AI 生成的应答候选，可通过点按/点击
- * 以可选择的按钮组显示。当候选为空或处于无效状态时，
- * 不显示任何内容。
- */
+/** 将模型候选回复降级为按需查看的“应答思路”。 */
 const SuggestionBar: React.FC<SuggestionBarProps> = ({
   suggestions,
   onSelect,
   disabled,
 }) => {
   const { t } = useTranslation();
+  const [expanded, setExpanded] = useState(false);
 
-  // 无候选或处于无效状态时不显示任何内容
   if (disabled || !suggestions || suggestions.length === 0) {
     return null;
   }
 
   return (
-    <Box
-      role="group"
-      aria-label={t("conversation.suggestion.label")}
-      sx={{
-        display: "flex",
-        flexWrap: "wrap",
-        alignItems: "center",
-        gap: 1,
-        px: 1,
-        py: 0.5,
-        backgroundColor: "rgba(255, 255, 255, 0.95)",
-        borderRadius: 1,
-        boxShadow: "0 -2px 8px rgba(0, 0, 0, 0.08)",
-      }}
-    >
-      <Box display="flex" alignItems="center" gap={0.5} sx={{ color: "text.secondary" }}>
-        <LightbulbIcon fontSize="small" aria-hidden="true" />
-        <Typography variant="caption">
-          {t("conversation.suggestion.label")}
-        </Typography>
-      </Box>
-      {suggestions.map((suggestion, index) => (
-        <Chip
-          key={`${index}-${suggestion}`}
-          label={suggestion}
-          variant="outlined"
-          color="primary"
-          clickable
-          onClick={() => onSelect(suggestion)}
-          data-testid={`suggestion-button-${index}`}
-          aria-label={t("conversation.suggestion.select", { text: suggestion })}
+    <Box sx={{ px: { xs: 1, sm: 2 }, pt: 0.75 }}>
+      <Paper
+        elevation={0}
+        role="group"
+        aria-label={t("conversation.suggestion.label")}
+        sx={{
+          width: "100%",
+          maxWidth: 900,
+          mx: "auto",
+          borderRadius: 3,
+          border: "1px solid #e2e7f0",
+          overflow: "hidden",
+          bgcolor: "#fff",
+        }}
+      >
+        <Button
+          fullWidth
+          onClick={() => setExpanded((value) => !value)}
+          aria-expanded={expanded}
+          startIcon={<LightbulbOutlined fontSize="small" />}
+          endIcon={
+            expanded ? <KeyboardArrowUpRounded /> : <KeyboardArrowDownRounded />
+          }
           sx={{
-            maxWidth: "100%",
-            height: "auto",
-            "& .MuiChip-label": {
-              whiteSpace: "normal",
-              py: 0.5,
-            },
+            minHeight: 40,
+            px: 1.5,
+            justifyContent: "flex-start",
+            color: "#405170",
+            fontSize: 13,
+            fontWeight: 700,
+            "& .MuiButton-endIcon": { ml: "auto" },
           }}
-        />
-      ))}
+        >
+          {t("conversation.workspace.replyIdeas")}
+        </Button>
+
+        <Collapse in={expanded}>
+          <Box sx={{ px: 1.5, pb: 1.35, borderTop: "1px solid #edf0f5" }}>
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ display: "block", py: 1 }}
+            >
+              {t("conversation.workspace.replyIdeasNote")}
+            </Typography>
+            <Box
+              sx={{ display: "flex", gap: 0.75, overflowX: "auto", pb: 0.25 }}
+            >
+              {suggestions.map((suggestion, index) => (
+                <Chip
+                  key={`${index}-${suggestion}`}
+                  label={suggestion}
+                  variant="outlined"
+                  clickable
+                  onClick={() => onSelect(suggestion)}
+                  data-testid={`suggestion-button-${index}`}
+                  aria-label={t("conversation.workspace.fillSuggestion", {
+                    text: suggestion,
+                  })}
+                  sx={{
+                    height: "auto",
+                    minHeight: 34,
+                    maxWidth: { xs: 260, md: 360 },
+                    flexShrink: 0,
+                    borderColor: "#dbe2ef",
+                    bgcolor: "#f8faff",
+                    color: "#33466b",
+                    "& .MuiChip-label": {
+                      whiteSpace: "normal",
+                      py: 0.65,
+                    },
+                  }}
+                />
+              ))}
+            </Box>
+          </Box>
+        </Collapse>
+      </Paper>
     </Box>
   );
 };

@@ -464,6 +464,17 @@ export class TranscribeService {
       }
     }
 
+    // 自动麦克风模式会在每个用户回合重新开启收音；每次停止时及时释放
+    // AudioContext，避免长会话累积浏览器音频资源。
+    if (this.audioContext) {
+      try {
+        void this.audioContext.close();
+      } catch (e) {
+        console.warn('AudioContext停止错误:', e);
+      }
+      this.audioContext = null;
+    }
+
     this.isRecording = false;
   }
 

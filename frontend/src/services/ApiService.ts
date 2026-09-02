@@ -8,7 +8,6 @@ import type {
   SessionListResponse,
   MessageListResponse,
   ScenarioListResponse,
-  RankingResponse,
   ComplianceCheck,
   ScenarioExportData,
   ImportResponse,
@@ -22,7 +21,7 @@ import {
 } from "../utils/apiTransformers";
 
 /**
- * API 通信服务 - 处理与 Amazon Bedrock 的通信
+ * 本地 FastAPI 通信服务。
  */
 export class ApiService {
   private static instance: ApiService;
@@ -197,7 +196,7 @@ export class ApiService {
   /**
    * 创建或更新会话
    * 
-   * 通过 AgentCore Runtime 对话时，用于将会话保存到 DynamoDB
+   * 创建或更新本地会话记录。
    * 
    * @param sessionId 会话 ID
    * @param scenarioId 场景 ID
@@ -255,6 +254,18 @@ export class ApiService {
   }
 
   /**
+   * 完成一场陪练，并让后端开始生成复盘报告。
+   */
+  public async completeSession(sessionId: string): Promise<{
+    success: boolean;
+    sessionId: string;
+    status: "completed";
+    message: string;
+  }> {
+    return this.apiPost(`/sessions/${sessionId}/complete`, {});
+  }
+
+  /**
    * 与 NPC 对话（本地 FastAPI 单次调用，回复+评分一次返回）
    *
    * @param message 用户消息
@@ -282,6 +293,7 @@ export class ApiService {
     language?: string,
     _presentedSlides?: Array<{ pageNumber: number; imageKey: string }>,
   ): Promise<{ response: string; sessionId: string; messageId: string }> {
+    void _presentedSlides;
     try {
       const auth = loadAuth();
       if (!auth) {
@@ -393,6 +405,7 @@ export class ApiService {
     gesture?: string;
     suggestions?: string[];
   }> {
+    void _scenarioDescription;
     try {
       const result = this.lastConversationResult;
       if (!result || result.sessionId !== sessionId) {
@@ -1249,7 +1262,7 @@ export class ApiService {
    * 获取会话反馈
    *
    * 获取已保存的反馈分析数据。
-   * 从 DynamoDB 获取会话结果页面使用的反馈数据。
+   * 获取会话结果页面使用的反馈数据。
    *
    * @param sessionId 会话 ID
    * @returns 反馈分析结果
@@ -1519,52 +1532,6 @@ export class ApiService {
   /** 判断是否为 409 Conflict 错误 */
   private is409Error(error: unknown): boolean {
     return this.hasResponseStatus(error, 409);
-  }
-
-  public async getRankings(
-    scenarioId: string,
-    period: "daily" | "weekly" | "monthly",
-    limit: number = 10,
-  ): Promise<RankingResponse> {
-    try {
-      // 创建查询参数
-      const queryParams: Record<string, string | number> = {
-        scenarioId: scenarioId,
-        period: period,
-        limit: limit,
-      };
-
-      // API 调用
-      const response = await this.apiGet<RankingResponse>(
-        "/rankings",
-        queryParams,
-      );
-
-      // 校验响应
-      if (!response.rankings) {
-        throw new Error(
-          "获取排行榜数据失败：数据格式无效",
-        );
-      }
-
-      // 按 RankingResponse 类型将 totalCount 字段作为 totalParticipants 处理
-      const formattedResponse: RankingResponse = {
-        ...response,
-        totalCount: response.totalCount || 0,
-      };
-
-      return formattedResponse;
-    } catch (error) {
-      console.error(
-        `排行榜获取错误: ${error instanceof Error ? error.message : String(error)}`,
-      );
-
-      if (error instanceof Error) {
-        throw new Error(`获取排行榜失败: ${error.message}`);
-      } else {
-        throw new Error("获取排行榜失败");
-      }
-    }
   }
 
   /**
@@ -1868,5 +1835,15 @@ export class ApiService {
         throw new Error('获取会话分析状态失败');
       }
     }
+  }
+
+  /** 重新生成失败的陪练复盘报告。 */
+  public async retrySessionAnalysis(sessionId: string): Promise<{
+    success: boolean;
+    sessionId: string;
+    status: "processing";
+    message: string;
+  }> {
+    return this.apiPost(`/sessions/${sessionId}/analysis-retry`, {});
   }
 }

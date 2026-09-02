@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Container,
@@ -19,6 +19,8 @@ import {
   Tooltip,
   ToggleButtonGroup,
   ToggleButton,
+  Button,
+  Stack,
   alpha,
   useTheme,
 } from "@mui/material";
@@ -31,6 +33,8 @@ import ViewListIcon from "@mui/icons-material/ViewList";
 import ViewModuleIcon from "@mui/icons-material/ViewModule";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import PlayCircleOutlineIcon from "@mui/icons-material/PlayCircleOutline";
+import ReplayRoundedIcon from "@mui/icons-material/ReplayRounded";
+import AssessmentRoundedIcon from "@mui/icons-material/AssessmentRounded";
 import { useNavigate } from "react-router-dom";
 import { ApiService } from "../../services/ApiService";
 import { SessionInfo, ScenarioInfo } from "../../types/api";
@@ -54,6 +58,7 @@ const SessionHistoryPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
+  const [totalCount, setTotalCount] = useState<number>(0);
   const [nextToken, setNextToken] = useState<string | undefined>(undefined);
   const [tokenHistory, setTokenHistory] = useState<(string | undefined)[]>([
     undefined,
@@ -62,6 +67,8 @@ const SessionHistoryPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [sortBy, setSortBy] = useState<"date-desc" | "date-asc" | "score">("date-desc");
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
+  const [completingSessionId, setCompletingSessionId] = useState<string | null>(null);
+  const filterInitializedRef = useRef(false);
 
   // 每页显示数量
   const ITEMS_PER_PAGE = 10;
@@ -72,8 +79,8 @@ const SessionHistoryPage: React.FC = () => {
       try {
         const currentUser = await authService.getCurrentUser();
         if (currentUser) {
-          loadSessions();
-          loadScenarios();
+          await Promise.all([loadSessions(), loadScenarios()]);
+          filterInitializedRef.current = true;
         }
       } catch (error) {
         console.error("用户信息获取失败:", error);
@@ -87,6 +94,7 @@ const SessionHistoryPage: React.FC = () => {
 
   // 场景筛选器变更时
   useEffect(() => {
+    if (!filterInitializedRef.current) return;
     setPage(1);
     setNextToken(undefined);
     setTokenHistory([undefined]);
@@ -105,14 +113,10 @@ const SessionHistoryPage: React.FC = () => {
       );
       setSessions(response.sessions);
       setNextToken(response.nextToken);
-
-      if (page === 1 && !token) {
-        setTotalPages(
-          response.nextToken
-            ? Math.max(2, Math.ceil(response.sessions.length / ITEMS_PER_PAGE))
-            : 1,
-        );
-      }
+      const count = response.totalCount ?? response.sessions.length;
+      setTotalCount(count);
+      setTotalPages(Math.max(1, Math.ceil(count / ITEMS_PER_PAGE)));
+      setError(null);
     } catch (err) {
       console.error("会话历史加载失败", err);
       setError(t("history.error.loadFailed"));
@@ -140,7 +144,7 @@ const SessionHistoryPage: React.FC = () => {
       if (nextToken) {
         setPage(newPage);
         loadSessions(nextToken);
-        setTokenHistory([...tokenHistory, nextToken]);
+        setTokenHistory((current) => [...current, nextToken]);
       }
     } else if (newPage < page) {
       const previousToken = tokenHistory[newPage - 1];
@@ -152,6 +156,75 @@ const SessionHistoryPage: React.FC = () => {
   // 跳转到会话详情页
   const handleSessionClick = (sessionId: string) => {
     navigate(`/history/session/${sessionId}`);
+  };
+
+  const handleRepeatPractice = (
+    event: React.MouseEvent,
+    session: SessionInfo,
+  ) => {
+    event.stopPropagation();
+    navigate(`/conversation/${session.scenarioId}`);
+  };
+
+  const handleCompleteAndReview = async (
+    event: React.MouseEvent,
+    session: SessionInfo,
+  ) => {
+    event.stopPropagation();
+    setCompletingSessionId(session.sessionId);
+    setError(null);
+    try {
+      await apiService.completeSession(session.sessionId);
+      navigate(`/history/session/${session.sessionId}`);
+    } catch (err) {
+      console.error("结束会话失败", err);
+      setError(t("history.error.completeFailed"));
+      setCompletingSessionId(null);
+    }
+  };
+
+  const renderSessionActions = (session: SessionInfo) => {
+    const isCompleted = session.status === "completed";
+    const canComplete = !isCompleted && (session.messageCount ?? 0) > 0;
+    const isCompleting = completingSessionId === session.sessionId;
+
+    return (
+      <Stack direction="row" useFlexGap flexWrap="wrap" gap={1} sx={{ mt: 1.5 }}>
+        {isCompleted ? (
+          <Button
+            size="small"
+            variant="contained"
+            startIcon={<AssessmentRoundedIcon />}
+            onClick={(event) => {
+              event.stopPropagation();
+              handleSessionClick(session.sessionId);
+            }}
+          >
+            {t("history.viewReview")}
+          </Button>
+        ) : canComplete ? (
+          <Button
+            size="small"
+            variant="contained"
+            startIcon={<AssessmentRoundedIcon />}
+            disabled={isCompleting}
+            onClick={(event) => handleCompleteAndReview(event, session)}
+          >
+            {isCompleting
+              ? t("history.completing")
+              : t("history.completeAndReview")}
+          </Button>
+        ) : null}
+        <Button
+          size="small"
+          variant="outlined"
+          startIcon={<ReplayRoundedIcon />}
+          onClick={(event) => handleRepeatPractice(event, session)}
+        >
+          {t("history.repeatPractice")}
+        </Button>
+      </Stack>
+    );
   };
 
   // 筛选器处理器
@@ -267,18 +340,17 @@ const SessionHistoryPage: React.FC = () => {
       <Paper
         key={session.sessionId}
         elevation={0}
-        onClick={() => handleSessionClick(session.sessionId)}
         sx={{
-          p: 2,
-          mb: 1.5,
-          cursor: "pointer",
+          p: { xs: 2, sm: 2.5 },
+          mb: 2,
           border: `1px solid ${theme.palette.divider}`,
-          borderRadius: 2,
-          transition: "all 0.15s ease",
+          borderRadius: 3.5,
+          bgcolor: "background.paper",
+          transition: "transform .2s ease, box-shadow .2s ease, border-color .2s ease",
           "&:hover": {
             borderColor: theme.palette.primary.main,
-            bgcolor: alpha(theme.palette.primary.main, 0.02),
-            boxShadow: `0 2px 8px ${alpha(theme.palette.primary.main, 0.1)}`,
+            transform: "translateY(-2px)",
+            boxShadow: `0 14px 36px ${alpha(theme.palette.primary.main, 0.1)}`,
           },
         }}
       >
@@ -287,27 +359,49 @@ const SessionHistoryPage: React.FC = () => {
             display: "flex",
             alignItems: "center",
             gap: 2,
+            flexWrap: { xs: "wrap", md: "nowrap" },
           }}
         >
           {/* 状态图标 */}
-          <Box sx={{ flexShrink: 0 }}>
+          <Box
+            sx={{
+              flexShrink: 0,
+              width: 44,
+              height: 44,
+              borderRadius: "50%",
+              display: "grid",
+              placeItems: "center",
+              bgcolor: isCompleted ? "rgba(37,166,106,.10)" : "rgba(43,89,209,.09)",
+            }}
+          >
             {isCompleted ? (
-              <CheckCircleIcon color="success" sx={{ fontSize: 28 }} />
+              <CheckCircleIcon color="success" sx={{ fontSize: 25 }} />
             ) : (
-              <PlayCircleOutlineIcon color="primary" sx={{ fontSize: 28 }} />
+              <PlayCircleOutlineIcon color="primary" sx={{ fontSize: 25 }} />
             )}
           </Box>
 
           {/* 主内容 */}
-          <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+          <Box
+            sx={{
+              flexGrow: 1,
+              flexBasis: { xs: "calc(100% - 64px)", md: "auto" },
+              minWidth: 0,
+            }}
+          >
             <Box
               sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}
             >
               <Typography
                 variant="subtitle1"
                 fontWeight={600}
-                noWrap
-                sx={{ flexGrow: 1 }}
+                sx={{
+                  flexGrow: 1,
+                  display: "-webkit-box",
+                  overflow: "hidden",
+                  WebkitBoxOrient: "vertical",
+                  WebkitLineClamp: 2,
+                }}
               >
                 {session.scenarioName || session.title || t("history.untitledSession")}
               </Typography>
@@ -375,6 +469,7 @@ const SessionHistoryPage: React.FC = () => {
                 </Box>
               )}
             </Box>
+            {renderSessionActions(session)}
           </Box>
 
           {/* 分数显示 */}
@@ -384,6 +479,7 @@ const SessionHistoryPage: React.FC = () => {
                 flexShrink: 0,
                 textAlign: "center",
                 minWidth: 60,
+                ml: { xs: 7.5, md: 0 },
               }}
             >
               <Typography
@@ -405,7 +501,7 @@ const SessionHistoryPage: React.FC = () => {
 
           {/* 指标迷你条 */}
           {session.metrics && (
-            <Box sx={{ flexShrink: 0, width: 80 }}>
+            <Box sx={{ flexShrink: 0, width: { xs: 112, md: 80 } }}>
               <Tooltip title={`信任度: ${session.metrics.trustLevel}/10`}>
                 <Box sx={{ mb: 0.5 }}>
                   <Typography
@@ -456,12 +552,11 @@ const SessionHistoryPage: React.FC = () => {
       <Paper
         key={session.sessionId}
         elevation={0}
-        onClick={() => handleSessionClick(session.sessionId)}
         sx={{
           p: 2.5,
-          cursor: "pointer",
           border: `1px solid ${theme.palette.divider}`,
-          borderRadius: 2,
+          borderRadius: 3.5,
+          bgcolor: "background.paper",
           height: "100%",
           display: "flex",
           flexDirection: "column",
@@ -483,7 +578,7 @@ const SessionHistoryPage: React.FC = () => {
           }}
         >
           <Typography variant="subtitle1" fontWeight={600} noWrap sx={{ flexGrow: 1 }}>
-            {session.title || t("history.untitledSession")}
+            {session.scenarioName || session.title || t("history.untitledSession")}
           </Typography>
           <Chip
             label={isCompleted ? t("history.completed") : t("history.active")}
@@ -557,21 +652,66 @@ const SessionHistoryPage: React.FC = () => {
               </Box>
             )}
           </Box>
+          {renderSessionActions(session)}
         </Box>
       </Paper>
     );
   };
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 3, mb: 4 }}>
-      {/* 筛选与控制 */}
+    <Container maxWidth="xl" sx={{ py: { xs: 3, md: 5 }, px: { xs: 2, sm: 3, lg: 5 } }}>
       <Box
         sx={{
           display: "flex",
+          justifyContent: "space-between",
+          alignItems: { xs: "flex-start", sm: "flex-end" },
+          flexDirection: { xs: "column", sm: "row" },
           gap: 2,
+          mb: { xs: 3, md: 4 },
+        }}
+      >
+        <Box>
+          <Typography
+            sx={{
+              color: "primary.main",
+              fontSize: 12,
+              fontWeight: 800,
+              letterSpacing: ".12em",
+              textTransform: "uppercase",
+              mb: 1,
+            }}
+          >
+            Practice review
+          </Typography>
+          <Typography variant="h3" component="h1" sx={{ fontSize: { xs: 32, md: 42 }, mb: 1 }}>
+            {t("history.title")}
+          </Typography>
+          <Typography color="text.secondary" sx={{ lineHeight: 1.7 }}>
+            {t("history.description")}
+          </Typography>
+        </Box>
+        <Chip
+          label={`${totalCount} 次练习`}
+          color="primary"
+          variant="outlined"
+          sx={{ bgcolor: "background.paper", fontWeight: 700 }}
+        />
+      </Box>
+
+      {/* 筛选与控制 */}
+      <Paper
+        elevation={0}
+        sx={{
+          display: "flex",
+          gap: 1.5,
           mb: 3,
           flexWrap: "wrap",
           alignItems: "center",
+          p: { xs: 1.5, md: 2 },
+          border: "1px solid",
+          borderColor: "divider",
+          borderRadius: 3.5,
+          bgcolor: "rgba(255,255,255,.82)",
         }}
       >
         <TextField
@@ -634,7 +774,7 @@ const SessionHistoryPage: React.FC = () => {
             </ToggleButton>
           </ToggleButtonGroup>
         </Box>
-      </Box>
+      </Paper>
 
       {/* 排序显示 */}
       {sortBy !== "date-desc" && (

@@ -124,9 +124,12 @@ console.error = (...args) => {
   // Check if the error is an act() warning
   const isActWarning = args.some(
     (arg) =>
-      typeof arg === "string" && 
-      (arg.includes("An update to") && arg.includes("inside a test was not wrapped in act(...)")) ||
-      arg.includes("When testing, code that causes React state updates should be wrapped into act(...)")
+      typeof arg === "string" &&
+      ((arg.includes("An update to") &&
+        arg.includes("inside a test was not wrapped in act(...)")) ||
+        arg.includes(
+          "When testing, code that causes React state updates should be wrapped into act(...)",
+        )),
   );
 
   if (isPropTypeWarning) {
