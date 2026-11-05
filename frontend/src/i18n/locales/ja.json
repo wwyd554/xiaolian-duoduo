@@ -519,6 +519,29 @@
     "profileAuth": "プロフィール"
   },
   "scenarios": {
+    "composer": {
+      "heading": "次の営業トークを、まず練習",
+      "description": "営業の悩みを入力すると、AI が専用シナリオを作成。内容を確認して練習を始めましょう。",
+      "placeholder": "例：更新料金が高いと言われた。価格への反論に対応する練習がしたい…",
+      "inputLabel": "練習したい場面",
+      "manualCreate": "手動で作成",
+      "send": "送信",
+      "libraryHeading": "練習シナリオを探す",
+      "presets": {
+        "renewal": {
+          "label": "契約更新の交渉",
+          "prompt": "私は企業向けソフトウェアの営業担当です。お客様は更新料金が高いと感じ、値引きを求めています。価格への懸念の背景を聞き出し、更新の合意を目指す練習がしたいです。"
+        },
+        "discovery": {
+          "label": "顧客ニーズの深掘り",
+          "prompt": "私は企業向けソフトウェアの営業担当です。要望がまだ曖昧なお客様との初回面談で、課題、予算、意思決定の流れを質問で把握する練習がしたいです。"
+        },
+        "investment": {
+          "label": "投資信託の積立を説明",
+          "prompt": "私は金融アドバイザーです。投資信託を始めたばかりのお客様に、積立投資の仕組みとリスクを分かりやすく説明し、投資目的を確認する練習がしたいです。"
+        }
+      }
+    },
     "priority": {
       "highest": "最高",
       "high": "高",
@@ -541,6 +564,17 @@
     "objectivesCount": "項目",
     "searchPlaceholder": "シナリオを検索...",
     "showingItems": "{{count}} 件表示中",
+    "cardMenu": {
+      "actions": "シナリオ操作：{{title}}",
+      "edit": "シナリオを編集",
+      "delete": "シナリオを削除",
+      "confirmTitle": "このシナリオを削除しますか？",
+      "confirmDescription": "削除したシナリオは復元できません。",
+      "confirmDelete": "削除を確定",
+      "deleteFailed": "削除に失敗しました。もう一度お試しください。",
+      "systemHint": "システムシナリオは管理者のみ編集でき、削除はできません。",
+      "ownerHint": "作成者のみ編集・削除できます。"
+    },
     "workspace": {
       "libraryTitle": "練習シナリオ集",
       "librarySubtitle": "今日伸ばしたいスキルを選択",
@@ -554,6 +588,8 @@
       "difficultyFilterAria": "難易度で絞り込む",
       "categoryFilterAria": "業界で絞り込む",
       "sortAria": "シナリオを並べ替える",
+      "sortLabel": "並べ替え",
+      "clearSearch": "検索をクリア",
       "clearFilters": "クリア",
       "loading": "練習シナリオを準備中…",
       "customBadge": "自作",

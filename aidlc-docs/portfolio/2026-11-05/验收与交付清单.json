@@ -1,0 +1,19 @@
+{
+  "pdf": "/Users/Admin/Desktop/wyy/个人项目/sample-ai-sales-roleplay-main/aidlc-docs/portfolio/2026-11-05/output/pdf/武禹德_销练多多_AI产品作品集.pdf",
+  "pages": 6,
+  "sizeBytes": 1118120,
+  "guide": "/Users/Admin/Desktop/wyy/个人项目/sample-ai-sales-roleplay-main/aidlc-docs/portfolio/2026-11-05/给HR的发送说明与90秒录屏脚本.md",
+  "zip": "/Users/Admin/Desktop/wyy/个人项目/sample-ai-sales-roleplay-main/aidlc-docs/portfolio/2026-11-05/output/销练多多_作品集与说明.zip",
+  "screenshots": 7,
+  "video": "仅脚本，未录制",
+  "publicDeployment": false,
+  "checks": {
+    "pageCount": 6,
+    "ChineseFontAndTextExtraction": "pass",
+    "textWithinPage": "pass",
+    "allPagesVisuallyReviewed": "pass",
+    "archiveContents": "PDF and HR guide only",
+    "videoCreated": false,
+    "publicDeployment": false
+  }
+}

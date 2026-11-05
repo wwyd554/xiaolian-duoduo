@@ -13,8 +13,8 @@ import {
   VolumeOff as VolumeOffIcon,
   Person as PersonIcon,
   PersonOff as PersonOffIcon,
-  Videocam as VideocamIcon,
-  VideocamOff as VideocamOffIcon,
+
+
 } from "@mui/icons-material";
 import { useTranslation } from "react-i18next";
 
@@ -50,9 +50,7 @@ const SessionSettingsPanel: React.FC<SessionSettingsPanelProps> = ({
   avatarVisible,
   setAvatarVisible,
   avatarEnabled,
-  videoRecordingEnabled,
-  setVideoRecordingEnabled,
-  recordingSettingLocked = false,
+
 }) => {
   // 由于 i18n 资源已静态打包并在 initImmediate:false 下同步初始化，
   // 首次渲染时 t() 即返回正确的翻译，无需回退机制，
@@ -62,50 +60,7 @@ const SessionSettingsPanel: React.FC<SessionSettingsPanelProps> = ({
   return (
     <Card sx={{ mb: 2 }}>
       <CardContent>
-        {/* 视频录像开关（仅商谈开始前可修改） */}
-        {setVideoRecordingEnabled && (
-          <Box sx={{ mb: 2 }} data-testid="video-recording-setting">
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={videoRecordingEnabled ?? true}
-                  onChange={(e) => setVideoRecordingEnabled(e.target.checked)}
-                  color="primary"
-                  disabled={recordingSettingLocked}
-                  inputProps={{
-                    // 无障碍名称（开/关、日英双语）。测试也通过该名称定位元素
-                    "aria-label": videoRecordingEnabled ?? true
-                      ? t("conversation.settings.recordingOn")
-                      : t("conversation.settings.recordingOff"),
-                  }}
-                />
-              }
-              label={
-                <Box display="flex" alignItems="center">
-                  {videoRecordingEnabled ?? true ? (
-                    <VideocamIcon fontSize="small" sx={{ mr: 1 }} />
-                  ) : (
-                    <VideocamOffIcon fontSize="small" sx={{ mr: 1 }} />
-                  )}
-                  <Typography variant="body2">
-                    {videoRecordingEnabled ?? true
-                      ? t("conversation.settings.recordingOn")
-                      : t("conversation.settings.recordingOff")}
-                  </Typography>
-                </Box>
-              }
-            />
-            <Typography
-              variant="caption"
-              color="text.secondary"
-              sx={{ display: "block", ml: 0.5 }}
-            >
-              {recordingSettingLocked
-                ? t("conversation.settings.recordingLockedNote")
-                : t("conversation.settings.recordingNote")}
-            </Typography>
-          </Box>
-        )}
+
 
         {/* 化身显示开关（仅在场景中化身启用时显示） */}
         {avatarEnabled && setAvatarVisible && (
@@ -164,7 +119,7 @@ const SessionSettingsPanel: React.FC<SessionSettingsPanelProps> = ({
         {audioEnabled && (
           <>
             <Box mt={2}>
-              <Typography variant="body2" gutterBottom>
+              <Typography id="audio-volume-slider" variant="body2" gutterBottom>
                 {t("conversation.audioSettings.volume", {
                   volume: audioVolume,
                 })}
@@ -181,7 +136,7 @@ const SessionSettingsPanel: React.FC<SessionSettingsPanelProps> = ({
             </Box>
 
             <Box mt={2}>
-              <Typography variant="body2" gutterBottom>
+              <Typography id="speech-rate-slider" variant="body2" gutterBottom>
                 {t("conversation.audioSettings.speechRate", {
                   rate: speechRate.toFixed(1),
                 })}

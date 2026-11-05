@@ -1,0 +1,35 @@
+name: Local Backend Reliability
+
+on:
+  pull_request:
+    paths: ['server/**', '.github/workflows/local-backend-tests.yml']
+  push:
+    branches: [main, local-deploy]
+    paths: ['server/**', '.github/workflows/local-backend-tests.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: server
+    env:
+      APP_ENV: test
+      JOB_WORKER_ENABLED: '0'
+      DEEPSEEK_API_KEY: ''
+      LLM_CHAT_MODEL: test-chat
+      LLM_REASONER_MODEL: test-reasoner
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: 'server/requirements*.txt'
+      - run: python -m pip install -r requirements-test.txt
+      - run: python -m unittest discover -s tests -v
+      - run: python -m app.harness.evaluators.regression

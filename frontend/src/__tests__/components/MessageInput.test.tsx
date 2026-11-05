@@ -149,6 +149,13 @@ describe("MessageInput", () => {
     expect(defaultProps.finishSpeechRecognition).toHaveBeenCalledTimes(1);
   });
 
+  test("收音时可以改用文字，不自动发送", () => {
+    render(<MessageInput {...defaultProps} isListening={true} userInput="正在说的话" />);
+    fireEvent.click(screen.getByRole("button", { name: "改用文字输入" }));
+    expect(defaultProps.switchToTextInput).toHaveBeenCalledTimes(1);
+    expect(defaultProps.sendMessage).not.toHaveBeenCalled();
+  });
+
   test("监听中文本为空时仍可点击说完了停止收音", () => {
     render(<MessageInput {...defaultProps} isListening={true} userInput="" />);
 

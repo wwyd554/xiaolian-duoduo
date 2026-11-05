@@ -11,19 +11,13 @@ import {
 } from "@mui/material";
 import { alpha } from "@mui/material/styles";
 import ArrowForwardRounded from "@mui/icons-material/ArrowForwardRounded";
-import AutoAwesomeRounded from "@mui/icons-material/AutoAwesomeRounded";
-import BarChartRounded from "@mui/icons-material/BarChartRounded";
 import CallEndRounded from "@mui/icons-material/CallEndRounded";
-import ChatBubbleOutlineRounded from "@mui/icons-material/ChatBubbleOutlineRounded";
 import CheckCircleRounded from "@mui/icons-material/CheckCircleRounded";
-import FiberManualRecordRounded from "@mui/icons-material/FiberManualRecordRounded";
-import GraphicEqRounded from "@mui/icons-material/GraphicEqRounded";
 import InsightsRounded from "@mui/icons-material/InsightsRounded";
 import MoreHorizRounded from "@mui/icons-material/MoreHorizRounded";
 import PsychologyRounded from "@mui/icons-material/PsychologyRounded";
 import ReplayRounded from "@mui/icons-material/ReplayRounded";
 import SentimentSatisfiedAltRounded from "@mui/icons-material/SentimentSatisfiedAltRounded";
-import SettingsRounded from "@mui/icons-material/SettingsRounded";
 import TipsAndUpdatesRounded from "@mui/icons-material/TipsAndUpdatesRounded";
 import TrendingUpRounded from "@mui/icons-material/TrendingUpRounded";
 import { useTranslation } from "react-i18next";
@@ -59,16 +53,7 @@ const FLOW_STAGES: readonly FlowStage[] = [
   },
 ];
 
-const STAGE_ACCENTS: Record<FlowStageId, string> = {
-  practice: "#7669eb",
-  score: "#4b77d9",
-  coach: "#e78555",
-  repeat: "#3b9d73",
-};
-
 const WorkspaceWindowBar: React.FC = () => {
-  const { t } = useTranslation();
-
   return (
     <Box
       sx={{
@@ -89,193 +74,11 @@ const WorkspaceWindowBar: React.FC = () => {
           />
         ))}
       </Stack>
-      <Stack
-        direction="row"
-        alignItems="center"
-        justifyContent="center"
-        gap={0.6}
-        sx={{
-          flex: 1,
-          maxWidth: 310,
-          mx: "auto",
-          px: 1.5,
-          py: 0.65,
-          borderRadius: 999,
-          bgcolor: "#efefec",
-          color: "#6a6d74",
-        }}
-      >
-        <GraphicEqRounded sx={{ fontSize: 12, color: "#6659d9" }} />
-        <Typography
-          sx={{ fontSize: 10.5, fontWeight: 650, whiteSpace: "nowrap" }}
-        >
-          {t("home.showcase.workspaceTitle")}
-        </Typography>
-      </Stack>
+      <Box sx={{ flex: 1 }} />
       <MoreHorizRounded
         sx={{ fontSize: 18, color: "text.secondary" }}
         aria-hidden="true"
       />
-    </Box>
-  );
-};
-
-const WorkspaceNavRail: React.FC<{ activeStage: FlowStageId }> = ({
-  activeStage,
-}) => {
-  const items = [
-    { id: "practice" as const, icon: <ChatBubbleOutlineRounded /> },
-    { id: "score" as const, icon: <BarChartRounded /> },
-    { id: "coach" as const, icon: <TipsAndUpdatesRounded /> },
-    { id: "repeat" as const, icon: <ReplayRounded /> },
-  ];
-
-  return (
-    <Box
-      aria-hidden="true"
-      sx={{
-        display: { xs: "none", sm: "flex" },
-        flexDirection: "column",
-        alignItems: "center",
-        gap: 1,
-        px: 0.8,
-        py: 1.5,
-        bgcolor: "#222321",
-        borderRight: "1px solid rgba(255,255,255,.05)",
-      }}
-    >
-      <Box
-        sx={{
-          width: 30,
-          height: 30,
-          mb: 1,
-          display: "grid",
-          placeItems: "center",
-          borderRadius: "10px",
-          bgcolor: "#f7f5ef",
-          color: "#222321",
-        }}
-      >
-        <AutoAwesomeRounded sx={{ fontSize: 17 }} />
-      </Box>
-      {items.map((item) => {
-        const isActive = activeStage === item.id;
-        return (
-          <Box
-            key={item.id}
-            sx={{
-              width: 34,
-              height: 34,
-              display: "grid",
-              placeItems: "center",
-              borderRadius: "11px",
-              color: isActive ? "#222321" : "rgba(255,255,255,.5)",
-              bgcolor: isActive ? "#aaa5ff" : "transparent",
-              "& svg": { fontSize: 17 },
-            }}
-          >
-            {item.icon}
-          </Box>
-        );
-      })}
-      <Box sx={{ flex: 1 }} />
-      <SettingsRounded sx={{ fontSize: 17, color: "rgba(255,255,255,.42)" }} />
-    </Box>
-  );
-};
-
-const CoachSidePanel: React.FC<{ activeStage: FlowStageId }> = ({
-  activeStage,
-}) => {
-  const { t } = useTranslation();
-  const content = {
-    practice: {
-      eyebrow: t("home.showcase.sidePanel.practice.eyebrow"),
-      title: t("home.showcase.sidePanel.practice.title"),
-      body: t("home.showcase.sidePanel.practice.body"),
-      score: t("home.showcase.sidePanel.practice.score"),
-    },
-    score: {
-      eyebrow: t("home.showcase.sidePanel.score.eyebrow"),
-      title: t("home.showcase.sidePanel.score.title"),
-      body: t("home.showcase.sidePanel.score.body"),
-      score: t("home.showcase.sidePanel.score.score"),
-    },
-    coach: {
-      eyebrow: t("home.showcase.sidePanel.coach.eyebrow"),
-      title: t("home.showcase.sidePanel.coach.title"),
-      body: t("home.showcase.sidePanel.coach.body"),
-      score: t("home.showcase.sidePanel.coach.score"),
-    },
-    repeat: {
-      eyebrow: t("home.showcase.sidePanel.repeat.eyebrow"),
-      title: t("home.showcase.sidePanel.repeat.title"),
-      body: t("home.showcase.sidePanel.repeat.body"),
-      score: t("home.showcase.sidePanel.repeat.score"),
-    },
-  }[activeStage];
-
-  return (
-    <Box
-      sx={{
-        display: { xs: "none", xl: "flex" },
-        flexDirection: "column",
-        width: 172,
-        p: 2,
-        bgcolor: "#fbfaf7",
-        borderLeft: "1px solid rgba(30,36,48,.08)",
-      }}
-    >
-      <Typography
-        sx={{
-          fontSize: 9.5,
-          fontWeight: 800,
-          letterSpacing: ".12em",
-          color: "#777b84",
-        }}
-      >
-        {content.eyebrow.toUpperCase()}
-      </Typography>
-      <Typography
-        sx={{ mt: 1, fontSize: 14, lineHeight: 1.35, fontWeight: 760 }}
-      >
-        {content.title}
-      </Typography>
-      <Typography
-        sx={{ mt: 0.9, fontSize: 11, lineHeight: 1.55, color: "#6a6e78" }}
-      >
-        {content.body}
-      </Typography>
-      <Box
-        sx={{
-          mt: 2,
-          p: 1.4,
-          borderRadius: "14px",
-          bgcolor: alpha(STAGE_ACCENTS[activeStage], 0.1),
-          border: `1px solid ${alpha(STAGE_ACCENTS[activeStage], 0.18)}`,
-        }}
-      >
-        <Typography
-          sx={{
-            fontSize: 22,
-            lineHeight: 1,
-            fontWeight: 800,
-            color: STAGE_ACCENTS[activeStage],
-          }}
-        >
-          {content.score}
-        </Typography>
-        <Typography sx={{ mt: 0.65, fontSize: 9.5, color: "#777b84" }}>
-          {t("home.showcase.sidePanel.insightLabel")}
-        </Typography>
-      </Box>
-      <Box sx={{ flex: 1 }} />
-      <Stack direction="row" gap={0.7} alignItems="center">
-        <FiberManualRecordRounded sx={{ fontSize: 9, color: "#49a873" }} />
-        <Typography sx={{ fontSize: 9.5, color: "#777b84" }}>
-          {t("home.showcase.sidePanel.updating")}
-        </Typography>
-      </Stack>
     </Box>
   );
 };
@@ -847,6 +650,7 @@ const ExperienceFlowShowcase: React.FC = () => {
 
   return (
     <Box sx={{ width: "100%", maxWidth: 840, mx: "auto" }}>
+      <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 1 }}>产品流程示例 · 以下为演示内容</Typography>
       <Box
         role="tablist"
         aria-label={t("home.showcase.flowAria")}
@@ -958,15 +762,10 @@ const ExperienceFlowShowcase: React.FC = () => {
           <Box
             sx={{
               display: "grid",
-              gridTemplateColumns: {
-                xs: "minmax(0, 1fr)",
-                sm: "52px minmax(0, 1fr)",
-                xl: "52px minmax(0, 1fr) 172px",
-              },
+              gridTemplateColumns: "minmax(0, 1fr)",
               minHeight: { xs: 520, sm: 465, lg: 478 },
             }}
           >
-            <WorkspaceNavRail activeStage={activeStage.id} />
             <Box
               key={activeStage.id}
               id={`flow-panel-${activeStage.id}`}
@@ -997,7 +796,6 @@ const ExperienceFlowShowcase: React.FC = () => {
             >
               {STAGE_CONTENT[activeStage.id]}
             </Box>
-            <CoachSidePanel activeStage={activeStage.id} />
           </Box>
         </Paper>
       </Box>

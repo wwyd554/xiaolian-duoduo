@@ -1,0 +1,202 @@
+{
+  "date": "2026-11-05",
+  "rubricVersion": "1.0.0",
+  "backendTestsPassed": 184,
+  "frontendProductionBuild": "passed",
+  "browser": {
+    "desktop": "passed",
+    "mobileWidth": 390,
+    "horizontalOverflow": false
+  },
+  "syntheticSamples": {
+    "strong": {
+      "scenario": {
+        "title": "合成验收样例：软件续约",
+        "description": "这是人工编写的测试对话，不是实际客户数据。销售需澄清续约价格和迁移顾虑，不能编造功能。",
+        "rubricConfig": {
+          "objectionRequired": true,
+          "productFactsVerified": true,
+          "productFacts": [
+            "本测试产品提供表格导入与线上培训，实施时间需要先核对数据量。",
+            "本测试产品不保证节省比例，不授权自动打折。"
+          ]
+        }
+      },
+      "messages": [
+        {
+          "id": "strong-1",
+          "role": "user",
+          "content": "李经理您好，这次想了解您对续约的顾虑。现在方便花五分钟聊聊吗？"
+        },
+        {
+          "id": "strong-2",
+          "role": "npc",
+          "content": "可以，主要觉得今年价格高了，换系统又怕麻烦。"
+        },
+        {
+          "id": "strong-3",
+          "role": "user",
+          "content": "明白。除了价格，换系统最担心的是数据迁移，还是员工重新学习？"
+        },
+        {
+          "id": "strong-4",
+          "role": "npc",
+          "content": "员工学习，我们只有两个人维护，月底特别忙。"
+        },
+        {
+          "id": "strong-5",
+          "role": "user",
+          "content": "所以最重要的是不影响月底工作，让两位维护人员能顺利上手，我这样理解对吗？"
+        },
+        {
+          "id": "strong-6",
+          "role": "npc",
+          "content": "对，不能耽误月底工作。"
+        },
+        {
+          "id": "strong-7",
+          "role": "user",
+          "content": "我们提供表格导入和线上培训，可以围绕上手问题核对安排。不过具体实施时间要先核对数据量，我现在不能承诺节省比例。这样的核对对您有帮助吗？"
+        },
+        {
+          "id": "strong-8",
+          "role": "npc",
+          "content": "有帮助。价格方面我们主要担心培训会再收费。"
+        },
+        {
+          "id": "strong-9",
+          "role": "user",
+          "content": "理解，您关注的是总成本。我先核对培训费用，不会把未知费用说成免费。明天下午三点由我把费用明细和实施安排发给您，您看完后指出还不清楚的地方，可以吗？"
+        },
+        {
+          "id": "strong-10",
+          "role": "npc",
+          "content": "可以，我明天下午看明细，再把问题反馈给你。"
+        }
+      ]
+    },
+    "weak": {
+      "scenario": {
+        "title": "合成验收样例：软件续约",
+        "description": "这是人工编写的测试对话，不是实际客户数据。销售需澄清续约价格和迁移顾虑，不能编造功能。",
+        "rubricConfig": {
+          "objectionRequired": true,
+          "productFactsVerified": true,
+          "productFacts": [
+            "本测试产品提供表格导入与线上培训，实施时间需要先核对数据量。",
+            "本测试产品不保证节省比例，不授权自动打折。"
+          ]
+        }
+      },
+      "messages": [
+        {
+          "id": "weak-1",
+          "role": "user",
+          "content": "赶紧续约吧，我们功能很多。"
+        },
+        {
+          "id": "weak-2",
+          "role": "npc",
+          "content": "我主要担心培训还要收费，而且月底没有时间折腾。"
+        },
+        {
+          "id": "weak-3",
+          "role": "user",
+          "content": "这个不重要，反正我们保证节省百分之五十，所有培训永久免费。"
+        },
+        {
+          "id": "weak-4",
+          "role": "npc",
+          "content": "先不要推销了，我想先看费用说明。"
+        },
+        {
+          "id": "weak-5",
+          "role": "user",
+          "content": "不需要看了，今天马上签。"
+        },
+        {
+          "id": "weak-6",
+          "role": "npc",
+          "content": "我不接受这样的安排。"
+        }
+      ]
+    }
+  },
+  "modelSmoke": {
+    "strong": {
+      "status": "completed",
+      "total": 90,
+      "scores": {
+        "S1": 2,
+        "S2": 2,
+        "S3": 2,
+        "S4": 1,
+        "S5": 2
+      },
+      "riskCount": 0,
+      "elapsedSeconds": 5.4
+    },
+    "weak": {
+      "status": "completed",
+      "total": 0,
+      "scores": {
+        "S1": 0,
+        "S2": 0,
+        "S3": 0,
+        "S4": 0,
+        "S5": 0
+      },
+      "riskCount": 3,
+      "elapsedSeconds": 7.6
+    }
+  },
+  "normalFollowupSmoke": {
+    "status": "completed",
+    "total": 38,
+    "riskCount": 0,
+    "risks": [],
+    "elapsedSeconds": 6.5
+  },
+  "httpFlow": {
+    "practice_created": {
+      "sessionId": "9d031a3d-711e-4d9d-9270-01842b6e4123"
+    },
+    "practice_report": {
+      "sessionId": "9d031a3d-711e-4d9d-9270-01842b6e4123",
+      "total": 41,
+      "version": "1.0.0",
+      "scores": {
+        "S1": 2,
+        "S2": 1,
+        "S3": 0,
+        "S4": null,
+        "S5": 1
+      }
+    },
+    "practice_plan": {
+      "sourceSessionId": "9d031a3d-711e-4d9d-9270-01842b6e4123",
+      "criterionId": "S3",
+      "previousScore": 0,
+      "rubricVersion": "1.0.0"
+    },
+    "focused_report": {
+      "sessionId": "e45f4b8b-786c-4ce4-8707-35d8b11857ae",
+      "total": 43,
+      "comparison": {
+        "sourceSessionId": "9d031a3d-711e-4d9d-9270-01842b6e4123",
+        "criterionId": "S3",
+        "previousScore": 0,
+        "currentScore": 0,
+        "delta": 0,
+        "comparable": true,
+        "reason": "同一规则下的单项表现对比，不代表长期能力或成交效果。"
+      }
+    },
+    "import_report": {
+      "sessionId": "578f087e-f4a0-4fad-83b1-a2075d5bc86d",
+      "total": 90,
+      "version": "1.0.0"
+    }
+  },
+  "limitations": "Synthetic smoke checks and one live HTTP workflow only; not a calibrated accuracy benchmark. Existing cached reports remain unchanged."
+}

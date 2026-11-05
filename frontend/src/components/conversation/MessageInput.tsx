@@ -231,6 +231,9 @@ const MessageInput: React.FC<MessageInputProps> = ({
         )}
       </Paper>
 
+      {isListening && <Box sx={{ textAlign: "center", mt: 0.5 }}>
+        <Button size="small" onClick={switchToTextInput}>改用文字输入</Button>
+      </Box>}
       <Typography
         variant="caption"
         color="text.secondary"

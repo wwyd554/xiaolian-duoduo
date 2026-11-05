@@ -1,0 +1,8 @@
+# Keep document/image assets binary; PDF streams may begin with a long ASCII section.
+*.pdf binary
+*.png binary
+*.jpg binary
+*.webp binary
+
+# Two trailing spaces intentionally encode Markdown hard line breaks.
+*.md whitespace=-blank-at-eol

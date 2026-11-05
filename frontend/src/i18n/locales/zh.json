@@ -37,7 +37,7 @@
     "subtitle": "",
     "description": "通过模拟真实销售场景的 AI 对话，在安全的环境中提升销售技能。你可以体验与不同行业、不同性格客户的商务洽谈。",
     "startButton": "开始练习",
-    "reviewButton": "陪练复盘",
+    "reviewButton": "销售复盘",
     "audioAnalysisButton": "录音复盘",
     "recentScenarios": "最近使用的场景",
     "noRecentScenarios": "暂无最近练习过的场景",
@@ -344,7 +344,7 @@
     "voiceType": "语音类型",
     "startButton": "开始商谈",
     "startButtonNoRecording": "开始商谈（不录制）",
-    "startQuestion": "确定开始商谈吗？",
+    "startQuestion": "准备好，开始这次练习",
     "cameraInitializing": "正在初始化摄像头...",
     "cameraInitializingMessage": "📹 正在初始化摄像头，请稍候...",
     "cameraAccessFailed": "⚠️ 摄像头访问失败，可在不录制的情况下开始商谈。",
@@ -397,7 +397,7 @@
       "inputListening": "正在聆听，讲完后点击“说完了”",
       "inputResponding": "AI 客户正在回应",
       "yourTurn": "轮到你了",
-      "inputHelp": "默认开启麦克风；讲完点击“说完了”，也可以切换为文字输入",
+      "inputHelp": "文字输入后按 Enter 发送，Shift + Enter 换行；点击麦克风可改用语音",
       "showHint": "给我一句提示",
       "hideHint": "收起提示",
       "coach": "AI 教练",
@@ -495,12 +495,12 @@
   },
   "navigation": {
     "home": "首页",
-    "scenarios": "场景列表",
+    "scenarios": "开始练习",
     "profile": "个人资料",
     "back": "返回",
     "homeNav": "首页",
     "scenariosNav": "场景列表",
-    "history": "陪练复盘",
+    "history": "销售复盘",
     "settingsNav": "设置",
     "profileNav": "个人资料",
     "openMenu": "打开导航菜单"
@@ -540,6 +540,29 @@
     "profileAuth": "个人资料"
   },
   "scenarios": {
+    "composer": {
+      "heading": "下一次销售沟通，先练一遍",
+      "description": "描述销售难题，AI 生成专属场景，确认后开始练习。",
+      "placeholder": "例如：客户觉得续约太贵，我想练习回应价格异议…",
+      "inputLabel": "想练习的场景",
+      "manualCreate": "手动创建",
+      "send": "发送",
+      "libraryHeading": "探索陪练场景",
+      "presets": {
+        "renewal": {
+          "label": "练习续约谈判",
+          "prompt": "我是企业软件销售，客户觉得续约价格太高，希望降价。我想练习挖掘价格异议背后的原因，并争取续约共识。"
+        },
+        "discovery": {
+          "label": "挖掘客户需求",
+          "prompt": "我是企业软件销售，第一次接触一位需求不明确的客户。我想练习通过提问了解真实痛点、预算和决策流程。"
+        },
+        "investment": {
+          "label": "解释基金定投",
+          "prompt": "我是理财顾问，客户刚接触基金投资。我想练习用通俗语言解释基金定投、说明风险，并了解客户的投资目标。"
+        }
+      }
+    },
     "priority": {
       "highest": "最高",
       "high": "高",
@@ -548,7 +571,7 @@
       "lowest": "最低"
     },
     "title": "场景列表",
-    "subtitle": "请选择要练习的场景。每个场景都设置了不同的难度和 NPC 角色。",
+    "subtitle": "选择一个要提升的能力，了解客户与练习目标后开始对话。",
     "beginner": "初级",
     "intermediate": "中级",
     "advanced": "高级",
@@ -562,6 +585,17 @@
     "objectivesCount": "项",
     "searchPlaceholder": "搜索场景...",
     "showingItems": "显示 {{count}} 条",
+    "cardMenu": {
+      "actions": "场景操作：{{title}}",
+      "edit": "修改场景",
+      "delete": "删除场景",
+      "confirmTitle": "删除这个场景？",
+      "confirmDescription": "删除后将无法恢复此场景。",
+      "confirmDelete": "确认删除",
+      "deleteFailed": "删除失败，请重试。",
+      "systemHint": "系统场景仅管理员可修改，不支持删除。",
+      "ownerHint": "仅创建者可修改或删除此场景。"
+    },
     "workspace": {
       "libraryTitle": "陪练场景库",
       "librarySubtitle": "选择今天要提升的能力",
@@ -575,6 +609,8 @@
       "difficultyFilterAria": "难度筛选",
       "categoryFilterAria": "行业筛选",
       "sortAria": "场景排序",
+      "sortLabel": "排序",
+      "clearSearch": "清除搜索",
       "clearFilters": "清除",
       "loading": "正在准备陪练场景…",
       "customBadge": "自建",
@@ -1041,7 +1077,7 @@
     "improvement": "改进点"
   },
   "history": {
-    "title": "陪练复盘",
+    "title": "销售复盘",
     "description": "回看每次 AI 陪练的对话表现、关键指标和改进建议。",
     "search": "搜索",
     "searchPlaceholder": "按会话名或 NPC 姓名搜索...",

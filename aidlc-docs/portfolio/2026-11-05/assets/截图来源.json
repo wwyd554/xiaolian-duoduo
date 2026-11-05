@@ -1,0 +1,14 @@
+{
+  "date": "2026-11-05",
+  "kind": "当前项目 EGO 浏览器真实截图，仅裁切与文档标注",
+  "pages": {
+    "home": "/",
+    "generated-draft": "/scenarios/generate（实际模型草稿，未保存）",
+    "context": "/demo",
+    "evidence": "/demo?step=review&example=before",
+    "import-preview": "/history 内的导入预览（模拟文字，未保存）",
+    "real-report": "/result/9d031a3d-711e-4d9d-9270-01842b6e4123",
+    "focus-practice": "/conversation/contract-renewal?sourceSessionId=9d031a3d-711e-4d9d-9270-01842b6e4123&criterionId=S3"
+  },
+  "limitations": "页面使用模拟案例或开发验收记录；示例分数不是能力提升、准确率或真实客户经营数据。"
+}

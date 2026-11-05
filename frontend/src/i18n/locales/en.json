@@ -540,6 +540,29 @@
     "profileAuth": "Profile"
   },
   "scenarios": {
+    "composer": {
+      "heading": "Practice your next sales conversation",
+      "description": "Describe a sales challenge. AI builds a scenario for you to review before you practice.",
+      "placeholder": "For example: A client thinks renewal is too expensive. I want to practice handling the price objection…",
+      "inputLabel": "Situation to practice",
+      "manualCreate": "Create manually",
+      "send": "Send",
+      "libraryHeading": "Explore practice scenarios",
+      "presets": {
+        "renewal": {
+          "label": "Renewal negotiation",
+          "prompt": "I sell enterprise software. A client thinks the renewal price is too high and wants a discount. I want to uncover the reasons behind the price objection and agree on a renewal."
+        },
+        "discovery": {
+          "label": "Customer discovery",
+          "prompt": "I sell enterprise software and am meeting a client with unclear requirements for the first time. I want to practice asking about their pain points, budget, and decision process."
+        },
+        "investment": {
+          "label": "Explain regular investing",
+          "prompt": "I am a financial adviser speaking with a client who is new to fund investing. I want to explain regular investing and its risks in plain language and understand their investment goals."
+        }
+      }
+    },
     "priority": {
       "highest": "Highest",
       "high": "High",
@@ -562,6 +585,17 @@
     "objectivesCount": " items",
     "searchPlaceholder": "Search scenarios...",
     "showingItems": "Showing {{count}} items",
+    "cardMenu": {
+      "actions": "Scenario actions: {{title}}",
+      "edit": "Edit scenario",
+      "delete": "Delete scenario",
+      "confirmTitle": "Delete this scenario?",
+      "confirmDescription": "This scenario cannot be recovered after deletion.",
+      "confirmDelete": "Confirm deletion",
+      "deleteFailed": "Could not delete the scenario. Please try again.",
+      "systemHint": "Only admins can edit system scenarios. They cannot be deleted.",
+      "ownerHint": "Only the creator can edit or delete this scenario."
+    },
     "workspace": {
       "libraryTitle": "Practice scenario library",
       "librarySubtitle": "Choose the skill you want to improve today",
@@ -575,6 +609,8 @@
       "difficultyFilterAria": "Filter by difficulty",
       "categoryFilterAria": "Filter by industry",
       "sortAria": "Sort scenarios",
+      "sortLabel": "Sort",
+      "clearSearch": "Clear search",
       "clearFilters": "Clear",
       "loading": "Preparing practice scenarios…",
       "customBadge": "Custom",

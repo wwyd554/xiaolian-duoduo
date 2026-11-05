@@ -1,5 +1,7 @@
+import type { CriterionId, PracticePlan } from "../types/businessReview";
 import React from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import Alert from "@mui/material/Alert";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import {
   Box,
   Button,
@@ -7,10 +9,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  Drawer,
   Typography,
-  useMediaQuery,
-  useTheme,
 } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import type {
@@ -23,7 +22,7 @@ import type {
 } from "../types/index";
 import type { ComplianceViolation, DifficultyLevel } from "../types/api";
 import type { CompositionEventType } from "../types/components";
-import { getSessionEndReason } from "../utils/dialogueEngine";
+import { applyAuthoritativeGoals, practiceEndLabel, type PracticeTerminationReason } from "../utils/practiceState";
 import { ApiService } from "../services/ApiService";
 import { AudioService } from "../services/AudioService";
 import { LanguageService } from "../services/LanguageService";
@@ -36,18 +35,12 @@ import type { EmotionState } from "../types/index";
 import {
   initializeGoalStatuses,
   calculateGoalScore,
-  areAllRequiredGoalsAchieved,
-  mergeGoalStatus,
 } from "../utils/goalUtils";
 import VideoManager from "../components/recording/v2/VideoManager";
-import {
-  loadVideoRecordingEnabled,
-  saveVideoRecordingEnabled,
-} from "../utils/videoRecordingSettings";
+
 
 // 导入拆分的组件
 import ConversationHeader from "../components/conversation/ConversationHeader";
-import { AvatarProvider } from "../components/avatar";
 import type { GestureType } from "../types/avatar";
 import MessageList from "../components/conversation/MessageList";
 import MessageInput from "../components/conversation/MessageInput";
@@ -56,9 +49,6 @@ import SuggestionBar from "../components/conversation/SuggestionBar";
 import { useEffect, useState, useCallback, useRef } from "react";
 import ComplianceAlert from "../components/compliance/ComplianceAlert";
 // 新组件
-import RightPanelContainer from "../components/conversation/RightPanelContainer";
-import CoachingHintBar from "../components/conversation/CoachingHintBar";
-import AvatarStage from "../components/conversation/AvatarStage";
 import SessionSettingsPanel from "../components/conversation/SessionSettingsPanel";
 import SlideTray from "../components/conversation/SlideTray";
 import SlideZoomModal from "../components/conversation/SlideZoomModal";
@@ -81,9 +71,37 @@ const NPC_RESPONSE_RANDOM_DELAY = import.meta.env.VITE_NPC_RESPONSE_DELAY
 const ConversationPage: React.FC = () => {
   const { scenarioId } = useParams<{ scenarioId: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const practiceSourceSessionId = searchParams.get("sourceSessionId");
+  const practiceCriterionId = searchParams.get("criterionId");
+  const [practicePlan, setPracticePlan] = useState<PracticePlan | null>(null);
+  const [practicePlanError, setPracticePlanError] = useState("");
+  const [practicePlanLoading, setPracticePlanLoading] = useState(false);
+  const [practicePlanRevision, setPracticePlanRevision] = useState(0);
   const { t } = useTranslation();
-  const theme = useTheme();
-  const isPersistentCoachRail = useMediaQuery(theme.breakpoints.up("lg"));
+
+  useEffect(() => {
+    let alive = true;
+    setPracticePlan(null);
+    setPracticePlanLoading(false);
+    setPracticePlanError("");
+    if (!practiceSourceSessionId && !practiceCriterionId) return;
+    if (!practiceSourceSessionId || !practiceCriterionId || !["S1", "S2", "S3", "S4", "S5"].includes(practiceCriterionId)) {
+      setPracticePlanError("专项练习链接不完整，请从复盘页重新选择练习目标。");
+      return;
+    }
+    setPracticePlanLoading(true);
+    ApiService.getInstance().getPracticePlan(practiceSourceSessionId, practiceCriterionId as CriterionId)
+      .then((plan) => {
+        if (!alive) return;
+        if (!plan.scenarioSnapshot) throw new Error("练习场景快照不可用，请返回复盘页重新选择。");
+        if (plan.scenarioId !== scenarioId) throw new Error("练习目标与当前场景不一致，请返回复盘页重新选择。");
+        setPracticePlan(plan);
+      })
+      .catch((err: unknown) => { if (alive) setPracticePlanError(err instanceof Error ? err.message : "加载练习目标失败"); })
+      .finally(() => { if (alive) setPracticePlanLoading(false); });
+    return () => { alive = false; };
+  }, [practiceSourceSessionId, practiceCriterionId, scenarioId, practicePlanRevision]);
 
   // 状態管理
   const [scenario, setScenario] = useState<Scenario | null>(null);
@@ -95,7 +113,7 @@ const ConversationPage: React.FC = () => {
     trustLevel: 0,
     progressLevel: 0,
   });
-  const [prevMetrics, setPrevMetrics] = useState<Metrics | null>(null);
+  const [, setPrevMetrics] = useState<Metrics | null>(null);
   const [userInput, setUserInput] = useState("");
   // 保持语音识别已确定的文本
   const [, setConfirmedTranscripts] = useState<string[]>([]);
@@ -105,16 +123,21 @@ const ConversationPage: React.FC = () => {
   // 会话开始后用于防止组件重新挂载的 Ref
   const hasComponentMounted = useRef(false);
   const [sessionEnded, setSessionEnded] = useState(false);
+  const [backendCompletion, setBackendCompletion] = useState<PracticeTerminationReason | null>(null);
+  const completionRef = useRef<PracticeTerminationReason | null>(null);
+  const endingRef = useRef(false);
+  const [conversationError, setConversationError] = useState<string | null>(null);
+  const [evaluationNotice, setEvaluationNotice] = useState<string | null>(null);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [sessionId, setSessionId] = useState<string>("");
   // 头像表情状态管理用的状态变量
   const [currentEmotion, setCurrentEmotion] = useState<string>("neutral");
   // NPC 情绪状态（从实时评估获取，直接传给头像）
-  const [npcDirectEmotion, setNpcDirectEmotion] = useState<
+  const [, setNpcDirectEmotion] = useState<
     EmotionState | undefined
   >(undefined);
   // NPC 手势状态（从实时评估获取，传给头像）
-  const [npcGesture, setNpcGesture] = useState<GestureType>("none");
+  const [, setNpcGesture] = useState<GestureType>("none");
   // 建议回复候选项（从实时评估获取，传给建议按钮）
   const [suggestions, setSuggestions] = useState<string[]>([]);
   // 场景的建议回复按钮启用/禁用
@@ -122,11 +145,11 @@ const ConversationPage: React.FC = () => {
   // 场景的初始建议回复候选项（洽谈开始时显示）
   const [initialSuggestions, setInitialSuggestions] = useState<string[]>([]);
   // 与场景关联的头像 ID
-  const [scenarioAvatarId, setScenarioAvatarId] = useState<string | undefined>(
+  const [, setScenarioAvatarId] = useState<string | undefined>(
     undefined,
   );
   // 与场景关联的头像 S3 key
-  const [scenarioAvatarS3Key, setScenarioAvatarS3Key] = useState<
+  const [, setScenarioAvatarS3Key] = useState<
     string | undefined
   >(undefined);
   // 场景 NPC 的语音模型 ID
@@ -134,9 +157,8 @@ const ConversationPage: React.FC = () => {
     undefined,
   );
   // 场景的头像显示开/关
-  const [enableAvatar, setEnableAvatar] = useState<boolean>(false);
+  const [, setEnableAvatar] = useState<boolean>(false);
   // 会话中的头像显示切换（运行时开关）
-  const [avatarVisible, setAvatarVisible] = useState<boolean>(false);
   // 幻灯片相关 state
   const [slideImages, setSlideImages] = useState<SlideImageInfo[]>([]);
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
@@ -155,7 +177,7 @@ const ConversationPage: React.FC = () => {
   const [connectionState, setConnectionState] = useState<ConnectionState>(
     ConnectionState.DISCONNECTED,
   );
-  const [metricsUpdating, setMetricsUpdating] = useState(false);
+  const [, setMetricsUpdating] = useState(false);
   const [goals, setGoals] = useState<Goal[]>([]);
   const [goalStatuses, setGoalStatuses] = useState<GoalStatus[]>([]);
 
@@ -166,7 +188,6 @@ const ConversationPage: React.FC = () => {
   // 引用最新 userInput 的 Ref
   const userInputRef = useRef<string>("");
   // 目标达成分数（会话结束时使用）
-  const [goalScore, setGoalScore] = useState<number>(0);
   // 手势重置用定时器
   const gestureTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   // NPC 响应定时器 Ref 管理（卸载时清理用）
@@ -174,6 +195,7 @@ const ConversationPage: React.FC = () => {
     null,
   );
   const fallbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const navigationTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   // 用 ref 管理 isSpeaking/currentMetrics（为从 sendMessage 的依赖数组中排除）
   const isSpeakingRef = useRef(isSpeaking);
   const currentMetricsRef = useRef<Metrics>({
@@ -230,36 +252,14 @@ const ConversationPage: React.FC = () => {
     useState<boolean>(false);
   // 相机错误状态管理
   const [cameraError, setCameraError] = useState<boolean>(false);
-  // 视频录制功能的开/关设置（localStorage 持久化，默认开启）
-  const [videoRecordingEnabled, setVideoRecordingEnabled] = useState<boolean>(
-    loadVideoRecordingEnabled,
-  );
-
-  // 将视频录制设置的变更持久化到 localStorage
-  useEffect(() => {
-    saveVideoRecordingEnabled(videoRecordingEnabled);
-
-    // 录制被禁用时，VideoManager 会卸载，相机初始化回调
-    // 将不再被调用，因此显式重置相机相关 state，使状态含义保持一致。
-    // （录制禁用时不使用相机，因此恢复到既非已初始化也非错误的状态）
-    if (!videoRecordingEnabled) {
-      setIsCameraInitialized(false);
-      setCameraError(false);
-    }
-  }, [videoRecordingEnabled]);
+  // 产品仅支持语音和文字，不读取旧的摄像头录制开关。
+  const videoRecordingEnabled = false;
 
   // 新布局用 state
-  const [rightPanelsVisible, setRightPanelsVisible] = useState<boolean>(true);
-  const metricsVisible = true;
   const [showSettings, setShowSettings] = useState<boolean>(false);
   const [confirmAction, setConfirmAction] = useState<"leave" | "end" | null>(
     null,
   );
-
-  // 桌面端常驻教练栏，平板与手机默认收起为覆盖式抽屉。
-  useEffect(() => {
-    setRightPanelsVisible(isPersistentCoachRail);
-  }, [isPersistentCoachRail]);
 
   // 组件初始挂载时的标志设置
   useEffect(() => {
@@ -282,6 +282,7 @@ const ConversationPage: React.FC = () => {
     }
 
     return () => {
+      hasComponentMounted.current = false;
       // 组件卸载时释放资源
       if (transcribeServiceRef.current) {
         transcribeServiceRef.current.dispose();
@@ -296,6 +297,7 @@ const ConversationPage: React.FC = () => {
       if (npcResponseTimerRef.current)
         clearTimeout(npcResponseTimerRef.current);
       if (fallbackTimerRef.current) clearTimeout(fallbackTimerRef.current);
+      if (navigationTimerRef.current) clearTimeout(navigationTimerRef.current);
 
       // 同时清除语音识别相关状态
       setConfirmedTranscripts([]);
@@ -305,10 +307,13 @@ const ConversationPage: React.FC = () => {
   // 初期化
   useEffect(() => {
     const fetchScenario = async () => {
+      if ((practiceSourceSessionId || practiceCriterionId) && !practicePlan) return;
       if (scenarioId) {
         try {
           const apiService = ApiService.getInstance();
-          const scenarioInfo = await apiService.getScenarioDetail(scenarioId);
+          const scenarioInfo = practicePlan
+            ? { ...practicePlan.scenarioSnapshot, scenarioId: practicePlan.scenarioId }
+            : await apiService.getScenarioDetail(scenarioId);
 
           if (scenarioInfo) {
             // 将从 API 获取的 ScenarioInfo 类型转换为 Scenario 类型
@@ -395,7 +400,6 @@ const ConversationPage: React.FC = () => {
             // 读取场景的头像显示开/关设置（未设置时默认为 false）
             setEnableAvatar(scenarioInfo.enableAvatar ?? false);
             // 运行时开关的初始值也与场景设置保持一致
-            setAvatarVisible(scenarioInfo.enableAvatar ?? false);
 
             // 读取场景的建议回复按钮启用/禁用设置（未设置时默认为 false）
             setSuggestionEnabled(scenarioInfo.suggestionEnabled ?? false);
@@ -476,7 +480,7 @@ const ConversationPage: React.FC = () => {
     };
 
     fetchScenario();
-  }, [scenarioId, navigate]);
+  }, [scenarioId, navigate, practicePlan, practiceSourceSessionId, practiceCriterionId]);
 
   // 音频设置的初始应用（场景获取后）
   useEffect(() => {
@@ -526,14 +530,14 @@ const ConversationPage: React.FC = () => {
 
   // 洽谈开始（启动相机并开始录制）
   const startConversation = async () => {
-    if (!scenario) return;
+    if (!scenario || ((practiceSourceSessionId || practiceCriterionId) && !practicePlan)) return;
 
     // 在 React 18 的 Strict 模式下防止双重渲染
     if (sessionStarted || isStarting) {
       return;
     }
     setIsStarting(true);
-    setVoiceInputPreferred(true);
+    setConversationError(null);
     setSpeechRecognitionError(null);
     autoMicTurnRef.current = null;
 
@@ -546,7 +550,7 @@ const ConversationPage: React.FC = () => {
     // 创建本地会话记录，供对话历史和复盘页面读取。
     const apiService = ApiService.getInstance();
     try {
-      await apiService.createOrUpdateSession(
+      const createdSession = await apiService.createOrUpdateSession(
         newSessionId,
         scenario.id,
         `与${scenario.npc.name}的会话`,
@@ -557,14 +561,19 @@ const ConversationPage: React.FC = () => {
           personality: scenario.npc.personality,
           description: scenario.npc.description,
         },
+        practicePlan ? { practiceSourceSessionId: practicePlan.sourceSessionId, practiceCriterionId: practicePlan.criterionId } : undefined,
       );
+      if (!createdSession.success) throw new Error("练习会话未创建成功");
     } catch (error) {
-      console.error("会话保存错误（对话将继续）:", error);
-      // 即使发生错误也可以继续会话
+      console.error("会话创建失败:", error);
+      setConversationError("暂时无法创建练习，尚未开始。请检查网络后重新点击开始。");
+      setIsStarting(false);
+      setSessionId("");
+      return;
     }
 
     // Transcribe WebSocket 的初始化
-    if (transcribeServiceRef.current) {
+    if (voiceInputPreferred && transcribeServiceRef.current) {
       transcribeServiceRef.current
         .initializeConnection(newSessionId, scenario?.language || "zh")
         .catch((error) => {
@@ -632,7 +641,8 @@ const ConversationPage: React.FC = () => {
           const synth = window.speechSynthesis;
           if (synth) {
             const utterance = new SpeechSynthesisUtterance(initialContent);
-            utterance.lang = "ja-JP";
+            utterance.lang = scenario.language?.startsWith("ja") ? "ja-JP" : scenario.language?.startsWith("en") ? "en-US" : "zh-CN";
+            utterance.onerror = () => setIsSpeaking(false);
             utterance.onend = () => setIsSpeaking(false);
             synth.speak(utterance);
           } else {
@@ -686,7 +696,8 @@ const ConversationPage: React.FC = () => {
     async (inputText?: string) => {
       // 使用参数传入的文本或当前 userInput（通过 ref 获取最新值）
       const messageText = inputText || userInputRef.current.trim();
-      if (!messageText || !scenario || isProcessing) return;
+      if (!messageText || !scenario || isProcessing || completionRef.current || endingRef.current) return;
+      setConversationError(null);
 
       // 语音识别中则停止（发送时自动关闭麦克风）
       if (
@@ -808,6 +819,19 @@ const ConversationPage: React.FC = () => {
             );
 
             const { response } = result;
+            if (!hasComponentMounted.current) return;
+            if (result.sessionCompleted) {
+              completionRef.current = result.terminationReason || "legacy_completed";
+            }
+            setEvaluationNotice(result.evaluationStatus === "unavailable" || result.scoringStatus === "unavailable"
+              ? "本轮部分评估暂不可用，已保留上一轮状态；可以继续练习。" : null);
+            if (!response && result.sessionCompleted) {
+              messagesRef.current = messagesRef.current.filter((m) => m.id !== userMessage.id);
+              setMessages(messagesRef.current);
+              setIsProcessing(false);
+              setBackendCompletion(completionRef.current);
+              return;
+            }
 
             // 使用前端生成的会话 ID
             const activeSessionId = sessionId;
@@ -1016,23 +1040,11 @@ const ConversationPage: React.FC = () => {
                     analysis: evaluationResult.analysis || prevMetrics.analysis,
                   }));
 
-                  // 目标状态更新（与既有状态合并）
+                  // 后端状态是权威结果，允许撤销此前误判；不做单向“只升不降”合并。
                   if (evaluationResult.goalStatuses) {
-                    setGoalStatuses((prevStatuses) => {
-                      const merged = prevStatuses.map((prev) => {
-                        const update = evaluationResult.goalStatuses!.find(
-                          (u) => u.goalId === prev.goalId,
-                        );
-                        if (update) {
-                          return mergeGoalStatus(prev, update);
-                        }
-                        return prev;
-                      });
-                      setGoalScore(
-                        calculateGoalScore(merged, goalsRef.current),
-                      );
-                      return merged;
-                    });
+                    const authoritative = applyAuthoritativeGoals(goalStatusesRef.current, evaluationResult.goalStatuses);
+                    goalStatusesRef.current = authoritative;
+                    setGoalStatuses(authoritative);
                   }
                 }
               } catch (error) {
@@ -1041,6 +1053,8 @@ const ConversationPage: React.FC = () => {
                 setMetricsUpdating(false);
               }
             }
+
+            if (result.sessionCompleted) setBackendCompletion(completionRef.current);
 
             // 音频播放完成事件未触发时的回退
             // 防止音频无限播放（通过 ref 获取最新值）
@@ -1053,9 +1067,13 @@ const ConversationPage: React.FC = () => {
             console.error("=== ConversationPage: API调用错误 ===");
             console.error("错误详情:", error);
 
-            // 出错时结束会话
+            // 请求失败不伪造 NPC 发言；恢复输入，让用户决定重试。
+            messagesRef.current = messagesRef.current.filter((m) => m.id !== userMessage.id);
+            setMessages(messagesRef.current);
+            userInputRef.current = messageText;
+            setUserInput(messageText);
+            setConversationError("未收到回复，输入已保留。请检查网络；重试前可先确认会话记录。");
             setIsProcessing(false);
-            console.error("由于API调用错误，结束会话");
           }
         },
         NPC_RESPONSE_BASE_DELAY + Math.random() * NPC_RESPONSE_RANDOM_DELAY,
@@ -1074,20 +1092,15 @@ const ConversationPage: React.FC = () => {
    */
   const endSession = useCallback(
     async (finalMessages: Message[], finalMetrics: Metrics) => {
+      if (endingRef.current) return;
+      endingRef.current = true;
       setSessionEnded(true);
 
       // 计算最终的目标分数
       const finalGoalScore = calculateGoalScore(goalStatuses, goals);
-      setGoalScore(finalGoalScore);
 
       // 获取结束原因
-      const endReason = getSessionEndReason(
-        finalMetrics,
-        finalMessages.length,
-        goalStatuses,
-        goals,
-        scenario || undefined,
-      );
+      const endReason = practiceEndLabel(completionRef.current || "user_ended");
 
       // 创建会话数据
       const session: Session = {
@@ -1100,12 +1113,9 @@ const ConversationPage: React.FC = () => {
         finalScore: 0,
         feedback: [],
         goalStatuses: goalStatuses,
-        goalScore: goalScore,
+        goalScore: finalGoalScore,
         endReason: endReason,
       };
-
-      // 将会话数据保存到 localStorage
-      localStorage.setItem(`session_${session.id}`, JSON.stringify(session));
 
       // 改善等待录制完成处理
       const waitForRecordingUpload = () => {
@@ -1201,14 +1211,21 @@ const ConversationPage: React.FC = () => {
         const apiService = ApiService.getInstance();
         await apiService.completeSession(session.id);
 
+        // 服务端确认结束后才缓存完成快照，避免失败重试时留下假完成状态。
+        localStorage.setItem(`session_${session.id}`, JSON.stringify(session));
         // 将分析开始信息保存到 localStorage
         localStorage.setItem(`session_${session.id}_analysisStarted`, "true");
       } catch (error) {
         console.error("会话完成状态保存失败:", error);
-        // 保存失败时仍进入结果页；ResultPage 会再次尝试获取复盘状态。
+        endingRef.current = false;
+        if (!hasComponentMounted.current) return;
+        setSessionEnded(false);
+        setConversationError("结束状态暂未保存，请再次点击结束会话。不会自动进入未完成的复盘。");
+        return;
       }
 
-      setTimeout(() => {
+      if (!hasComponentMounted.current) return;
+      navigationTimerRef.current = setTimeout(() => {
         navigate(`/result/${session.id}`);
       }, 1000);
     },
@@ -1217,7 +1234,6 @@ const ConversationPage: React.FC = () => {
       goalStatuses,
       navigate,
       scenario,
-      goalScore,
       sessionId,
       videoRecordingEnabled,
     ],
@@ -1415,6 +1431,7 @@ const ConversationPage: React.FC = () => {
       !voiceInputPreferred ||
       !sessionStarted ||
       sessionEnded ||
+      backendCompletion ||
       isSpeaking ||
       isProcessing ||
       isListening ||
@@ -1434,6 +1451,7 @@ const ConversationPage: React.FC = () => {
     isSpeaking,
     latestNpcTurnId,
     sessionEnded,
+    backendCompletion,
     sessionStarted,
     startSpeechRecognition,
     voiceInputPreferred,
@@ -1467,11 +1485,6 @@ const ConversationPage: React.FC = () => {
     });
   }, []);
 
-  // 情绪状态变化的处理器
-  const handleEmotionChange = useCallback((emotion: EmotionState) => {
-    setCurrentEmotion(emotion);
-  }, []);
-
   // 相机初始化状态的处理器
   const handleCameraInitialized = useCallback((initialized: boolean) => {
     setIsCameraInitialized(initialized);
@@ -1481,39 +1494,19 @@ const ConversationPage: React.FC = () => {
     }
   }, []);
 
-  // 目标达成时的通知显示
+  // Only the server may auto-complete a session. Clean up delayed navigation on rerender/unmount.
   useEffect(() => {
-    // 与上一次的目标状态比较，检测新达成的目标
-    const newlyAchievedGoals = goalStatuses.filter((status) => {
-      if (!status.achieved) return false;
-      const goal = goals.find((g) => g.id === status.goalId);
-      return (
-        goal &&
-        status.achievedAt &&
-        new Date(status.achievedAt).getTime() > Date.now() - 5000
-      ); // 5 秒内达成的目标
-    });
-
-    // 存在新达成的目标时显示通知
-    if (newlyAchievedGoals.length > 0) {
-      const achievedGoal = newlyAchievedGoals[0];
-      const goal = goals.find((g) => g.id === achievedGoal.goalId);
-
-      if (goal) {
-        // 所有必需目标均已达成时，结束会话
-        if (areAllRequiredGoalsAchieved(goalStatuses, goals)) {
-          setTimeout(async () => {
-            if (!sessionEnded && messagesRef.current.length > 0) {
-              await endSession(messagesRef.current, currentMetrics);
-            }
-          }, 2000);
-        }
-      }
-    }
-  }, [goalStatuses, goals, currentMetrics, sessionEnded, endSession]);
+    if (!backendCompletion || sessionEnded || conversationError) return;
+    const timer = setTimeout(() => void endSession(messagesRef.current, currentMetricsRef.current), 2000);
+    return () => clearTimeout(timer);
+  }, [backendCompletion, sessionEnded, conversationError, endSession]);
 
   if (!scenario) {
-    return null;
+    return <Box sx={{ p: 4, maxWidth: 760, mx: "auto" }}>
+      {practicePlanError ? <Alert severity="error" action={<Button onClick={() => setPracticePlanRevision((v) => v + 1)}>重试</Button>}>{practicePlanError}</Alert>
+        : <Typography role="status">正在准备练习场景…</Typography>}
+      <Button onClick={() => navigate("/history")} sx={{ mt: 2 }}>返回陪练复盘</Button>
+    </Box>;
   }
 
   // 录制完成时的处理器
@@ -1545,10 +1538,7 @@ const ConversationPage: React.FC = () => {
             : navigate("/scenarios")
         }
         messageCount={messages.length}
-        onToggleRightPanels={() => setRightPanelsVisible((v) => !v)}
         onOpenSettings={() => setShowSettings(true)}
-        rightPanelsVisible={rightPanelsVisible}
-        metricsVisible={metricsVisible}
       />
 
       {/* 合规违规通知 - 页头下方滑入 */}
@@ -1568,8 +1558,9 @@ const ConversationPage: React.FC = () => {
           display: "flex",
           minHeight: 0,
           overflow: "hidden",
-          gap: { xs: 0.75, lg: 2 },
-          p: sessionStarted ? { xs: 0.75, sm: 1.25, lg: 2 } : 0,
+          justifyContent: "center",
+          px: { xs: 0, sm: 3 },
+          py: sessionStarted ? { xs: 0, sm: 2 } : 0,
           bgcolor: "#f4f6fa",
         }}
       >
@@ -1577,17 +1568,18 @@ const ConversationPage: React.FC = () => {
         <Box
           sx={{
             flex: 1,
+            width: "100%",
+            maxWidth: 900,
             minWidth: 0,
+            mx: "auto",
             display: "flex",
             flexDirection: "column",
             overflow: "hidden",
             position: "relative",
             bgcolor: "#fff",
-            border: sessionStarted ? "1px solid #e2e7ef" : 0,
-            borderRadius: sessionStarted ? { xs: 3, sm: 4.5 } : 0,
-            boxShadow: sessionStarted
-              ? "0 12px 36px rgba(24,39,75,.07)"
-              : "none",
+            border: 0,
+            borderRadius: sessionStarted ? { xs: 0, sm: 4 } : 0,
+            boxShadow: "none",
           }}
         >
           {videoRecordingEnabled && (
@@ -1635,6 +1627,11 @@ const ConversationPage: React.FC = () => {
             role="region"
             aria-label={t("conversation.workspace.ariaLabel")}
           >
+            {(practiceSourceSessionId || practiceCriterionId) && <Box sx={{ px: { xs: 2, sm: 3 }, pt: 2 }}>
+              {practicePlanLoading && <Alert severity="info">正在准备专项练习目标…</Alert>}
+              {practicePlanError && <Alert severity="error" action={<Button onClick={() => setPracticePlanRevision((v) => v + 1)}>重试</Button>}>{practicePlanError}</Alert>}
+              {practicePlan && <Alert severity="info"><Typography variant="subtitle2">本次专项 · {practicePlan.label}</Typography><Typography variant="body2">{practicePlan.instruction}</Typography></Alert>}
+            </Box>}
             <MessageList
               messages={messages}
               isProcessing={isProcessing}
@@ -1653,23 +1650,8 @@ const ConversationPage: React.FC = () => {
               }}
               isSpeaking={isSpeaking}
               isStarting={isStarting}
-              participantVisual={
-                avatarVisible ? (
-                  <AvatarProvider>
-                    <AvatarStage
-                      avatarId={scenarioAvatarId}
-                      avatarS3Key={scenarioAvatarS3Key}
-                      angerLevel={currentMetrics.angerLevel}
-                      trustLevel={currentMetrics.trustLevel}
-                      progressLevel={currentMetrics.progressLevel}
-                      isSpeaking={isSpeaking}
-                      directEmotion={npcDirectEmotion}
-                      gesture={npcGesture}
-                      onEmotionChange={handleEmotionChange}
-                    />
-                  </AvatarProvider>
-                ) : undefined
-              }
+              startDisabled={!!(practiceSourceSessionId || practiceCriterionId) && !practicePlan}
+
             />
           </Box>
 
@@ -1696,7 +1678,7 @@ const ConversationPage: React.FC = () => {
             </Box>
           )}
 
-          {sessionStarted && !sessionEnded && (
+          {sessionStarted && !sessionEnded && suggestionEnabled && (
             <Box
               sx={{
                 flexShrink: 0,
@@ -1706,7 +1688,6 @@ const ConversationPage: React.FC = () => {
                 overflowY: "auto",
               }}
             >
-              <CoachingHintBar hint={currentMetrics.analysis} />
               {suggestionEnabled && (
                 <SuggestionBar
                   suggestions={suggestions}
@@ -1718,6 +1699,9 @@ const ConversationPage: React.FC = () => {
           )}
 
           <Box sx={{ flexShrink: 0, bgcolor: "#f7f9fc" }}>
+            {conversationError ? <Alert severity="error">{conversationError}</Alert> : null}
+            {evaluationNotice ? <Alert severity="info">{evaluationNotice}</Alert> : null}
+            {backendCompletion && !conversationError ? <Alert severity="success">{practiceEndLabel(backendCompletion)}，正在准备复盘。</Alert> : null}
             <MessageInput
               userInput={userInput}
               setUserInput={setUserInput}
@@ -1731,72 +1715,12 @@ const ConversationPage: React.FC = () => {
               switchToTextInput={switchToTextInput}
               handleKeyDown={handleKeyDown}
               sessionStarted={sessionStarted}
-              sessionEnded={sessionEnded}
+              sessionEnded={sessionEnded || Boolean(backendCompletion)}
               continuousListening={continuousListening}
             />
           </Box>
         </Box>
 
-        {/* AI 教练栏：桌面常驻，平板和手机改为覆盖式抽屉。 */}
-        {sessionStarted && isPersistentCoachRail && rightPanelsVisible && (
-          <Box
-            sx={{
-              position: "relative",
-              zIndex: 1,
-              width: 340,
-              minWidth: 340,
-              maxWidth: 380,
-              minHeight: 0,
-              overflow: "hidden",
-              bgcolor: "#fff",
-              border: "1px solid #e2e7ef",
-              borderRadius: 4.5,
-              boxShadow: "0 12px 36px rgba(24,39,75,.06)",
-            }}
-          >
-            <RightPanelContainer
-              visible={true}
-              goals={goals}
-              goalStatuses={goalStatuses}
-              scenario={scenario}
-              currentMetrics={currentMetrics}
-              prevMetrics={prevMetrics}
-              metricsUpdating={metricsUpdating}
-              metricsVisible={metricsVisible}
-            />
-          </Box>
-        )}
-
-        <Drawer
-          anchor="right"
-          open={sessionStarted && !isPersistentCoachRail && rightPanelsVisible}
-          onClose={() => setRightPanelsVisible(false)}
-          ModalProps={{ keepMounted: true }}
-          PaperProps={{
-            sx: {
-              width: { xs: "calc(100% - 20px)", sm: 360 },
-              maxWidth: 380,
-              m: { xs: "10px", sm: "14px" },
-              height: { xs: "calc(100% - 20px)", sm: "calc(100% - 28px)" },
-              borderRadius: 4,
-              overflow: "hidden",
-              border: "1px solid #e2e7ef",
-              boxShadow: "0 24px 70px rgba(19,28,45,.25)",
-            },
-          }}
-        >
-          <RightPanelContainer
-            visible={sessionStarted}
-            goals={goals}
-            goalStatuses={goalStatuses}
-            scenario={scenario}
-            currentMetrics={currentMetrics}
-            prevMetrics={prevMetrics}
-            metricsUpdating={metricsUpdating}
-            metricsVisible={metricsVisible}
-            onClose={() => setRightPanelsVisible(false)}
-          />
-        </Drawer>
       </Box>
 
       {/* 幻灯片放大模态框 */}
@@ -1832,12 +1756,7 @@ const ConversationPage: React.FC = () => {
             setAudioVolume={setAudioVolume}
             speechRate={speechRate}
             setSpeechRate={setSpeechRate}
-            avatarVisible={avatarVisible}
-            setAvatarVisible={setAvatarVisible}
-            avatarEnabled={enableAvatar}
-            videoRecordingEnabled={videoRecordingEnabled}
-            setVideoRecordingEnabled={setVideoRecordingEnabled}
-            recordingSettingLocked={sessionStarted}
+
           />
         </DialogContent>
       </Dialog>

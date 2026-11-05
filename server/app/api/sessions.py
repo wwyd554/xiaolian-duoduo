@@ -17,10 +17,15 @@ from ..models import (
     CompleteSessionResponse,
     CreateSessionRequest,
     CreateSessionResponse,
+    PracticePlanRequest,
     SendMessageRequest,
 )
-from ..services import report
 from ..services.conversation import run_conversation_turn
+from ..workers.jobs import enqueue_review
+from ..harness.state import load_state, save_state, finish_state
+from ..harness.budget import BudgetExceeded
+from ..services.scenario_access import assert_readable
+from ..services.practice_plan import load_practice_plan
 
 router = APIRouter(prefix="/sessions", tags=["sessions"])
 
@@ -78,6 +83,12 @@ def _serialize_session(row) -> dict:
         item["metrics"] = latest_metrics
 
     report_data = _json_object(row["report_json"])
+    business_review = report_data.get("businessReview")
+    if isinstance(business_review, dict):
+        item["scores"] = {"overall": business_review.get("totalScore")}
+        item["businessReviewStatus"] = business_review.get("status")
+        item["rubricVersion"] = business_review.get("rubricVersion")
+        return item
     scores = report_data.get("feedback", {}).get("scores", {})
     if isinstance(scores, dict) and scores:
         item["scores"] = {
@@ -179,33 +190,75 @@ def create_session(body: CreateSessionRequest, user: UserInfo = Depends(get_curr
     now = _now()
 
     with db() as conn:
+        conn.execute("BEGIN IMMEDIATE")
         existing = conn.execute(
-            "SELECT * FROM sessions WHERE id = ? AND user_id = ?", (session_id, user.user_id)
+            "SELECT * FROM sessions WHERE id = ?", (session_id,)
         ).fetchone()
 
         if existing:
-            npc_info = json.dumps(body.npcInfo, ensure_ascii=False) if body.npcInfo else existing["npc_info"]
+            if existing["user_id"] != user.user_id:
+                raise HTTPException(403, "无权访问该会话")
+            if existing["scenario_id"] != body.scenarioId:
+                raise HTTPException(409, "已有会话不能更换场景，请新建练习")
+            if body.practiceSourceSessionId:
+                focus = load_state(conn, existing).practiceFocus or {}
+                if (focus.get("sourceSessionId") != body.practiceSourceSessionId
+                        or focus.get("criterionId") != body.practiceCriterionId):
+                    raise HTTPException(409, "已有会话不能更换复练目标，请新建练习")
+            # Snapshot identity is immutable. Client npcInfo is display-only legacy input.
+            if existing["status"] == "completed":
+                return CreateSessionResponse(success=True, sessionId=session_id, message="会话已结束", isNew=False)
             title = body.title or existing["title"]
             conn.execute(
-                "UPDATE sessions SET title = ?, npc_info = ?, updated_at = ? WHERE id = ?",
-                (title, npc_info, now, session_id),
+                "UPDATE sessions SET title = ?, updated_at = ? WHERE id = ?",
+                (title, now, session_id),
             )
             return CreateSessionResponse(success=True, sessionId=session_id, message="会话已更新", isNew=False)
 
+        scene_row = conn.execute("SELECT * FROM scenarios WHERE id=?", (body.scenarioId,)).fetchone()
+        scene = assert_readable(scene_row, user)
+        plan = None
+        source_rubric = None
+        if body.practiceSourceSessionId:
+            plan, source_scene, source_rubric = load_practice_plan(
+                conn, body.practiceSourceSessionId, user, body.practiceCriterionId)
+            if plan["scenarioId"] != body.scenarioId:
+                raise HTTPException(409, "复练必须使用原练习场景")
+            scene = source_scene
         title = body.title
-        if not title and body.npcInfo:
-            title = f"{body.npcInfo.get('name', 'NPC')}的对话"
+        if not title and scene.get("npc"):
+            title = f"{scene['npc'].get('name', 'NPC')}的对话"
         title = title or "新对话会话"
         conn.execute(
             "INSERT INTO sessions (id, user_id, scenario_id, title, status, npc_info, created_at, updated_at) "
             "VALUES (?, ?, ?, ?, 'active', ?, ?, ?)",
             (
                 session_id, user.user_id, body.scenarioId, title,
-                json.dumps(body.npcInfo, ensure_ascii=False) if body.npcInfo else None,
+                json.dumps(scene.get("npc") or {}, ensure_ascii=False),
                 now, now,
             ),
         )
+        created = conn.execute("SELECT * FROM sessions WHERE id=?", (session_id,)).fetchone()
+        state = load_state(conn, created)
+        if plan:
+            from ..agents.scoring import parse_scoring_output
+            from ..harness.state import GoalState
+            state.scenario = scene
+            state.rubricSnapshot = source_rubric
+            state.practiceFocus = plan
+            state.customerState = parse_scoring_output("{}", scene.get("initialMetrics") or {})["scores"]
+            state.goalStatuses = [GoalState(goalId=g["id"]) for g in scene.get("goals", [])
+                                  if isinstance(g, dict) and g.get("id")]
+        save_state(conn, state)
         return CreateSessionResponse(success=True, sessionId=session_id, message="会话已创建", isNew=True)
+
+
+@router.post("/{session_id}/practice-plan")
+def practice_plan(session_id: str, body: PracticePlanRequest | None = None,
+                  user: UserInfo = Depends(get_current_user)):
+    with db() as conn:
+        plan, scenario, _ = load_practice_plan(conn, session_id, user, body.criterionId if body else None)
+    return {**plan, "scenarioSnapshot": scenario}
 
 
 @router.post("/{session_id}/complete", response_model=CompleteSessionResponse)
@@ -216,25 +269,39 @@ def complete_session(
     """完成一场陪练并启动复盘报告生成（幂等）。"""
     now = _now()
     with db() as conn:
+        conn.execute("BEGIN IMMEDIATE")
         session = conn.execute(
-            "SELECT id, status FROM sessions WHERE id = ? AND user_id = ?",
+            "SELECT * FROM sessions WHERE id = ? AND user_id = ?",
             (session_id, user.user_id),
         ).fetchone()
         if session is None:
             raise HTTPException(404, f"会话不存在: {session_id}")
 
+        if session["status"] != "completed":
+            finish_state(conn, session, "user_ended")
         conn.execute(
-            "UPDATE sessions SET status = 'completed', updated_at = ? WHERE id = ?",
+            "UPDATE sessions SET status = 'completed', updated_at = ? WHERE id = ? AND status != 'completed'",
             (now, session_id),
         )
-
-    report.trigger_async(session_id)
+        review_status = enqueue_review(conn, session_id)
     return CompleteSessionResponse(
         success=True,
         sessionId=session_id,
         status="completed",
-        message="会话已完成，复盘生成中",
+        message={"completed": "会话与复盘均已完成", "failed": "会话已完成，复盘失败，请手动重试"}.get(
+            review_status, "会话已完成，复盘生成中"
+        ),
     )
+
+
+@router.get("/{session_id}/practice-state")
+def practice_state(session_id: str, user: UserInfo = Depends(get_current_user)):
+    with db() as conn:
+        session = conn.execute("SELECT * FROM sessions WHERE id=? AND user_id=?", (session_id, user.user_id)).fetchone()
+        if session is None:
+            raise HTTPException(404, "会话不存在")
+        state = load_state(conn, session)
+    return state.model_dump(exclude={"userId", "scenario"})
 
 
 @router.get("/{session_id}/messages")
@@ -294,10 +361,12 @@ def send_message(
 
         try:
             result = run_conversation_turn(conn, sess, body, user.user_id)
+        except BudgetExceeded as exc:
+            raise HTTPException(429, str(exc)) from exc
         except ValueError as exc:
             raise HTTPException(400, str(exc))
         except Exception as exc:
             conn.rollback()
-            raise HTTPException(500, f"对话处理失败: {exc}")
+            raise HTTPException(503, "对话服务暂时不可用，请稍后重试") from exc
 
     return result

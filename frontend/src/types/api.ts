@@ -1,3 +1,4 @@
+import type { BusinessReview, PracticeComparison } from "./businessReview";
 /**
  * API 相关的类型定义
  *
@@ -602,6 +603,9 @@ export interface SessionCompleteDataResponse {
     createdAt: string;
     updatedAt: string;
     title?: string;
+    scenarioName?: string;
+    startTime?: string;
+    endTime?: string;
     npcInfo?: Pick<NPCInfo, "name" | "role" | "company"> & {
       personality: string[];
     };
@@ -631,7 +635,9 @@ export interface SessionCompleteDataResponse {
   videoAnalysisCreatedAt?: string;
   videoUrl?: string;
   createdAt?: string;
-  feedback?: FeedbackAnalysisResult;
+  feedback?: FeedbackAnalysisResult | (Pick<FeedbackAnalysisResult, "strengths" | "improvements" | "keyInsights" | "nextSteps"> & { scores: { overall: number | null } });
+  businessReview?: BusinessReview;
+  practiceComparison?: PracticeComparison;
   finalMetrics?: RawMetricsWithAnalysis;
   feedbackCreatedAt?: string;
   goalResults?: {

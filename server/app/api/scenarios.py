@@ -22,12 +22,28 @@ from ..auth.jwt import UserInfo, get_current_user, optional_user
 from ..config import settings
 from ..database import db
 from ..models import ScenarioShareRequest
+from ..services.scenario_access import assert_readable
+from ..services.business_review import build_rubric_snapshot
 
 logger = logging.getLogger("scenarios")
 
 router = APIRouter(prefix="/scenarios", tags=["scenarios"])
 
 ID_PATTERN = re.compile(r"^[a-zA-Z0-9-]+$")
+
+
+def _validated_rubric_config(value: object) -> dict:
+    """Accept supported task configuration, never silently accept rule/weight overrides."""
+    allowed = {"criterionIds", "objectionRequired", "productFacts", "productFactsVerified", "transcriptComplete"}
+    if not isinstance(value, dict):
+        raise HTTPException(400, "rubricConfig 必须是对象；使用空对象恢复默认考点")
+    if set(value) - allowed:
+        raise HTTPException(400, "rubricConfig 包含不支持的配置；权重和评分锚点由规则版本固定")
+    try:
+        build_rubric_snapshot({"rubricConfig": value})
+    except ValueError as exc:
+        raise HTTPException(400, str(exc)) from exc
+    return dict(value)
 
 
 def _doc_to_response(doc: dict) -> dict:
@@ -57,6 +73,8 @@ def _can_edit(row, user: UserInfo, operation: str) -> None:
         raise HTTPException(403, "系统场景的操作需要管理员权限")
     if not is_custom and operation != "read":
         raise HTTPException(403, "此场景无操作权限")
+    if operation != "read":
+        raise HTTPException(403, "只有场景所有者或管理员可修改此场景")
 
 
 @router.get("")
@@ -134,21 +152,12 @@ def list_scenarios(
 @router.get("/{scenario_id}")
 def get_scenario(scenario_id: str, user: UserInfo | None = Depends(optional_user)):
     row = _get_scenario_row(scenario_id)
-    if row is None:
-        raise HTTPException(404, f"场景不存在: {scenario_id}")
-    doc = json.loads(row["data"])
+    doc = assert_readable(row, user)
     doc["id"] = row["id"]
     doc.setdefault("createdBy", row["created_by"] or "system")
     doc.setdefault("isCustom", bool(row["is_custom"]))
     doc.setdefault("createdAt", row["created_at"])
     doc.setdefault("updatedAt", row["updated_at"])
-
-    vis = doc.get("visibility", "public")
-    shared = doc.get("sharedWithUsers", [])
-    if vis == "private" and not (user and doc.get("createdBy") == user.user_id):
-        raise HTTPException(403, "无权限访问此场景")
-    if vis == "shared" and not (user and (doc.get("createdBy") == user.user_id or user.user_id in shared)):
-        raise HTTPException(403, "无权限访问此场景")
 
     return _doc_to_response(doc)
 
@@ -191,6 +200,8 @@ def create_scenario(body: dict = Body(...), user: UserInfo = Depends(get_current
                   "avatarId", "presentationFile", "initialSuggestions", "industry"):
         if body.get(field):
             doc[field] = body[field]
+    if "rubricConfig" in body:
+        doc["rubricConfig"] = _validated_rubric_config(body["rubricConfig"])
     for field in ("enableAvatar", "suggestionEnabled"):
         if isinstance(body.get(field), bool):
             doc[field] = body[field]
@@ -250,8 +261,8 @@ def generate_scenario_draft(body: dict = Body(...), user: UserInfo = Depends(get
             draft["initialMetrics"] = {"angerLevel": 1, "trustLevel": 1, "progressLevel": 1}
         draft.setdefault("maxTurns", 20)
     except Exception as exc:  # noqa: BLE001
-        logger.warning("[scenario-gen] 生成失败: %s", exc)
-        raise HTTPException(500, f"场景生成失败: {exc}")
+        logger.warning("[scenario-gen] 生成失败 error_type=%s", type(exc).__name__)
+        raise HTTPException(503, "场景生成暂时不可用，请稍后重试") from exc
 
     return {"success": True, "draft": draft}
 
@@ -272,11 +283,14 @@ def update_scenario(scenario_id: str, body: dict = Body(...), user: UserInfo = D
         "initialMetrics", "objectives", "visibility", "language",
         "initialMessage", "pdfFiles", "maxTurns", "avatarId",
         "enableAvatar", "suggestionEnabled", "initialSuggestions",
-        "presentationFile", "industry", "tags",
+        "presentationFile", "industry", "tags", "rubricConfig",
     }
     for key in field_map:
         if key in body:
             doc[key] = body[key]
+
+    if "rubricConfig" in body:
+        doc["rubricConfig"] = _validated_rubric_config(body["rubricConfig"])
 
     if body.get("visibility") == "shared" and isinstance(body.get("sharedWithUsers"), list):
         doc["sharedWithUsers"] = body["sharedWithUsers"]
@@ -379,9 +393,11 @@ def import_scenarios(body: dict = Body(...), user: UserInfo = Depends(get_curren
                     "createdAt": now, "updatedAt": now,
                 }
                 for field in ("language", "initialMessage", "goals", "initialMetrics",
-                              "objectives", "industry", "guardrail", "maxTurns", "tags", "npc"):
+                              "objectives", "industry", "guardrail", "maxTurns", "tags", "npc", "rubricConfig"):
                     if field in sc:
                         doc[field] = sc[field]
+                if "rubricConfig" in doc:
+                    doc["rubricConfig"] = _validated_rubric_config(doc["rubricConfig"])
                 conn.execute(
                     "INSERT INTO scenarios (id, data, created_by, is_custom, created_at, updated_at) "
                     "VALUES (?, ?, ?, 1, ?, ?)",

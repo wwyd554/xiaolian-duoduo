@@ -1,5 +1,7 @@
+import type { CriterionId, PracticePlan } from "../types/businessReview";
 // 本地 FastAPI 后端 —— 邀请码制认证（替代原 aws-amplify API 客户端）
 import { LOCAL_BACKEND_URL, loadAuth } from "./LocalAuth";
+import type { ReviewSource, ReviewItem, ReviewMessage, ImportedReviewDetail, RecordingTranscription } from "../types/reviews";
 import type { Message, Metrics, NPC, Goal, GoalStatus } from "../types/index";
 import type {
   FeedbackAnalysisResult,
@@ -13,7 +15,8 @@ import type {
   ImportResponse,
   SessionCompleteDataResponse,
 } from "../types/api";
-import { mergeGoalStatus, serializeGoalStatus } from "../utils/goalUtils";
+import { serializeGoalStatus } from "../utils/goalUtils";
+import { applyAuthoritativeGoals, type PracticeTerminationReason } from "../utils/practiceState";
 import {
   transformImportResponse,
   transformVideoAnalysisResult,
@@ -24,6 +27,60 @@ import {
  * 本地 FastAPI 通信服务。
  */
 export class ApiService {
+  getReviews(source: ReviewSource | "all", page: number, state: "all" | "completed" | "active" = "all") {
+    return this.apiGet<{ items: ReviewItem[]; total: number }>("/reviews", { source, page, state });
+  }
+
+  deleteReview(id: string) {
+    return this.apiDelete<{ success: boolean; sessionId: string }>(`/reviews/${encodeURIComponent(id)}`);
+  }
+
+  importReview(body: { id: string; source: "chat" | "audio"; title: string; context: string; messages: ReviewMessage[] }) {
+    return this.apiPost<{ sessionId: string }>("/reviews/import", body);
+  }
+
+  async transcribeRecording(file: File, signal?: AbortSignal): Promise<RecordingTranscription> {
+    const { Authorization } = await this.getAuthHeaders();
+    const form = new FormData();
+    form.append("file", file);
+    form.append("language", "zh");
+    const controller = new AbortController();
+    const abort = () => controller.abort();
+    if (signal?.aborted) controller.abort();
+    else signal?.addEventListener("abort", abort, { once: true });
+    let timedOut = false;
+    const timeout = setTimeout(() => {
+      timedOut = true;
+      controller.abort();
+    }, 15 * 60 * 1000);
+    try {
+      const response = await fetch(`${LOCAL_BACKEND_URL}/reviews/transcribe`, {
+        method: "POST",
+        headers: { Authorization },
+        body: form,
+        signal: controller.signal,
+      });
+      if (!response.ok) {
+        const body = await response.json().catch(() => null);
+        throw new Error(typeof body?.detail === "string" ? body.detail : "录音转写失败，请重试。");
+      }
+      return await response.json() as RecordingTranscription;
+    } catch (error) {
+      if (timedOut) throw new Error("本次转写等待超时，请将录音分段后重试。");
+      if (error instanceof TypeError && !controller.signal.aborted) {
+        throw new Error("无法连接本地转写服务，请确认项目后端已启动。");
+      }
+      throw error;
+    } finally {
+      clearTimeout(timeout);
+      signal?.removeEventListener("abort", abort);
+    }
+  }
+
+  getImportedReview(id: string) {
+    return this.apiGet<ImportedReviewDetail>(`/reviews/${id}`);
+  }
+
   private static instance: ApiService;
 
   /**
@@ -214,7 +271,8 @@ export class ApiService {
       company: string;
       personality?: string[];
       description?: string;
-    }
+    },
+    practice?: { practiceSourceSessionId: string; practiceCriterionId: CriterionId },
   ): Promise<{ success: boolean; sessionId: string; isNew: boolean }> {
     try {
       const requestBody: Record<string, unknown> = {
@@ -229,6 +287,7 @@ export class ApiService {
       if (npcInfo) {
         requestBody.npcInfo = npcInfo;
       }
+      if (practice) Object.assign(requestBody, practice);
 
       const response = await this.apiPost<{
         success: boolean;
@@ -244,18 +303,18 @@ export class ApiService {
       };
     } catch (error) {
       console.error("会话创建/更新错误:", error);
-      // 即使发生错误也要保证对话可继续
-      return {
-        success: false,
-        sessionId,
-        isNew: false,
-      };
+      // A failed create must not silently start an unpersisted practice.
+      throw error;
     }
   }
 
   /**
    * 完成一场陪练，并让后端开始生成复盘报告。
    */
+  public async getPracticePlan(sessionId: string, criterionId?: CriterionId): Promise<PracticePlan> {
+    return this.apiPost(`/sessions/${encodeURIComponent(sessionId)}/practice-plan`, criterionId ? { criterionId } : {});
+  }
+
   public async completeSession(sessionId: string): Promise<{
     success: boolean;
     sessionId: string;
@@ -292,7 +351,9 @@ export class ApiService {
     scenarioId?: string,
     language?: string,
     _presentedSlides?: Array<{ pageNumber: number; imageKey: string }>,
-  ): Promise<{ response: string; sessionId: string; messageId: string }> {
+  ): Promise<{ response: string; sessionId: string; messageId: string;
+    sessionCompleted?: boolean; terminationReason?: PracticeTerminationReason | null;
+    evaluationStatus?: string; scoringStatus?: string }> {
     void _presentedSlides;
     try {
       const auth = loadAuth();
@@ -305,7 +366,7 @@ export class ApiService {
         content: message,
         language: language || "zh",
       };
-      // NPC 信息（后端优先使用请求传入；缺失时回退会话/场景）
+      // Legacy-compatible fields only. The server owns snapshot identity and metrics.
       if (npc) {
         body.npcInfo = {
           name: npc.name,
@@ -338,6 +399,9 @@ export class ApiService {
         sessionCompleted: boolean;
         turnsUsed: number;
         maxTurns: number;
+        terminationReason?: PracticeTerminationReason | null;
+        evaluationStatus?: string;
+        scoringStatus?: string;
       }>("POST", `/sessions/${currentSessionId}/messages`, body);
 
       // 缓存完整结果，供 getRealtimeEvaluation 消费
@@ -347,16 +411,15 @@ export class ApiService {
         response: result.response || "",
         sessionId: result.sessionId || currentSessionId,
         messageId: result.messageId || messageId || crypto.randomUUID(),
+        sessionCompleted: result.sessionCompleted,
+        terminationReason: result.terminationReason,
+        evaluationStatus: result.evaluationStatus,
+        scoringStatus: result.scoringStatus,
       };
     } catch (error: unknown) {
       console.error("与NPC对话时发生错误:", error);
-      // 出错时的兜底响应
-      return {
-        response:
-          "抱歉，回复生成时出现错误，请稍后重试。",
-        sessionId: sessionId || "",
-        messageId: messageId || "",
-      };
+      this.lastConversationResult = null;
+      throw error;
     }
   }
 
@@ -424,22 +487,15 @@ export class ApiService {
       // goalUpdates → goalStatuses 转换（与当前前端状态合并）
       let convertedGoalStatuses: GoalStatus[] | undefined;
       if (Array.isArray(result.goalUpdates)) {
-        const currentStatusMap = new Map(
-          (goalStatuses || []).map((s) => [s.goalId, s]),
-        );
-        convertedGoalStatuses = result.goalUpdates.map((update) => {
-          const currentStatus = currentStatusMap.get(update.goalId);
+        convertedGoalStatuses = applyAuthoritativeGoals(goalStatuses || [], result.goalUpdates.map((update) => {
           const updateStatus: GoalStatus = {
             goalId: update.goalId,
             progress: update.achieved ? 100 : 0,
             achieved: update.achieved,
             reason: update.reason || "",
           };
-          if (currentStatus) {
-            return mergeGoalStatus(currentStatus, updateStatus);
-          }
           return updateStatus;
-        });
+        }));
       }
 
       return {

@@ -1,0 +1,617 @@
+{
+  "scenarioId": "demo-store-value-v1",
+  "scenarioTitle": "商户电话邀约：客户觉得收费不值",
+  "product": {
+    "name": "店小记",
+    "label": "训练用模拟产品",
+    "facts": [
+      "店小记基础版价格为 199 元/月/店。",
+      "支持 7 天免绑卡试用。",
+      "支持导入现有表格。",
+      "支持记录会员消费。",
+      "支持查看老客回访记录。",
+      "可预约 10 分钟线上演示。",
+      "不保证增加客流或营收。",
+      "销售无权自行承诺折扣。",
+      "不替代收银系统。",
+      "不代发微信。",
+      "店小记和青禾咖啡是训练用模拟产品与门店，资料仅为本案例的内部设定，不是已验证的真实产品效果。"
+    ]
+  },
+  "customer": {
+    "name": "陈晓",
+    "role": "门店老板",
+    "company": "青禾咖啡（模拟门店）",
+    "context": "一家三人经营的社区咖啡店，正在用表格管理会员。客户只有两分钟，觉得再买工具未必值得。"
+  },
+  "goal": "问清客户为什么不愿付费，用已知产品条件回应顾虑，争取一次10分钟线上演示。",
+  "opening": "我现在只有两分钟，店里用表格也够了，为什么还要再付一笔钱？",
+  "focusCriterionId": "S4",
+  "examples": [
+    {
+      "id": "before",
+      "label": "常见说法",
+      "description": "直接列功能、报价格，没有问清为什么担心买了用不起来。",
+      "messages": [
+        {
+          "id": "demo-before-1",
+          "role": "npc",
+          "content": "我现在只有两分钟，店里用表格也够了，为什么还要再付一笔钱？"
+        },
+        {
+          "id": "demo-before-2",
+          "role": "user",
+          "content": "陈老板您好，我是店小记的销售顾问。就占用您这两分钟，和您聊聊门店会员管理，可以吗？"
+        },
+        {
+          "id": "demo-before-3",
+          "role": "npc",
+          "content": "可以，简单说吧，我们用表格记一下也没什么问题。"
+        },
+        {
+          "id": "demo-before-4",
+          "role": "user",
+          "content": "我们功能很多，导入表格、记录消费、看老客回访记录都有，基础版每月每店199元，很划算。"
+        },
+        {
+          "id": "demo-before-5",
+          "role": "npc",
+          "content": "之前也买过这种工具，员工没人会用，最后还是回到表格。花钱不用才是浪费。"
+        },
+        {
+          "id": "demo-before-6",
+          "role": "user",
+          "content": "这个操作挺简单，您用用就知道了。先试试嘛。"
+        },
+        {
+          "id": "demo-before-7",
+          "role": "npc",
+          "content": "我现在忙，还是先算了吧。"
+        },
+        {
+          "id": "demo-before-8",
+          "role": "user",
+          "content": "好，那我把介绍发您，有空看一下。"
+        },
+        {
+          "id": "demo-before-9",
+          "role": "npc",
+          "content": "可以发来，但我不保证什么时候看。"
+        }
+      ],
+      "review": {
+        "rubricId": "xiaolian-sales-core",
+        "rubricVersion": "1.0.0",
+        "status": "completed",
+        "totalScore": 18,
+        "criteria": [
+          {
+            "id": "S1",
+            "label": "建立沟通与确认议程",
+            "weight": 10,
+            "status": "assessed",
+            "score": 2,
+            "reason": "销售在开场明确说明身份和来意（店小记销售顾问、聊门店会员管理），并主动询问“就占用您这两分钟……可以吗”，确认了通话时间；客户回复“可以，简单说吧”，说明客户认可了两分钟限制并愿意继续，注意力焦点也对齐到“简单说”。来意、时间方便程度、交流重点均有覆盖且有客户确认。",
+            "evidence": [
+              {
+                "messageId": "demo-before-2",
+                "speaker": "user",
+                "quote": "陈老板您好，我是店小记的销售顾问。就占用您这两分钟，和您聊聊门店会员管理，可以吗？"
+              },
+              {
+                "messageId": "demo-before-3",
+                "speaker": "npc",
+                "quote": "可以，简单说吧，我们用表格记一下也没什么问题。"
+              }
+            ],
+            "checkedMessageIds": [
+              "demo-before-1",
+              "demo-before-2",
+              "demo-before-3",
+              "demo-before-4",
+              "demo-before-5",
+              "demo-before-6",
+              "demo-before-7",
+              "demo-before-8",
+              "demo-before-9"
+            ],
+            "missingBehavior": "无，已完整建立沟通与议程",
+            "nextPractice": "保持开场先报身份、确认时间并抛出交流主题的做法"
+          },
+          {
+            "id": "S2",
+            "label": "探索并核对需求",
+            "weight": 30,
+            "status": "assessed",
+            "score": 0,
+            "reason": "客户在开场即提出核心问题“为什么还要再付一笔钱”，随后又明确说“之前也买过这种工具，员工没人会用，最后还是回到表格。花钱不用才是浪费”，这是现成的现状与顾虑线索。但销售在demo-before-4直接罗列功能与价格，未追问现有表格记录流程、过去工具失败的具体原因、员工操作负担或优先级；demo-before-6用“这个操作挺简单，您用用就知道了”直接否定客户顾虑，属于忽略客户明确需求与经验。全程没有追问影响、优先级，也没有复述核对。",
+            "evidence": [
+              {
+                "messageId": "demo-before-1",
+                "speaker": "npc",
+                "quote": "我现在只有两分钟，店里用表格也够了，为什么还要再付一笔钱？"
+              },
+              {
+                "messageId": "demo-before-4",
+                "speaker": "user",
+                "quote": "我们功能很多，导入表格、记录消费、看老客回访记录都有，基础版每月每店199元，很划算。"
+              },
+              {
+                "messageId": "demo-before-5",
+                "speaker": "npc",
+                "quote": "之前也买过这种工具，员工没人会用，最后还是回到表格。花钱不用才是浪费。"
+              },
+              {
+                "messageId": "demo-before-6",
+                "speaker": "user",
+                "quote": "这个操作挺简单，您用用就知道了。先试试嘛。"
+              }
+            ],
+            "checkedMessageIds": [
+              "demo-before-1",
+              "demo-before-2",
+              "demo-before-3",
+              "demo-before-4",
+              "demo-before-5",
+              "demo-before-6",
+              "demo-before-7",
+              "demo-before-8",
+              "demo-before-9"
+            ],
+            "missingBehavior": "未追问客户当前用表格的具体流程、过去工具弃用的原因与员工操作负担，也未复述客户顾虑请其确认",
+            "nextPractice": "下次先问“员工之前卡在哪一步、现在表格最费时的是哪块”，再复述确认客户核心顾虑"
+          },
+          {
+            "id": "S3",
+            "label": "将价值与需求对应",
+            "weight": 25,
+            "status": "assessed",
+            "score": 0,
+            "reason": "销售在demo-before-4直接把导入表格、记录消费、回访记录与199元价格堆叠在一起，未对应客户已表达的“员工不会用、回到表格”的具体痛点说明作用与条件；demo-before-6用“操作挺简单，您用用就知道了”给出无依据的确定性判断，既未说明导入格式与员工操作是否合适需演示确认，也未声明任何未知边界，且没有向客户确认这些功能是否有帮助。客户随后表示“先算了”，未获得任何价值确认。",
+            "evidence": [
+              {
+                "messageId": "demo-before-4",
+                "speaker": "user",
+                "quote": "我们功能很多，导入表格、记录消费、看老客回访记录都有，基础版每月每店199元，很划算。"
+              },
+              {
+                "messageId": "demo-before-6",
+                "speaker": "user",
+                "quote": "这个操作挺简单，您用用就知道了。先试试嘛。"
+              },
+              {
+                "messageId": "demo-before-7",
+                "speaker": "npc",
+                "quote": "我现在忙，还是先算了吧。"
+              }
+            ],
+            "checkedMessageIds": [
+              "demo-before-1",
+              "demo-before-2",
+              "demo-before-3",
+              "demo-before-4",
+              "demo-before-5",
+              "demo-before-6",
+              "demo-before-7",
+              "demo-before-8",
+              "demo-before-9"
+            ],
+            "missingBehavior": "未把功能与客户“员工不会用”的顾虑对应，也未说明操作难易和导入格式需演示确认的边界，更未请客户确认是否有帮助",
+            "nextPractice": "下次针对客户具体顾虑讲价值，并明确“是否省时、导入格式是否匹配需演示确认”，讲完问客户这样是否解决了问题"
+          },
+          {
+            "id": "S4",
+            "label": "理解并回应异议",
+            "weight": 20,
+            "status": "assessed",
+            "score": 0,
+            "reason": "客户明确提出“员工没人会用，最后还是回到表格，花钱不用才是浪费”的顾虑，属于明确的异议机会。销售未认可顾虑、未澄清原因，直接用“这个操作挺简单，您用用就知道了”反驳客户过往经验，属于未澄清就无依据地淡化问题，触发0分档的争辩/忽略顾虑行为。之后客户表示忙、先算了，销售也未回头确认顾虑是否解答。",
+            "evidence": [
+              {
+                "messageId": "demo-before-5",
+                "speaker": "npc",
+                "quote": "之前也买过这种工具，员工没人会用，最后还是回到表格。花钱不用才是浪费。"
+              },
+              {
+                "messageId": "demo-before-6",
+                "speaker": "user",
+                "quote": "这个操作挺简单，您用用就知道了。先试试嘛。"
+              },
+              {
+                "messageId": "demo-before-7",
+                "speaker": "npc",
+                "quote": "我现在忙，还是先算了吧。"
+              }
+            ],
+            "checkedMessageIds": [
+              "demo-before-1",
+              "demo-before-2",
+              "demo-before-3",
+              "demo-before-4",
+              "demo-before-5",
+              "demo-before-6",
+              "demo-before-7",
+              "demo-before-8",
+              "demo-before-9"
+            ],
+            "missingBehavior": "未认可客户关于“买了没人用”的顾虑、未澄清具体原因，也未确认顾虑是否解答",
+            "nextPractice": "下次先认可“买了用不起来确实浪费”，再问清员工卡在哪，然后给有依据的回应并确认是否解答"
+          },
+          {
+            "id": "S5",
+            "label": "对齐下一步",
+            "weight": 15,
+            "status": "assessed",
+            "score": 1,
+            "reason": "销售在客户表示“先算了”后提出“把介绍发您，有空看一下”，客户回复“可以发来”，是一个具体动作且获得了客户口头接受；但没有约定发送时间、发送渠道明细和后续联系时间，也未提出可选的10分钟线上演示，双方未形成负责人+时间+动作的完整安排。",
+            "evidence": [
+              {
+                "messageId": "demo-before-7",
+                "speaker": "npc",
+                "quote": "我现在忙，还是先算了吧。"
+              },
+              {
+                "messageId": "demo-before-8",
+                "speaker": "user",
+                "quote": "好，那我把介绍发您，有空看一下。"
+              },
+              {
+                "messageId": "demo-before-9",
+                "speaker": "npc",
+                "quote": "可以发来，但我不保证什么时候看。"
+              }
+            ],
+            "checkedMessageIds": [
+              "demo-before-1",
+              "demo-before-2",
+              "demo-before-3",
+              "demo-before-4",
+              "demo-before-5",
+              "demo-before-6",
+              "demo-before-7",
+              "demo-before-8",
+              "demo-before-9"
+            ],
+            "missingBehavior": "未约定发送时间与具体渠道，也未提出10分钟线上演示或约定下次联系时间",
+            "nextPractice": "下次在客户同意接收资料后补一句“我今天下班前发到您微信，明天下午再约10分钟线上看一下导入表格是否顺利，可以吗”，把时间与动作定下来"
+          }
+        ],
+        "coverage": {
+          "assessed": 5,
+          "applicable": 5
+        },
+        "coaching": {
+          "keep": "销售在开场明确说明身份和来意（店小记销售顾问、聊门店会员管理），并主动询问“就占用您这两分钟……可以吗”，确认了通话时间；客户回复“可以，简单说吧”，说明客户认可了两分钟限制并愿意继续，注意力焦点也对齐到“简单说”。来意、时间方便程度、交流重点均有覆盖且有客户确认。",
+          "fix": "未追问客户当前用表格的具体流程、过去工具弃用的原因与员工操作负担，也未复述客户顾虑请其确认",
+          "nextPractice": "下次先问“员工之前卡在哪一步、现在表格最费时的是哪块”，再复述确认客户核心顾虑",
+          "focusCriterionId": "S2"
+        },
+        "riskChecks": {
+          "status": "not_checked",
+          "limitations": "产品事实仅与本场提供的资料对照，仍需人工确认。本次是训练反馈，不构成完整合规审计或上岗认证。",
+          "findings": []
+        }
+      }
+    },
+    {
+      "id": "after",
+      "label": "调整后示范",
+      "description": "先问流程与顾虑，再解释价值和边界，最后约定一个双方认可的下一步。",
+      "messages": [
+        {
+          "id": "demo-after-1",
+          "role": "npc",
+          "content": "我现在只有两分钟，店里用表格也够了，为什么还要再付一笔钱？"
+        },
+        {
+          "id": "demo-after-2",
+          "role": "user",
+          "content": "陈老板您好，我是店小记的销售顾问。只占用您这两分钟，先了解您现在怎么记录会员，再看看是否值得安排演示，可以吗？"
+        },
+        {
+          "id": "demo-after-3",
+          "role": "npc",
+          "content": "可以，两分钟。我们现在就用表格，没觉得非得换系统。"
+        },
+        {
+          "id": "demo-after-4",
+          "role": "user",
+          "content": "了解。您说表格够用，平时是谁记录，汇总时会不会有重复录入或查不到记录的情况？"
+        },
+        {
+          "id": "demo-after-5",
+          "role": "npc",
+          "content": "我们三个人轮着记，周末我还要花两个小时重新整理。"
+        },
+        {
+          "id": "demo-after-6",
+          "role": "user",
+          "content": "所以最想解决的是三个人交接和周末重复整理占时间，而不是单纯换一个记录工具，我这样理解对吗？"
+        },
+        {
+          "id": "demo-after-7",
+          "role": "npc",
+          "content": "对。不过以前买过系统没人会用，最后还是回到了表格。"
+        },
+        {
+          "id": "demo-after-8",
+          "role": "user",
+          "content": "难怪您不想再花一遍钱。上次用不起来，主要是迁移麻烦，还是员工不知道怎么操作？"
+        },
+        {
+          "id": "demo-after-9",
+          "role": "npc",
+          "content": "主要没人带着试，平时忙，也没时间自己研究。"
+        },
+        {
+          "id": "demo-after-10",
+          "role": "user",
+          "content": "明白，您担心的是付费后仍然没人能用。店小记能导入现有表格、记录会员消费和查看老客回访记录，可以先核对是否适合三个人交接；具体能省多少时间要试过才知道。基础版199元每月每店，7天免绑卡试用。先看一遍表格怎么导入和操作，会不会比直接订阅更适合您？"
+        },
+        {
+          "id": "demo-after-11",
+          "role": "npc",
+          "content": "这样可以，我愿意先看看能不能上手，但不想现在就签约。"
+        },
+        {
+          "id": "demo-after-12",
+          "role": "user",
+          "content": "好，演示不等于签约。明天下午三点，由我给您做十分钟线上演示，用脱敏表格展示导入和记录功能；您先操作看看是否方便，再决定要不要试用。这个时间合适吗？"
+        },
+        {
+          "id": "demo-after-13",
+          "role": "npc",
+          "content": "可以，明天下午三点，我叫负责记录的同事一起看十分钟，再决定要不要试。"
+        }
+      ],
+      "review": {
+        "rubricId": "xiaolian-sales-core",
+        "rubricVersion": "1.0.0",
+        "status": "completed",
+        "totalScore": 100,
+        "criteria": [
+          {
+            "id": "S1",
+            "label": "建立沟通与确认议程",
+            "weight": 10,
+            "status": "assessed",
+            "score": 2,
+            "reason": "销售先说明身份与来意，明确只占用客户已给出的两分钟，并确认交流重点（先了解记录方式，再判断是否演示），客户回答“可以，两分钟”确认了议程。",
+            "evidence": [
+              {
+                "messageId": "demo-after-1",
+                "speaker": "npc",
+                "quote": "我现在只有两分钟，店里用表格也够了，为什么还要再付一笔钱？"
+              },
+              {
+                "messageId": "demo-after-2",
+                "speaker": "user",
+                "quote": "陈老板您好，我是店小记的销售顾问。只占用您这两分钟，先了解您现在怎么记录会员，再看看是否值得安排演示，可以吗？"
+              },
+              {
+                "messageId": "demo-after-3",
+                "speaker": "npc",
+                "quote": "可以，两分钟。我们现在就用表格，没觉得非得换系统。"
+              }
+            ],
+            "checkedMessageIds": [
+              "demo-after-1",
+              "demo-after-2",
+              "demo-after-3",
+              "demo-after-4",
+              "demo-after-5",
+              "demo-after-6",
+              "demo-after-7",
+              "demo-after-8",
+              "demo-after-9",
+              "demo-after-10",
+              "demo-after-11",
+              "demo-after-12",
+              "demo-after-13"
+            ],
+            "missingBehavior": "已完整做到，无需补做",
+            "nextPractice": "保持先说明来意、对齐时间与重点的开场方式"
+          },
+          {
+            "id": "S2",
+            "label": "探索并核对需求",
+            "weight": 30,
+            "status": "assessed",
+            "score": 2,
+            "reason": "销售围绕客户“表格够用”的现状追问谁在记录、是否有重复录入或查不到记录，客户说明三人轮记、周末花两小时整理；销售随后复述“三个人交接和周末重复整理占时间，而不是单纯换工具”，客户以“对”确认理解准确，并进一步暴露“以前买过系统没人会用”的顾虑。",
+            "evidence": [
+              {
+                "messageId": "demo-after-4",
+                "speaker": "user",
+                "quote": "了解。您说表格够用，平时是谁记录，汇总时会不会有重复录入或查不到记录的情况？"
+              },
+              {
+                "messageId": "demo-after-5",
+                "speaker": "npc",
+                "quote": "我们三个人轮着记，周末我还要花两个小时重新整理。"
+              },
+              {
+                "messageId": "demo-after-6",
+                "speaker": "user",
+                "quote": "所以最想解决的是三个人交接和周末重复整理占时间，而不是单纯换一个记录工具，我这样理解对吗？"
+              },
+              {
+                "messageId": "demo-after-7",
+                "speaker": "npc",
+                "quote": "对。不过以前买过系统没人会用，最后还是回到了表格。"
+              },
+              {
+                "messageId": "demo-after-8",
+                "speaker": "user",
+                "quote": "难怪您不想再花一遍钱。上次用不起来，主要是迁移麻烦，还是员工不知道怎么操作？"
+              }
+            ],
+            "checkedMessageIds": [
+              "demo-after-1",
+              "demo-after-2",
+              "demo-after-3",
+              "demo-after-4",
+              "demo-after-5",
+              "demo-after-6",
+              "demo-after-7",
+              "demo-after-8",
+              "demo-after-9",
+              "demo-after-10",
+              "demo-after-11",
+              "demo-after-12",
+              "demo-after-13"
+            ],
+            "missingBehavior": "已完整做到，无需补做",
+            "nextPractice": "保持先追问现状与影响、再复述并由客户确认的探索节奏"
+          },
+          {
+            "id": "S3",
+            "label": "将价值与需求对应",
+            "weight": 25,
+            "status": "assessed",
+            "score": 2,
+            "reason": "销售把导入现有表格、记录会员消费、查看回访记录对应到客户已确认的三人交接与周末整理问题，并说明“具体能省多少时间要试过才知道”，给出199元/月/店与7天免绑卡试用的已知条件，同时提出先用脱敏表格看导入和操作是否比直接订阅更适合；客户回应“我愿意先看看能不能上手”，确认该方向有帮助。",
+            "evidence": [
+              {
+                "messageId": "demo-after-9",
+                "speaker": "npc",
+                "quote": "主要没人带着试，平时忙，也没时间自己研究。"
+              },
+              {
+                "messageId": "demo-after-10",
+                "speaker": "user",
+                "quote": "明白，您担心的是付费后仍然没人能用。店小记能导入现有表格、记录会员消费和查看老客回访记录，可以先核对是否适合三个人交接；具体能省多少时间要试过才知道。基础版199元每月每店，7天免绑卡试用。先看一遍表格怎么导入和操作，会不会比直接订阅更适合您？"
+              },
+              {
+                "messageId": "demo-after-11",
+                "speaker": "npc",
+                "quote": "这样可以，我愿意先看看能不能上手，但不想现在就签约。"
+              }
+            ],
+            "checkedMessageIds": [
+              "demo-after-1",
+              "demo-after-2",
+              "demo-after-3",
+              "demo-after-4",
+              "demo-after-5",
+              "demo-after-6",
+              "demo-after-7",
+              "demo-after-8",
+              "demo-after-9",
+              "demo-after-10",
+              "demo-after-11",
+              "demo-after-12",
+              "demo-after-13"
+            ],
+            "missingBehavior": "已完整做到，无需补做",
+            "nextPractice": "保持用资料内功能对应需求，并明确省时效果待演示核实的边界表达"
+          },
+          {
+            "id": "S4",
+            "label": "理解并回应异议",
+            "weight": 20,
+            "status": "assessed",
+            "score": 2,
+            "reason": "客户表达“以前买过系统没人会用”的顾虑，销售先认可“难怪您不想再花一遍钱”，再澄清原因是迁移麻烦还是员工不会操作，客户答“主要没人带着试”；销售用演示中带操作、先看不签约回应，客户以“这样可以，我愿意先看看能不能上手”确认顾虑得到回应。",
+            "evidence": [
+              {
+                "messageId": "demo-after-7",
+                "speaker": "npc",
+                "quote": "对。不过以前买过系统没人会用，最后还是回到了表格。"
+              },
+              {
+                "messageId": "demo-after-8",
+                "speaker": "user",
+                "quote": "难怪您不想再花一遍钱。上次用不起来，主要是迁移麻烦，还是员工不知道怎么操作？"
+              },
+              {
+                "messageId": "demo-after-10",
+                "speaker": "user",
+                "quote": "明白，您担心的是付费后仍然没人能用。店小记能导入现有表格、记录会员消费和查看老客回访记录，可以先核对是否适合三个人交接；具体能省多少时间要试过才知道。基础版199元每月每店，7天免绑卡试用。先看一遍表格怎么导入和操作，会不会比直接订阅更适合您？"
+              },
+              {
+                "messageId": "demo-after-11",
+                "speaker": "npc",
+                "quote": "这样可以，我愿意先看看能不能上手，但不想现在就签约。"
+              }
+            ],
+            "checkedMessageIds": [
+              "demo-after-1",
+              "demo-after-2",
+              "demo-after-3",
+              "demo-after-4",
+              "demo-after-5",
+              "demo-after-6",
+              "demo-after-7",
+              "demo-after-8",
+              "demo-after-9",
+              "demo-after-10",
+              "demo-after-11",
+              "demo-after-12",
+              "demo-after-13"
+            ],
+            "missingBehavior": "已完整做到，无需补做",
+            "nextPractice": "保持认可顾虑、澄清原因、给依据并请客户确认的处理方式"
+          },
+          {
+            "id": "S5",
+            "label": "对齐下一步",
+            "weight": 15,
+            "status": "assessed",
+            "score": 2,
+            "reason": "销售提出明天下午三点由自己做十分钟线上演示，明确演示不等于签约，并邀请客户确认时间；客户回应“可以，明天下午三点，我叫负责记录的同事一起看十分钟”，双方确认了动作、负责人与时间。",
+            "evidence": [
+              {
+                "messageId": "demo-after-12",
+                "speaker": "user",
+                "quote": "好，演示不等于签约。明天下午三点，由我给您做十分钟线上演示，用脱敏表格展示导入和记录功能；您先操作看看是否方便，再决定要不要试用。这个时间合适吗？"
+              },
+              {
+                "messageId": "demo-after-13",
+                "speaker": "npc",
+                "quote": "可以，明天下午三点，我叫负责记录的同事一起看十分钟，再决定要不要试。"
+              }
+            ],
+            "checkedMessageIds": [
+              "demo-after-1",
+              "demo-after-2",
+              "demo-after-3",
+              "demo-after-4",
+              "demo-after-5",
+              "demo-after-6",
+              "demo-after-7",
+              "demo-after-8",
+              "demo-after-9",
+              "demo-after-10",
+              "demo-after-11",
+              "demo-after-12",
+              "demo-after-13"
+            ],
+            "missingBehavior": "已完整做到，无需补做",
+            "nextPractice": "保持约定时间、参与人和演示内容后再由客户确认的收尾方式"
+          }
+        ],
+        "coverage": {
+          "assessed": 5,
+          "applicable": 5
+        },
+        "coaching": {
+          "keep": "销售围绕客户“表格够用”的现状追问谁在记录、是否有重复录入或查不到记录，客户说明三人轮记、周末花两小时整理；销售随后复述“三个人交接和周末重复整理占时间，而不是单纯换工具”，客户以“对”确认理解准确，并进一步暴露“以前买过系统没人会用”的顾虑。",
+          "fix": "本次已评考点没有低于完整档的项目。",
+          "nextPractice": "",
+          "focusCriterionId": null
+        },
+        "riskChecks": {
+          "status": "not_checked",
+          "limitations": "产品事实仅与本场提供的资料对照，仍需人工确认。本次是训练反馈，不构成完整合规审计或上岗认证。",
+          "findings": []
+        }
+      }
+    }
+  ],
+  "generatedAt": "2026-11-05T00:43:43.320200+00:00",
+  "provenance": {
+    "kind": "synthetic-model-evaluated",
+    "notice": "人物、产品和两段对话均为本项目编写的模拟教学案例；报告由现有评分模型实际生成并经程序校验。展示的是两种说法对照，不是真实客户案例、用户成长数据或人工认证成绩。"
+  }
+}

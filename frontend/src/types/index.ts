@@ -73,7 +73,7 @@ export interface Session {
   endTime?: Date;
   messages: Message[];
   finalMetrics: ExtendedMetrics;
-  finalScore: number;
+  finalScore: number | null;
   feedback: string[];
   goalStatuses: GoalStatus[]; // 目标达成情况
   goalScore: number; // 目标得分（0-100）

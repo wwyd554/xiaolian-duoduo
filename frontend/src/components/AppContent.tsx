@@ -1,5 +1,5 @@
 import React, { lazy, Suspense, useEffect } from "react";
-import { Routes, Route, useLocation } from "react-router-dom";
+import { Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { Box, Button } from "@mui/material";
 import { useTranslation } from "react-i18next";
 
@@ -7,15 +7,17 @@ import { useTranslation } from "react-i18next";
 import Header from "./Header";
 import HomePage from "../pages/HomePage";
 
+const ProductDemoPage = lazy(() => import("../pages/ProductDemoPage"));
 const ScenarioSelectPage = lazy(() => import("../pages/ScenarioSelectPage"));
 const ConversationPage = lazy(() => import("../pages/ConversationPage"));
 const ResultPage = lazy(() => import("../pages/ResultPage"));
 const ProfilePage = lazy(() => import("../pages/ProfilePage"));
 const SessionHistoryPage = lazy(
-  () => import("../pages/history/SessionHistoryPage"),
+  () => import("../pages/history/SalesReviewPage"),
 );
-const AudioAnalysisPage = lazy(() => import("../pages/AudioAnalysisPage"));
+const ImportedReviewPage = lazy(() => import("../pages/history/ImportedReviewPage"));
 const AvatarTestPage = lazy(() => import("../pages/AvatarTestPage"));
+const ScenarioGeneratePage = lazy(() => import("../pages/scenarios/ScenarioGeneratePage"));
 const ScenarioCreatePage = lazy(
   () => import("../pages/scenarios/ScenarioCreatePage"),
 );
@@ -82,6 +84,7 @@ const AppContent: React.FC = () => {
     const path = location.pathname;
 
     if (path === "/") return undefined;
+    if (path === "/demo") return "产品演示";
     if (path === "/scenarios") return t("scenarios.title");
     if (path === "/scenarios/create") return t("scenarios.create.title");
     if (path.startsWith("/scenarios/edit/")) return t("scenarios.edit.title");
@@ -175,7 +178,9 @@ const AppContent: React.FC = () => {
           >
             <Routes>
               <Route path="/" element={<HomePage />} />
+              <Route path="/demo" element={<ProductDemoPage />} />
               <Route path="/scenarios" element={<ScenarioSelectPage />} />
+              <Route path="/scenarios/generate" element={<ScenarioGeneratePage />} />
               <Route
                 path="/scenarios/create"
                 element={<ScenarioCreatePage />}
@@ -195,11 +200,12 @@ const AppContent: React.FC = () => {
               <Route path="/result/:sessionId" element={<ResultPage />} />
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/history" element={<SessionHistoryPage />} />
+              <Route path="/history/import/:sessionId" element={<ImportedReviewPage />} />
               <Route
                 path="/history/session/:sessionId"
                 element={<ResultPage />}
               />
-              <Route path="/audio-analysis" element={<AudioAnalysisPage />} />
+              <Route path="/audio-analysis" element={<Navigate to="/history?source=audio" replace />} />
               <Route path="/avatar-test" element={<AvatarTestPage />} />
             </Routes>
           </Suspense>

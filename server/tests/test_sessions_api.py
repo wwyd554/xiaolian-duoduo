@@ -167,8 +167,7 @@ class SessionApiTests(unittest.TestCase):
             {item["sessionId"] for item in first_page["sessions"] + second_page["sessions"]},
         )
 
-    @patch("app.api.sessions.report.trigger_async")
-    def test_complete_session_persists_status_and_starts_review(self, trigger_async) -> None:
+    def test_complete_session_persists_status_and_starts_review(self) -> None:
         response = complete_session("session-old", user=self.user)
 
         stored = self.conn.execute(
@@ -176,14 +175,18 @@ class SessionApiTests(unittest.TestCase):
         ).fetchone()
         self.assertEqual(stored["status"], "completed")
         self.assertEqual(response.status, "completed")
-        trigger_async.assert_called_once_with("session-old")
+        self.assertEqual(self.conn.execute("SELECT status FROM jobs WHERE resource_id='session-old'").fetchone()["status"], "pending")
+        before = self.conn.execute("SELECT updated_at FROM sessions WHERE id='session-old'").fetchone()[0]
+        complete_session("session-old", user=self.user)
+        self.assertEqual(self.conn.execute("SELECT COUNT(*) FROM jobs").fetchone()[0], 1)
+        self.assertEqual(self.conn.execute("SELECT updated_at FROM sessions WHERE id='session-old'").fetchone()[0], before)
 
-    @patch("app.api.analysis.report.trigger_async")
+    @patch("app.api.analysis.report.trigger_async", return_value="processing")
     def test_retry_analysis_checks_owner_and_restarts_report(self, trigger_async) -> None:
         response = retry_analysis("session-new", user=self.user)
 
         self.assertEqual(response["status"], "processing")
-        trigger_async.assert_called_once_with("session-new")
+        trigger_async.assert_called_once_with("session-new", retry=True)
 
 
 if __name__ == "__main__":

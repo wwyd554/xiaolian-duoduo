@@ -1,13 +1,18 @@
 :root {
   font-family:
-    Roboto, "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", Arial,
+    "Noto Sans SC",
+    "PingFang SC",
+    "Microsoft YaHei",
+    system-ui,
+    -apple-system,
+    "Segoe UI",
     sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
   color-scheme: light;
-  color: #17181a;
-  background-color: #f7f7f8;
+  color: #1e293b;
+  background-color: #f8fafc;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;

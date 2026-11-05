@@ -51,4 +51,14 @@ i18n
     initImmediate: false,
   });
 
+// Keep the document language aligned with the app's own translations.
+// Otherwise browsers can mistake the Chinese interface for an English page.
+const syncDocumentLanguage = (language: string) => {
+  if (typeof document !== "undefined") {
+    document.documentElement.lang = language;
+  }
+};
+i18n.on("languageChanged", syncDocumentLanguage);
+syncDocumentLanguage(i18n.resolvedLanguage || i18n.language || "zh");
+
 export default i18n;

@@ -1,17 +1,9 @@
+import { customerAvatar } from "../../utils/customerAvatar";
 import React, { useEffect, useMemo, useRef } from "react";
+import { Avatar, Box, Button, Paper, Stack, Typography } from "@mui/material";
 import {
-  Avatar,
-  Box,
-  Button,
-  Chip,
-  Paper,
-  Stack,
-  Typography,
-} from "@mui/material";
-import {
-  GraphicEqRounded,
   SendRounded as SendIcon,
-  SmartToyRounded,
+  FaceRounded as FaceIcon,
 } from "@mui/icons-material";
 import { Message, Metrics, Scenario } from "../../types/index";
 import type { SlideImageInfo } from "../../types/api";
@@ -33,17 +25,10 @@ interface MessageListProps {
   slideImages?: SlideImageInfo[];
   onSlideClick?: (slideIndex: number) => void;
   /** 可选的 3D 形象；未传时使用场景头像或卡通降级图。 */
-  participantVisual?: React.ReactNode;
   isSpeaking?: boolean;
   isStarting?: boolean;
+  startDisabled?: boolean;
 }
-
-const isImageAvatar = (value: string | undefined): value is string =>
-  Boolean(
-    value &&
-    (/^(https?:|data:|\/)/.test(value) ||
-      /\.(png|jpe?g|webp|gif|svg)$/i.test(value)),
-  );
 
 const formatMessageTime = (timestamp: Date): string => {
   const date = timestamp instanceof Date ? timestamp : new Date(timestamp);
@@ -65,9 +50,8 @@ const MessageList: React.FC<MessageListProps> = ({
   videoRecordingEnabled = DEFAULT_VIDEO_RECORDING_ENABLED,
   slideImages = [],
   onSlideClick,
-  participantVisual,
-  isSpeaking = false,
   isStarting = false,
+  startDisabled = false,
 }) => {
   const { t } = useTranslation();
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -75,28 +59,18 @@ const MessageList: React.FC<MessageListProps> = ({
   const shouldAutoScrollRef = useRef(true);
 
   const canStart =
-    !isStarting &&
+    !isStarting && !startDisabled &&
     (!videoRecordingEnabled || isCameraInitialized || cameraError);
 
   const startButtonLabel = useMemo(() => {
     if (isStarting) return t("conversation.workspace.starting");
-    if (!videoRecordingEnabled) return t("conversation.startButtonNoRecording");
+    if (!videoRecordingEnabled) return t("conversation.startButton");
     if (isCameraInitialized) return t("conversation.startButton");
-    if (cameraError) return t("conversation.startButtonNoRecording");
+    if (cameraError) return t("conversation.startButton");
     return t("conversation.cameraInitializing");
   }, [videoRecordingEnabled, isCameraInitialized, cameraError, isStarting, t]);
 
-  const avatarSource = useMemo(() => {
-    if (isImageAvatar(scenario.npc.avatar)) return scenario.npc.avatar;
-    return scenario.npc.name === "林嘉诚"
-      ? "/avatars/lin-jiacheng-cartoon-v2-340w.webp"
-      : undefined;
-  }, [scenario.npc.avatar, scenario.npc.name]);
-
-  const latestNpcMessage = useMemo(
-    () => [...messages].reverse().find((message) => message.sender !== "user"),
-    [messages],
-  );
+  const avatarSource = customerAvatar(scenario.npc.name, scenario.npc.avatar);
 
   useEffect(() => {
     const container = scrollContainerRef.current;
@@ -128,7 +102,7 @@ const MessageList: React.FC<MessageListProps> = ({
         minHeight: 0,
         overflowY: "auto",
         overflowX: "hidden",
-        backgroundColor: sessionStarted ? "#f7f9fc" : "transparent",
+        backgroundColor: "transparent",
         boxShadow: "none",
         borderRadius: 0,
         display: "flex",
@@ -149,7 +123,7 @@ const MessageList: React.FC<MessageListProps> = ({
             elevation={0}
             sx={{
               width: "100%",
-              maxWidth: 620,
+              maxWidth: 760,
               p: { xs: 3, sm: 4.5 },
               textAlign: "center",
               borderRadius: 5,
@@ -159,35 +133,19 @@ const MessageList: React.FC<MessageListProps> = ({
               boxShadow: "0 24px 70px rgba(30,36,48,.09)",
             }}
           >
-            <Stack
-              direction="row"
-              justifyContent="center"
-              alignItems="center"
-              gap={0.75}
-              sx={{ mb: 2.5 }}
-            >
-              <SmartToyRounded sx={{ color: "primary.main", fontSize: 18 }} />
-              <Typography
-                sx={{
-                  color: "primary.main",
-                  fontSize: 12,
-                  fontWeight: 800,
-                  letterSpacing: ".1em",
-                  textTransform: "uppercase",
-                }}
-              >
-                {t("conversation.workspace.preflightBadge")}
-              </Typography>
-            </Stack>
-
             <Avatar
-              src={avatarSource}
+              src={customerAvatar(
+                scenario.npc.name,
+                scenario.npc.avatar,
+                "large",
+              )}
+              alt={scenario.npc.name}
               sx={{
-                width: 96,
-                height: 96,
+                width: 72,
+                height: 72,
                 mx: "auto",
                 mb: 2,
-                fontSize: 42,
+                fontSize: 30,
                 bgcolor: "#edf2ff",
                 color: "primary.main",
                 border: "5px solid white",
@@ -196,8 +154,7 @@ const MessageList: React.FC<MessageListProps> = ({
                 "& img": { objectFit: "cover", objectPosition: "center 18%" },
               }}
             >
-              {!avatarSource &&
-                (scenario.npc.avatar || scenario.npc.name.charAt(0))}
+              <FaceIcon sx={{ fontSize: 42 }} />
             </Avatar>
 
             <Typography
@@ -218,16 +175,48 @@ const MessageList: React.FC<MessageListProps> = ({
               {scenario.description}
             </Typography>
 
-            {!videoRecordingEnabled && (
-              <Typography
-                variant="caption"
-                color="text.secondary"
-                sx={{ display: "block", mt: 2.25 }}
-                role="status"
-              >
-                {t("conversation.recordingDisabledMessage")}
+            <Box
+              sx={{
+                textAlign: "left",
+                mt: 3,
+                p: 2.5,
+                bgcolor: "#f6f7fb",
+                borderRadius: 3,
+              }}
+            >
+              <Typography variant="subtitle2" color="primary.main" gutterBottom>
+                你的任务 · 销售顾问
               </Typography>
-            )}
+              <Typography variant="body2" sx={{ mb: 2, lineHeight: 1.8 }}>
+                与客户沟通需求，围绕下面的目标推进对话。结束后可查看基于本次沟通的反馈。
+              </Typography>
+              <Typography variant="subtitle2" gutterBottom>
+                本次练习目标
+              </Typography>
+              {scenario.goals?.length ? (
+                scenario.goals.map((goal, index) => (
+                  <Box key={goal.id} sx={{ mt: 1.5 }}>
+                    <Typography variant="body2" fontWeight={600}>
+                      {index + 1}. {goal.description}
+                      {goal.isRequired ? " · 重点" : ""}
+                    </Typography>
+                    {goal.criteria?.length > 0 && (
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{ mt: 0.5, lineHeight: 1.7 }}
+                      >
+                        达成标准：{goal.criteria.join("；")}
+                      </Typography>
+                    )}
+                  </Box>
+                ))
+              ) : (
+                <Typography variant="body2" color="text.secondary">
+                  此场景未设置具体目标，可先了解客户需求并确认下一步行动。
+                </Typography>
+              )}
+            </Box>
 
             {videoRecordingEnabled && !isCameraInitialized && !cameraError && (
               <Typography
@@ -275,166 +264,11 @@ const MessageList: React.FC<MessageListProps> = ({
         <>
           <Box
             sx={{
-              flexShrink: 0,
-              display: "grid",
-              gridTemplateColumns: {
-                xs: "82px minmax(0,1fr)",
-                sm: "170px minmax(0,1fr)",
-              },
-              alignItems: "center",
-              gap: { xs: 1.5, sm: 3 },
-              minHeight: { xs: 150, sm: 224 },
-              pl: { xs: 1.5, sm: 3.5 },
-              pr: videoRecordingEnabled
-                ? { xs: 1.5, sm: 20 }
-                : { xs: 1.5, sm: 3.5 },
-              py: { xs: 1.5, sm: 2.5 },
-              borderBottom: "1px solid #e8ecf2",
-              background:
-                "radial-gradient(circle at 12% 15%, rgba(43,89,209,.13), transparent 30%), radial-gradient(circle at 90% 10%, rgba(121,99,255,.08), transparent 32%), #fff",
-            }}
-          >
-            <Box
-              sx={{
-                position: "relative",
-                width: { xs: 78, sm: 164 },
-                height: { xs: 78, sm: 164 },
-                mx: "auto",
-                borderRadius: { xs: "50%", sm: 5 },
-                overflow: "hidden",
-                bgcolor: "#eaf0ff",
-                border: "5px solid #fff",
-                boxShadow: "0 12px 36px rgba(43,89,209,.16)",
-              }}
-            >
-              {participantVisual || (
-                <Avatar
-                  src={avatarSource}
-                  sx={{
-                    width: "100%",
-                    height: "100%",
-                    bgcolor: "#eaf0ff",
-                    color: "primary.main",
-                    fontSize: { xs: 34, sm: 64 },
-                    "& img": {
-                      objectFit: "cover",
-                      objectPosition: "center 14%",
-                    },
-                  }}
-                >
-                  {!avatarSource &&
-                    (scenario.npc.avatar || scenario.npc.name.charAt(0))}
-                </Avatar>
-              )}
-              <Box
-                aria-hidden="true"
-                sx={{
-                  position: "absolute",
-                  right: 5,
-                  bottom: 5,
-                  width: { xs: 14, sm: 18 },
-                  height: { xs: 14, sm: 18 },
-                  borderRadius: "50%",
-                  bgcolor: isSpeaking ? "primary.main" : "#2fae76",
-                  border: "3px solid #fff",
-                  boxShadow: isSpeaking
-                    ? "0 0 0 5px rgba(43,89,209,.14)"
-                    : "none",
-                }}
-              />
-            </Box>
-
-            <Box sx={{ minWidth: 0 }}>
-              <Stack
-                direction="row"
-                alignItems="center"
-                useFlexGap
-                flexWrap="wrap"
-                gap={0.75}
-              >
-                <Chip
-                  size="small"
-                  icon={isSpeaking ? <GraphicEqRounded /> : <SmartToyRounded />}
-                  label={
-                    isSpeaking
-                      ? t("conversation.workspace.stageSpeaking")
-                      : isProcessing
-                        ? t("conversation.workspace.stageThinking")
-                        : t("conversation.workspace.simulatedCustomer")
-                  }
-                  sx={{
-                    height: 27,
-                    bgcolor: isSpeaking ? "#eef2ff" : "#edf8f3",
-                    color: isSpeaking ? "primary.main" : "#237c58",
-                    fontWeight: 700,
-                  }}
-                />
-                {scenario.npc.company && (
-                  <Typography
-                    variant="caption"
-                    color="text.secondary"
-                    sx={{ display: { xs: "none", sm: "block" } }}
-                  >
-                    {scenario.npc.company}
-                  </Typography>
-                )}
-              </Stack>
-              <Typography
-                sx={{
-                  mt: 0.75,
-                  fontSize: { xs: 19, sm: 26 },
-                  fontWeight: 780,
-                  letterSpacing: "-.02em",
-                }}
-              >
-                {scenario.npc.name}
-              </Typography>
-              <Typography
-                color="text.secondary"
-                sx={{ fontSize: { xs: 12, sm: 14 }, mt: 0.15 }}
-              >
-                {scenario.npc.role}
-                {scenario.npc.company ? ` · ${scenario.npc.company}` : ""}
-              </Typography>
-
-              <Paper
-                elevation={0}
-                sx={{
-                  mt: { xs: 1, sm: 1.5 },
-                  p: { xs: 1.15, sm: 1.5 },
-                  maxWidth: 680,
-                  borderRadius: 3,
-                  bgcolor: "rgba(255,255,255,.86)",
-                  border: "1px solid rgba(215,222,235,.9)",
-                }}
-              >
-                <Typography
-                  sx={{
-                    fontSize: { xs: 12.5, sm: 15 },
-                    lineHeight: 1.65,
-                    color: latestNpcMessage ? "text.primary" : "text.secondary",
-                    display: "-webkit-box",
-                    WebkitBoxOrient: "vertical",
-                    WebkitLineClamp: { xs: 2, sm: 3 },
-                    overflow: "hidden",
-                    whiteSpace: "pre-wrap",
-                    overflowWrap: "anywhere",
-                  }}
-                >
-                  {latestNpcMessage?.content ||
-                    t("conversation.workspace.connectedMessage")}
-                </Typography>
-              </Paper>
-            </Box>
-          </Box>
-
-          <Box
-            sx={{
               width: "100%",
               maxWidth: 900,
               mx: "auto",
               px: { xs: 1.25, sm: 2.5 },
-              py: 2,
+              py: { xs: 2, sm: 3 },
             }}
           >
             <Stack
@@ -487,6 +321,7 @@ const MessageList: React.FC<MessageListProps> = ({
                 >
                   <Avatar
                     src={!isUser ? avatarSource : undefined}
+                    alt={!isUser ? scenario.npc.name : undefined}
                     sx={{
                       width: 36,
                       height: 36,
@@ -499,11 +334,11 @@ const MessageList: React.FC<MessageListProps> = ({
                       },
                     }}
                   >
-                    {isUser
-                      ? t("conversation.workspace.me")
-                      : !avatarSource
-                        ? scenario.npc.avatar || scenario.npc.name.charAt(0)
-                        : null}
+                    {isUser ? (
+                      t("conversation.workspace.me")
+                    ) : (
+                      <FaceIcon sx={{ fontSize: 24 }} />
+                    )}
                   </Avatar>
                   <Box sx={{ minWidth: 0 }}>
                     <Stack
@@ -634,6 +469,7 @@ const MessageList: React.FC<MessageListProps> = ({
               >
                 <Avatar
                   src={avatarSource}
+                  alt={scenario.npc.name}
                   sx={{
                     width: 30,
                     height: 30,
@@ -641,7 +477,7 @@ const MessageList: React.FC<MessageListProps> = ({
                     fontSize: 13,
                   }}
                 >
-                  {!avatarSource && scenario.npc.name.charAt(0)}
+                  <FaceIcon sx={{ fontSize: 22 }} />
                 </Avatar>
                 <Typography variant="body2" color="text.secondary">
                   {scenario.npc.name} {t("conversation.thinking")}

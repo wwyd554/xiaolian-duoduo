@@ -37,7 +37,10 @@ def create_token(user_id: str, nickname: str, is_admin: bool) -> str:
 
 def decode_token(token: str) -> dict:
     try:
-        return pyjwt.decode(token, settings.jwt_secret, algorithms=["HS256"])
+        payload = pyjwt.decode(token, settings.jwt_secret, algorithms=["HS256"], options={"require": ["exp", "sub"]})
+        if not isinstance(payload.get("sub"), str) or not payload["sub"].strip():
+            raise pyjwt.InvalidTokenError("invalid subject")
+        return payload
     except pyjwt.ExpiredSignatureError as exc:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "登录已过期，请重新登录") from exc
     except pyjwt.InvalidTokenError as exc:

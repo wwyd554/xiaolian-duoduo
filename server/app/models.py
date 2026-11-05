@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from typing import Any, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, model_validator
 
 
 # ---------- 认证 ----------
@@ -26,6 +26,18 @@ class CreateSessionRequest(BaseModel):
     scenarioId: str
     title: Optional[str] = None
     npcInfo: Optional[dict[str, Any]] = None
+    practiceSourceSessionId: Optional[str] = Field(default=None, min_length=1, max_length=128)
+    practiceCriterionId: Optional[str] = Field(default=None, pattern=r"^S[1-5]$")
+
+    @model_validator(mode="after")
+    def validate_practice_source(self):
+        if bool(self.practiceSourceSessionId) != bool(self.practiceCriterionId):
+            raise ValueError("再练来源与训练考点必须同时提供")
+        return self
+
+
+class PracticePlanRequest(BaseModel):
+    criterionId: Optional[str] = Field(default=None, pattern=r"^S[1-5]$")
 
 
 class CreateSessionResponse(BaseModel):

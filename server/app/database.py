@@ -69,8 +69,70 @@ CREATE TABLE IF NOT EXISTS analysis_reports (
   updated_at  TEXT NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS review_imports (
+  session_id TEXT PRIMARY KEY,
+  source TEXT NOT NULL,
+  context TEXT NOT NULL
+);
+
 CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id, updated_at DESC);
 CREATE INDEX IF NOT EXISTS idx_messages_session ON messages(session_id, created_at ASC);
+
+CREATE TABLE IF NOT EXISTS jobs (
+  id TEXT PRIMARY KEY,
+  type TEXT NOT NULL,
+  resource_id TEXT NOT NULL,
+  trace_id TEXT NOT NULL,
+  status TEXT NOT NULL,
+  attempt INTEGER NOT NULL DEFAULT 0,
+  max_attempts INTEGER NOT NULL,
+  lease_token TEXT,
+  lease_until REAL,
+  deadline REAL,
+  next_run_at REAL NOT NULL,
+  error TEXT,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL,
+  UNIQUE(type, resource_id)
+);
+CREATE INDEX IF NOT EXISTS idx_jobs_ready ON jobs(status, next_run_at);
+
+CREATE TABLE IF NOT EXISTS session_states (
+  session_id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  state_json TEXT NOT NULL,
+  revision INTEGER NOT NULL DEFAULT 0,
+  updated_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS tool_audits (
+  id TEXT PRIMARY KEY,
+  trace_id TEXT NOT NULL,
+  session_id TEXT NOT NULL,
+  user_id TEXT NOT NULL,
+  tool TEXT NOT NULL,
+  effect TEXT NOT NULL,
+  status TEXT NOT NULL,
+  reason TEXT,
+  argument_bytes INTEGER NOT NULL,
+  elapsed_ms INTEGER,
+  created_at REAL NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_tool_audits_created ON tool_audits(created_at);
+
+CREATE TABLE IF NOT EXISTS resource_rates (
+  user_id TEXT NOT NULL,
+  scope TEXT NOT NULL,
+  window INTEGER NOT NULL,
+  used INTEGER NOT NULL,
+  PRIMARY KEY(user_id,scope,window)
+);
+CREATE TABLE IF NOT EXISTS resource_leases (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  scope TEXT NOT NULL,
+  expires_at REAL NOT NULL
+);
 """
 
 
@@ -102,6 +164,20 @@ def db():
     except Exception:
         conn.rollback()
         raise
+
+
+@contextmanager
+def independent_db():
+    """Worker/heartbeat 使用独立且短生命周期的连接，避免跨线程复用事务。"""
+    conn = _connect()
+    try:
+        yield conn
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
 
 
 def _migrate(conn: sqlite3.Connection) -> None:

@@ -1,0 +1,61 @@
+{
+  "checked_at": "2026-11-05",
+  "purpose": "Read-only reference snapshot; not installed skills or application dependencies",
+  "normalization": "UTF-8 text; trailing newline normalized",
+  "files": [
+    {
+      "local_path": "upstream/leadmagic/call-coaching-rubric.md",
+      "source_url": "https://github.com/LeadMagic/gtm-skills/blob/2b7ec0f9e7044f46e4c77b536f486303fd863e28/skills/management-leadership/sales-coaching/references/call-coaching-rubric.md",
+      "license": "MIT; preserve source notices and any third-party limitations",
+      "sha256": "a8581ba1332eec703edf5634cb7f5ed3f37b2442da7f4cc3054adea4b729b094"
+    },
+    {
+      "local_path": "upstream/leadmagic/call-coaching-form.md",
+      "source_url": "https://github.com/LeadMagic/gtm-skills/blob/2b7ec0f9e7044f46e4c77b536f486303fd863e28/skills/management-leadership/sales-coaching/templates/call-coaching-form.md",
+      "license": "MIT; preserve source notices and any third-party limitations",
+      "sha256": "a8aa1af1b4465b64d025b3755dc07f30761a377f114baa4f5c26ae1fbc41c833"
+    },
+    {
+      "local_path": "upstream/leadmagic/objection-handling.reference.md",
+      "source_url": "https://github.com/LeadMagic/gtm-skills/blob/2b7ec0f9e7044f46e4c77b536f486303fd863e28/skills/sales-revops/objection-handling/SKILL.md",
+      "license": "MIT; preserve source notices and any third-party limitations",
+      "sha256": "21634abaad033e747907208b2065d523bd9c50177aa984322b5090e400b50ea2"
+    },
+    {
+      "local_path": "upstream/leadmagic/LICENSE",
+      "source_url": "https://github.com/LeadMagic/gtm-skills/blob/2b7ec0f9e7044f46e4c77b536f486303fd863e28/LICENSE",
+      "license": "MIT; preserve source notices and any third-party limitations",
+      "sha256": "63723b1e903f4af74f6fc1a166abfd29ebd02383b6014ed314573dc2eb733dcf"
+    },
+    {
+      "local_path": "upstream/leadmagic/LICENSE-NOTES.md",
+      "source_url": "https://github.com/LeadMagic/gtm-skills/blob/2b7ec0f9e7044f46e4c77b536f486303fd863e28/LICENSE-NOTES.md",
+      "license": "MIT; preserve source notices and any third-party limitations",
+      "sha256": "836794464368a033f573d0ab86646561129fcc469951434c49330f1b8a5d506f"
+    },
+    {
+      "local_path": "upstream/sales-coach/system_prompt.reference.md",
+      "source_url": "https://github.com/Yz613/Sales-Coach/blob/5b07fc12b7dc6ffa77f5969d6ec67ae78f20897c/prompts/system_prompt.md",
+      "license": "MIT; preserve source notices and any third-party limitations",
+      "sha256": "79c4beac75a08aee8d5a5c9fbd17b376c8742b667801d1a1a559ea998a832c40"
+    },
+    {
+      "local_path": "upstream/sales-coach/scoreWeights.ts.reference.txt",
+      "source_url": "https://github.com/Yz613/Sales-Coach/blob/5b07fc12b7dc6ffa77f5969d6ec67ae78f20897c/src/lib/scoreWeights.ts",
+      "license": "MIT; preserve source notices and any third-party limitations",
+      "sha256": "e63dc4012e1635f18aa76a2c666d38b4ac02734347337f40fef21a7a0bcb5c80"
+    },
+    {
+      "local_path": "upstream/sales-coach/LICENSE",
+      "source_url": "https://github.com/Yz613/Sales-Coach/blob/5b07fc12b7dc6ffa77f5969d6ec67ae78f20897c/LICENSE",
+      "license": "MIT; preserve source notices and any third-party limitations",
+      "sha256": "c7d73c88ea5e95b909c1474cc93c88afbe82ba1e0f8d55c804fccc00a132797a"
+    },
+    {
+      "local_path": "upstream/zhixun/LICENSE",
+      "source_url": "https://github.com/shangyankeji/zhixun/blob/b226b34577f6804afd106e2ca7495249b6ee8a17/LICENSE",
+      "license": "MIT; preserve source notices and any third-party limitations",
+      "sha256": "bf0bab958e923359a1260a6dd8c49e8325181b8f3c6291e0ee2961e87b81cf5d"
+    }
+  ]
+}

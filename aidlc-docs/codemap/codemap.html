@@ -1,0 +1,704 @@
+<!doctype html>
+<html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>销练多多：一句销售话术如何变成训练反馈</title>
+<style>
+  :root{
+    --ground:#0C1014; --panel:#12171F; --rule:#1E2733; --grid:#161D26;
+    --ink:#C7D0DC; --dim:#7B8798; --faint:#4A5567;
+    --blue:#2581E9; --blue-soft:#6BA8F2; --blue-deep:#12365F;
+    --orange:#F2701D; --orange-soft:#F79954;
+    --face-top:#25303E; --face-left:#19212B; --face-right:#121821;
+    --region:#38485C; --region-on:#3C74B4;
+    --region-ink:#5C6A7E; --region-ink-on:#8FB4DE;
+    --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,monospace;
+    --sans:ui-sans-serif,-apple-system,"Helvetica Neue",Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; background:var(--ground); color:var(--ink);
+    font-family:var(--mono); font-size:12px; line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  .shell{display:flex; flex-direction:column; height:100vh; min-height:600px}
+
+  /* ---------- top strip ---------- */
+  .stats{
+    display:flex; flex-wrap:wrap; align-items:stretch;
+    border-bottom:1px solid var(--rule); background:var(--panel);
+  }
+  .stat{padding:7px 14px; border-right:1px solid var(--rule); min-width:0}
+  .stat:last-child{border-right:0}
+  .stat .k{
+    font-size:8.5px; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--faint); white-space:nowrap;
+  }
+  .stat .v{font-size:12px; color:var(--ink); white-space:nowrap; font-variant-numeric:tabular-nums}
+  .stat.lead .v{color:var(--blue-soft)}
+  .controls{margin-left:auto; display:flex; align-items:center; gap:6px; padding:0 12px}
+  button{
+    font-family:var(--mono); font-size:9px; letter-spacing:.12em; text-transform:uppercase;
+    color:var(--ink); background:transparent; border:1px solid var(--rule);
+    padding:5px 9px; cursor:pointer;
+  }
+  button:hover{border-color:var(--blue); color:var(--blue-soft)}
+  button:focus-visible{outline:2px solid var(--orange); outline-offset:1px}
+  button[aria-pressed="true"]{border-color:var(--orange); color:var(--orange-soft)}
+
+  /* ---------- three columns ---------- */
+  .body{display:flex; flex:1; min-height:0}
+
+  .index{
+    width:212px; flex:none; border-right:1px solid var(--rule);
+    overflow-y:auto; background:var(--panel);
+  }
+  .grp{
+    font-size:8.5px; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--faint); padding:12px 12px 5px;
+  }
+  .row{
+    display:flex; gap:8px; align-items:baseline; width:100%;
+    padding:4px 12px; border:0; border-left:2px solid transparent;
+    background:transparent; color:var(--dim); text-align:left; cursor:pointer;
+    font-family:var(--mono); font-size:10.5px; letter-spacing:.02em;
+  }
+  .row:hover{color:var(--ink); background:#161C25}
+  .row[aria-current="true"]{color:var(--ink); border-left-color:var(--blue); background:#151E2B}
+  .row .c{color:var(--faint); width:12px; flex:none}
+  .row[aria-current="true"] .c{color:var(--blue-soft)}
+  .row .n{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+  .row .t{color:var(--faint); font-size:8.5px; letter-spacing:.1em}
+
+  .stage{flex:1; min-width:0; position:relative; overflow:hidden; background:var(--ground)}
+  svg{display:block; width:100%; height:100%; touch-action:none; cursor:grab}
+  svg.dragging{cursor:grabbing}
+  .node-hit{cursor:pointer}
+  .node-hit:focus-visible{outline:none}
+  .flow-dot{cursor:pointer}
+
+  /* ---------- right panel ---------- */
+  .read{
+    width:340px; flex:none; border-left:1px solid var(--rule);
+    background:var(--panel); display:flex; flex-direction:column; min-height:0;
+  }
+  .tabs{display:flex; border-bottom:1px solid var(--rule)}
+  .tab{
+    flex:1; padding:8px 10px; border:0; border-bottom:2px solid transparent;
+    background:transparent; color:var(--faint); cursor:pointer;
+    font-family:var(--mono); font-size:8.5px; letter-spacing:.14em; text-transform:uppercase;
+  }
+  .tab[aria-selected="true"]{color:var(--ink); border-bottom-color:var(--blue)}
+  .tab:hover{color:var(--ink)}
+  .read-body{padding:16px 18px 28px; overflow-y:auto; flex:1}
+  .eyebrow{
+    font-size:8.5px; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--faint); margin:0 0 6px;
+  }
+  .read h2{
+    font-family:var(--mono); font-size:19px; font-weight:500; letter-spacing:-.01em;
+    margin:0 0 4px; color:var(--ink); text-wrap:balance;
+  }
+  .sub{color:var(--dim); font-size:11px; margin:0 0 18px}
+  .read h3{
+    font-size:8.5px; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--faint); margin:20px 0 7px; font-weight:400;
+  }
+  .read p{font-family:var(--sans); font-size:13px; line-height:1.62; color:var(--ink); margin:0 0 11px; max-width:62ch}
+  .read p.quiet{color:var(--dim)}
+  mark{background:var(--blue-deep); color:var(--blue-soft); padding:0 3px; border-radius:1px}
+  code{font-family:var(--mono); font-size:11.5px; color:var(--orange-soft); background:#1A1F27; padding:1px 4px}
+  .facts{display:grid; grid-template-columns:auto 1fr; gap:5px 12px; margin:10px 0 0}
+  .facts dt{font-size:8.5px; letter-spacing:.13em; text-transform:uppercase; color:var(--faint); padding-top:2px}
+  .facts dd{margin:0; font-size:11.5px; color:var(--ink); font-variant-numeric:tabular-nums}
+
+  /* Dashed, to match the outline the reader just clicked inside. */
+  .origin{border:1px dashed var(--region); padding:8px 10px; margin:0 0 18px}
+  .origin .who{
+    display:block; font-size:8.5px; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--region-ink-on);
+  }
+  .origin .what{display:block; margin-top:3px; font-size:11px; color:var(--dim)}
+
+  .snippet{border:1px solid var(--rule); border-left:2px solid var(--orange); padding:11px 13px; margin:0 0 14px; background:#141920}
+  .snippet .lbl{font-size:8.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--faint); margin-bottom:5px}
+  .snippet .val{font-size:13px; color:var(--orange-soft); word-break:break-all}
+  .snippet .whence{font-size:10.5px; color:var(--dim); margin-top:6px}
+
+  /* ---------- bottom strip ---------- */
+  .hints{
+    border-top:1px solid var(--rule); background:var(--panel);
+    padding:6px 14px; color:var(--faint);
+    font-size:8.5px; letter-spacing:.13em; text-transform:uppercase;
+    display:flex; gap:18px; flex-wrap:wrap;
+  }
+
+  @media (max-width:1100px){
+    .index{width:170px}
+    .read{width:290px}
+  }
+  @media (max-width:820px){
+    .body{flex-direction:column}
+    .index{width:auto; max-height:150px; border-right:0; border-bottom:1px solid var(--rule)}
+    .read{width:auto; max-height:44vh; border-left:0; border-top:1px solid var(--rule)}
+    .stage{min-height:280px}
+  }
+  @media (prefers-reduced-motion:reduce){ .flow-dot{display:none} }
+</style>
+
+<div class="shell">
+  <div class="stats" id="stats"></div>
+
+  <div class="body">
+    <nav class="index" id="index" aria-label="模块索引"></nav>
+
+    <div class="stage">
+      <svg id="svg" role="img" aria-label="销练多多从场景和语音输入，经服务端状态、陪练 Runtime、模型评估到虚拟形象与持久化复盘的交互架构地图。">
+        <defs>
+          <pattern id="iso" width="144" height="72" patternUnits="userSpaceOnUse">
+            <path d="M0 36 L72 0 L144 36 L72 72 Z" fill="none" stroke="#161D26" stroke-width="1"/>
+          </pattern>
+        </defs>
+        <rect id="bg" x="-4000" y="-4000" width="8000" height="8000" fill="url(#iso)"/>
+        <g id="world">
+          <!-- Regions are a footprint on the floor, so they go under
+               everything the floor carries. -->
+          <g id="regions"></g>
+          <g id="edges"></g>
+          <g id="dots"></g>
+          <g id="nodes"></g>
+          <!-- Labels last, so a block drawn in front of another cannot
+               paint over its neighbour's name. -->
+          <g id="labels"></g>
+        </g>
+      </svg>
+    </div>
+
+    <aside class="read">
+      <div class="tabs" role="tablist">
+        <button class="tab" id="tab-does" role="tab" aria-selected="true">职责与边界</button>
+        <button class="tab" id="tab-built" role="tab" aria-selected="false">代码与接口</button>
+      </div>
+      <div class="read-body" id="read"></div>
+    </aside>
+  </div>
+
+  <div class="hints">
+    <span>点击模块查看职责和源码路径</span>
+    <span>点击橙色圆点检查数据</span>
+    <span>空格暂停</span>
+    <span>拖动平移</span>
+    <span>滚轮缩放</span>
+  </div>
+</div>
+
+<script>
+"use strict";
+
+/* ------------------------------------------------------------------ data
+ *
+ * EVERYTHING BELOW THIS COMMENT IS THE ONLY PART YOU CHANGE.
+ *
+ * The four arrays are STATS, NODES, EDGES and REGIONS. The chrome, the isometric
+ * projection, the panning and the animation underneath all work already and
+ * do not need touching. What decides whether the diagram is worth anything is
+ * entirely the content you put here — see SKILL.md, "Fill it with facts".
+ *
+ * The values shown here are from a real project, kept as a worked example of
+ * the level of specificity to aim for. Replace them; do not imitate their
+ * subject.
+ */
+
+const STATS = [
+["系统","销练多多 · 陪练到复盘",true],
+["依据","2026-09-08 工作区"],
+["架构","20 模块 · 29 条逻辑边"],
+["硬上限","20 轮"],
+["受控工具","4 个"],
+["当前主体","React + FastAPI + SQLite"]
+];
+
+const NODES = [
+{c:"01",id:"ui",name:"陪练工作台",grp:"开始一场练习",gx:0,gy:0,h:34,sub:"React 19 · TypeScript · MUI 7 · Vite 8",does:"选择场景后发送文字或转写结果，展示客户回复、情绪和目标；结束原因由后端返回。ConversationPage 同时协调语音、形象、结束与复盘跳转，是前端主要复杂度集中处。",built:"<code>frontend/src/pages/ConversationPage.tsx</code><br><code>frontend/src/utils/practiceState.ts</code>",facts:[["构建版本依据","frontend/package.json；README 的 Vite 7 已滞后"],["分析快照","2026-09-08，含未提交改动"]]},
+{c:"02",id:"scenario",name:"场景与开场",grp:"开始一场练习",gx:0,gy:1,h:20,sub:"场景库 · 自建场景 · 场景生成",does:"创建会话时固定场景快照，避免之后修改场景改变已经开始的练习。开场白会被补入模型上下文，但不算用户轮次。",built:"<code>server/app/api/scenarios.py</code><br><code>server/app/api/sessions.py</code><br><code>server/app/harness/state.py</code>",facts:[["轮数","min(场景 maxTurns, 20)"],["场景权限","scenario_access.py"]]},
+{c:"03",id:"auth",name:"邀请码与鉴权",grp:"开始一场练习",gx:0,gy:2,h:20,sub:"JWT · 会话所有权",does:"前端将登录凭据保存在 localStorage；后端校验用户及资源归属。语音连接也必须属于本人活跃会话。生产启动检查要求关闭开发免登录。",built:"<code>frontend/src/services/LocalAuth.ts</code><br><code>server/app/auth/jwt.py</code><br><code>server/app/auth/routes.py</code><br><code>server/app/config.py</code>",facts:[["JWT 默认有效期","30 天（配置默认值）"],["前端本地到期","保存时设为 7 天"]]},
+{c:"04",id:"mic",name:"麦克风转写",grp:"开始一场练习",gx:0,gy:3,h:27,sub:"WebSocket → 本地 faster-whisper",does:"浏览器上传 PCM，后端按音量与静音分段，用 CPU/int8 Whisper 识别；它是分段重识别，不是供应商原生流式 ASR。首用时懒加载模型。",built:"<code>frontend/src/services/TranscribeService.ts</code><br><code>server/app/api/transcribe.py</code><br><code>server/app/services/asr.py</code>",facts:[["音频","PCM16 / 16kHz / 单声道"],["静音 / 中间结果","800 ms / 1500 ms"]]},
+{c:"05",id:"api",name:"API 契约",grp:"恢复可信状态",gx:1,gy:0,h:21,sub:"fetch → FastAPI",does:"ApiService 直连本地后端，保持部分 AWS 风格方法名和字段。不能从 PollyService 等命名推断当前仍依赖 AWS。入口挂载认证、场景、会话、分析、语音和合规路由，并返回 X-Trace-ID。",built:"<code>frontend/src/services/ApiService.ts</code><br><code>server/app/main.py</code><br><code>server/app/api/sessions.py</code>",facts:[["消息入口","POST /sessions/{id}/messages"],["健康检查","GET /health"]]},
+{c:"06",id:"state",name:"练习状态",grp:"恢复可信状态",gx:1,gy:1,h:32,sub:"场景快照 · revision · 终止原因",does:"PracticeState 是服务端权威状态。模型执行后再用 BEGIN IMMEDIATE 检查会话是否已结束、轮次和 revision 是否变化，防止并发旧回复覆盖新状态。",built:"<code>server/app/harness/state.py</code><br><code>server/app/harness/runtime.py</code>",facts:[["结束原因","goals_achieved / max_turns / user_ended"],["持久化","session_states"]]},
+{c:"07",id:"context",name:"上下文与记忆",grp:"恢复可信状态",gx:1,gy:2,h:36,sub:"有来源原句 · 分角色上下文",does:"按事实类型和说话者保留首末事实，超预算依次裁掉旧消息、摘要摘录、事实；记录省略量。NPC 默认视图去掉训练目标，但只读工具仍能取得目标，因此不构成机密隔离。",built:"<code>server/app/harness/context.py</code><br><code>server/app/harness/memory.py</code>",facts:[["默认预算","16000，UTF-8 字节上界估算"],["计费依据","供应商 usage，非本地估算"]]},
+{c:"08",id:"db",name:"SQLite 持久化",grp:"恢复可信状态",gx:1,gy:3,h:32,sub:"WAL · 业务状态 · 工作队列",does:"一个 SQLite 库保存用户、邀请码、场景、会话、消息、报告、任务、练习状态、审计和资源限额。会话结束与复盘入队共用事务；独立连接供 Worker 使用。",built:"<code>server/app/database.py</code>",facts:[["建表定义","11 张表（静态计数）"],["并发模式","WAL + 显式写事务"]]},
+{c:"09",id:"runtime",name:"陪练 Runtime",grp:"执行一轮陪练",gx:2,gy:0,h:46,sub:"固定工作流 + 有限工具选择",does:"先恢复状态和预算，NPC 与实时评分并行，随后独立目标评估，再原子保存。角色接管命中确定性策略时返回客户身份澄清，保持评分，不能把零模型调用当成模型抗攻击能力。",built:"<code>server/app/harness/runtime.py</code><br><code>server/app/services/conversation.py</code><br><code>server/app/harness/budget.py</code>",facts:[["默认开关","HARNESS_RUNTIME_ENABLED=1"],["整轮预算","12 次模型尝试 / 120000 预留 Token"]]},
+{c:"10",id:"npc",name:"客户扮演",grp:"执行一轮陪练",gx:2,gy:1,h:32,sub:"客户台词 · 原生工具循环",does:"NPC 扮演买方，销售是 user，客户历史是 assistant。允许有限次读取资料、查训练规则、暂存事实。工具协议默认使用 tools / tool_use / tool_result；文本 JSON 协议仅保留回退。",built:"<code>server/app/harness/tool_loop.py</code><br><code>server/app/agents/prompts.py</code>",facts:[["工具往返","最多 2 次"],["请求上限","每批 2 个 / 每轮 4 个"]]},
+{c:"11",id:"score",name:"实时评分",grp:"执行一轮陪练",gx:2,gy:2,h:26,sub:"情绪、建议、表情、动作",does:"只评估销售本轮发言，更新 angerLevel、trustLevel、progressLevel，不决定目标完成。评分失败保留旧指标并标记 unavailable。已有实测发现重复预算也可能涨进度，语义评分仍需校准。",built:"<code>server/app/harness/runtime.py</code><br><code>server/app/agents/scoring.py</code>",facts:[["指标区间","1–10"],["模型输出上限","2048 Token"]]},
+{c:"12",id:"goal",name:"目标证据核验",grp:"执行一轮陪练",gx:2,gy:3,h:35,sub:"独立 Evaluator · 双方完整原句",does:"检查目标 ID、消息来源、连续完整原句。达成必须引用销售与客户发言，置信度至少 0.85；全部显式必需目标满足且 outcome=completed 才自动结束。错误证据保留旧状态。",built:"<code>server/app/harness/evaluators/goal_completion.py</code><br><code>server/app/harness/evidence.py</code>",facts:[["置信度门槛","0.85"],["无必需目标","不推断自动完成策略"]]},
+{c:"13",id:"tools",name:"四个受控工具",grp:"受控调用与复盘",gx:3,gy:0,sub:"白名单 · 权限 · 暂存 · 审计",does:"四种工具：get_scenario_context、get_session_state、retrieve_sales_knowledge、record_customer_fact。写事实需原文来源，先暂存，与成功会话事务一起提交。知识查询只检索两条内置训练规则。",built:"<code>server/app/harness/tools/registry.py</code><br><code>server/app/harness/tools/knowledge.py</code><br><code>server/app/harness/hooks.py</code>",facts:[["规则范围","2 条本地规则，无企业知识库"],["事实原句实测","由张经理签字。"]],h:37,stack:4},
+{c:"14",id:"llm",name:"模型调用底座",grp:"受控调用与复盘",gx:3,gy:1,h:31,sub:"Anthropic SDK → DeepSeek",does:"SDK 内部重试关闭，由应用统一管理退避、超时与共享预算。空输出和 max_tokens 截断视为失败。实时三类调用默认关闭 thinking，源于小样本中的评分截断问题。日志只写白名单元数据。",built:"<code>server/app/agents/llm.py</code><br><code>server/app/harness/observability.py</code><br><code>server/app/config.py</code>",facts:[["默认单调用尝试","3 次 / 120 秒超时"],["实时 thinking","disabled，可配置"]]},
+{c:"15",id:"queue",name:"可恢复复盘队列",grp:"受控调用与复盘",gx:3,gy:2,h:36,sub:"SQLite jobs → ReviewWorker",does:"完成会话时入队。Worker 领取任务、续租和生成报告；只有仍持有有效租约令牌的 Worker 能提交结果，旧线程不能覆盖接管者。进程重启可恢复遗留任务。",built:"<code>server/app/workers/jobs.py</code><br><code>server/app/main.py</code>",facts:[["默认租约 / 时限","30 秒 / 900 秒"],["默认最多尝试","3 次"]]},
+{c:"16",id:"report",name:"复盘生成",grp:"受控调用与复盘",gx:3,gy:3,h:26,sub:"会话材料 → 模型报告 → 落库",does:"后台读取会话材料生成报告，供历史会话查询。客户端通过状态接口了解处理进度，失败可显式重试。生成过程在数据库事务外执行，结果由租约持有者落库。",built:"<code>server/app/services/report.py</code><br><code>server/app/api/analysis.py</code>",facts:[["状态","pending / processing / completed / failed"],["结果存储","analysis_reports.report_json"]]},
+{c:"17",id:"provider",name:"DeepSeek 服务",grp:"外部服务与呈现",gx:4,gy:0,h:24,sub:"仓库外的模型 API",does:"对话、评分、目标评估和报告共享供应商接口；chat 与 reasoner 的模型名由环境变量配置，不在架构图中假设当前运行型号。此图未读取凭据或发起真实模型调用。",built:"<code>server/app/agents/llm.py</code><br><code>server/app/config.py</code>",facts:[["兼容接口","api.deepseek.com/anthropic"],["历史小样本","2026-09-05，非本次重新测试"]]},
+{c:"18",id:"speech",name:"Edge 在线语音",grp:"外部服务与呈现",gx:4,gy:1,h:20,sub:"edge-tts 依赖的外部合成服务",does:"本地适配器通过 edge-tts 请求在线语音，接收 MP3 与词边界时间戳。本地化后端仍依赖外网语音服务；faster-whisper 识别则在本机运行。",built:"<code>server/app/services/tts.py</code><br><code>server/app/api/tts.py</code>",facts:[["音色映射","Kazuha → zh-CN-XiaoxiaoNeural"],["请求超时","30 秒"]]},
+{c:"19",id:"avatar",name:"播音与虚拟形象",grp:"外部服务与呈现",gx:4,gy:2,h:27,sub:"MP3 · viseme · 情绪 · 手势",does:"前端播放语音，并由 LipSyncController、ExpressionController、AnimationController 驱动 VRM。当前中文口型通过词边界和汉字码位取模近似得到，不是精确音素对齐。",built:"<code>frontend/src/services/AudioService.ts</code><br><code>frontend/src/components/avatar/LipSyncController.ts</code><br><code>frontend/src/components/avatar/ExpressionController.ts</code><br><code>server/app/services/tts.py</code>",facts:[["近似母音","a / i / u / e / o"],["技术","three.js + @pixiv/three-vrm"]]},
+{c:"20",id:"results",name:"复盘与历史",grp:"外部服务与呈现",gx:4,gy:3,h:22,sub:"练习结束后的反馈入口",does:"展示当前会话分析状态与报告、支持失败重试。当前本地页面尚未接通独立录音文件复盘，不能将历史 AWS 上传界面视为可用本地能力。",built:"<code>frontend/src/pages/ResultPage.tsx</code><br><code>frontend/src/pages/AudioAnalysisPage.tsx</code><br><code>frontend/src/services/ApiService.ts</code><br><code>server/app/api/analysis.py</code>",facts:[["状态接口","/sessions/{id}/analysis-status"],["重试接口","/sessions/{id}/analysis-retry"]]}
+];
+
+const EDGES = [
+["scenario","api","POST /sessions","server/app/api/sessions.py：创建会话路由；ID 为运行时生成。"],
+["auth","api","sales_roleplay_auth","frontend/src/services/LocalAuth.ts：凭据存储键；不展示真实 JWT。"],
+["mic","ui","{\"transcript\":\"...\",\"isPartial\":false}","server/app/api/transcribe.py 的文档契约；省略号为协议占位。"],
+["ui","api","您最希望解决的是线索分配还是跟进遗漏？","server/tests/fixtures/dialogue_regression.json：needs-discovery 合成输入。"],
+["api","state","/sessions/{session_id}/practice-state","server/app/api/sessions.py：状态读取契约。"],
+["api","runtime","POST /sessions/{session_id}/messages","server/app/api/sessions.py → services/conversation.py → harness/runtime.py。"],
+["state","context","budget / need / objection / decision_maker / commitment","context.py 中事实分类枚举；非虚构用户数据。"],
+["state","db","session_states","database.py 的表名。"],
+["context","runtime","预算上限是每年五万元。","dialogue_regression.json：early-fact 的早期 NPC 合成原句；演示需保留的事实。"],
+["runtime","npc","npc-conversation","runtime.py 的模型调用标签；与评分并行。"],
+["runtime","score","realtime-scoring","runtime.py 的模型调用标签；与 NPC 并行。"],
+["runtime","goal","goal-completion","runtime.py：收到 NPC 回复后才执行目标评估。"],
+["npc","tools","retrieve_sales_knowledge","registry.py 白名单工具名，tool_loop.py 执行。"],
+["tools","npc","local://training-rules/confirm-needs/v1","knowledge.py 内置规则的实际来源标识。"],
+["tools","db","status='staged' → status='committed'","runtime.py：待提交审计与业务状态一起提交。"],
+["npc","llm","max_tokens=500","runtime.py 的客户回复输出预算。"],
+["score","llm","{\"angerLevel\":1,\"trustLevel\":1,\"progressLevel\":1}","runtime.py SCORING_SYSTEM 的实际 JSON 示例摘录，不是实测评分。"],
+["goal","llm","好的，我会安排演示，但还没定具体时间。","dialogue_regression.json：goal-boundary 合成原句，不能据此判定已约见。"],
+["llm","provider","{\"thinking\":{\"type\":\"disabled\"}}","llm.py 实时请求默认 extra_body，控制思考预算。"],
+["runtime","db","goals_achieved / max_turns","runtime.py：自动结束原因，与消息、目标和状态一起持久化。"],
+["runtime","queue","enqueue_review(conn, state.sessionId)","runtime.py：自动结束时入队；手动结束也由 sessions 路由入队。"],
+["queue","db","UNIQUE(type, resource_id)","database.py：同一资源与任务类型唯一。"],
+["queue","report","type='review'","workers/jobs.py 的实际任务类型，领取后调用 report._generate。"],
+["report","llm","llm_reasoner_model","services/report.py：报告使用配置的推理模型。"],
+["report","db","analysis_reports.report_json","workers/jobs.py finish：持有效租约才写入报告结果。"],
+["api","speech","/polly/convert","ApiService → api/tts.py → services/tts.py → edge-tts；此边折叠本地适配器，不是浏览器直接调用供应商。"],
+["speech","avatar","data:audio/mpeg;base64,","api/tts.py：服务端将音频包装成此 data URL 前缀，经前端音频服务播放。"],
+["score","avatar","happy / angry / sad / relaxed / neutral","runtime.py：情绪枚举随轮响应经工作台传入形象组件，此边为逻辑数据流。"],
+["db","results","processing / completed / failed","analysis.py 和前端查询契约；经 API 获取，不是浏览器直连 SQLite。"]
+];
+
+const REGIONS = [
+{label:"外部服务",of:["provider","speech"],note:"虚线表示仓库外的模型与在线语音服务。图中本地适配器路径可在“代码与接口”查看。Whisper、React、three.js 等第三方库在本地模块中使用，未逐一拆成节点。"}
+];
+
+/* ------------------------------------------------------------- geometry */
+
+const SX = 78, SY = 39, W = 32, H = 16;
+const at = n => ({ x:(n.gx - n.gy) * SX, y:(n.gx + n.gy) * SY });
+const byId = Object.fromEntries(NODES.map(n => [n.id, n]));
+
+const NS = "http://www.w3.org/2000/svg";
+const make = (t, a={}) => { const e = document.createElementNS(NS, t);
+  for (const k in a) e.setAttribute(k, a[k]); return e; };
+
+/* ---------------------------------------------------------------- build */
+
+const gRegions = document.getElementById("regions");
+const gEdges = document.getElementById("edges");
+const gDots  = document.getElementById("dots");
+const gNodes = document.getElementById("nodes");
+const gLabels = document.getElementById("labels");
+
+// The outline is a rectangle in grid space, which the projection turns into a
+// diamond lying on the floor — the same plane the grid pattern is drawn on, so
+// it reads as ground rather than as a box floating in front of the blocks.
+// Blocks stand up out of it and are painted over it, which is the point: the
+// region says where a thing sits, not what covers it.
+const REGION_PAD = 0.62;   // grid units, ~48px across at this scale
+const regionPts = [];      // hull corners, so fit() can see them
+
+// The blocks inside a region are drawn dashed too, so a single cube still
+// reads as "not ours" once the reader has panned away from the outline or
+// zoomed past it. The outline says where the boundary is; the dashes say
+// which blocks it is about.
+const inRegion = new Set(REGIONS.flatMap(r => r.of));
+const REGION_DASH = "3.5 2.5";
+
+const regionEls = [];
+for (const r of REGIONS) {
+  const members = r.of.map(id => byId[id]).filter(Boolean);
+  if (!members.length) continue;   // verify.py catches the typo that gets here
+
+  const gx0 = Math.min(...members.map(n => n.gx)) - REGION_PAD;
+  const gx1 = Math.max(...members.map(n => n.gx)) + REGION_PAD;
+  const gy0 = Math.min(...members.map(n => n.gy)) - REGION_PAD;
+  const gy1 = Math.max(...members.map(n => n.gy)) + REGION_PAD;
+  const corner = (gx, gy) => ({ x:(gx - gy) * SX, y:(gx + gy) * SY });
+  const pts = [corner(gx0, gy0), corner(gx1, gy0), corner(gx1, gy1), corner(gx0, gy1)];
+  regionPts.push(...pts);
+
+  const poly = make("polygon", {
+    points:pts.map(p => `${p.x},${p.y}`).join(" "), fill:"none",
+    stroke:"var(--region)", "stroke-width":1, "stroke-dasharray":"5 4",
+  });
+  gRegions.appendChild(poly);
+
+  // Under the south corner, centred — the same place, and for the same
+  // reason, as a node's own name. Blocks stand up and away from the viewer,
+  // so the strip below the front corner is the one part of the drawing
+  // nothing else ever occupies. Above the region reads better on an empty
+  // grid and collides with the neighbours on a full one.
+  // One short line only. `note` deliberately does not appear here: a second
+  // line doubles the width the caption has to find room for, and on a full
+  // grid there is no direction with room for it. It goes in the panel, which
+  // is where a reader is already looking for detail.
+  const south = pts[2];
+  const label = make("text", { x:south.x, y:south.y + 15, "text-anchor":"middle",
+    "font-family":"var(--mono)", "font-size":"9", "letter-spacing":".16em",
+    fill:"var(--region-ink)" });
+  label.textContent = r.label.toUpperCase();
+  gLabels.appendChild(label);
+  regionPts.push({ x:south.x, y:south.y + 21 });
+
+  regionEls.push({ poly, label, ids:new Set(r.of) });
+}
+
+// Back to front, so nearer blocks overlap further ones.
+const order = [...NODES].sort((a,b) => (a.gx + a.gy) - (b.gx + b.gy));
+
+const edgePaths = EDGES.map(([from, to, datum, whence]) => {
+  const a = at(byId[from]), b = at(byId[to]);
+  const mid = { x:(a.x + b.x) / 2, y:(a.y + b.y) / 2 - 26 };
+  const d = `M${a.x} ${a.y} Q${mid.x} ${mid.y} ${b.x} ${b.y}`;
+  const p = make("path", { d, fill:"none", stroke:"#26303D", "stroke-width":1 });
+  gEdges.appendChild(p);
+  return { p, from, to, datum, whence, len:0 };
+});
+edgePaths.forEach(e => { e.len = e.p.getTotalLength(); });
+
+const nodeEls = {};
+for (const n of order) {
+  const { x, y } = at(n);
+  const g = make("g", { transform:`translate(${x} ${y})`, class:"node-hit",
+                        tabindex:"0", role:"button", "aria-label":n.name });
+
+  // A node with `stack` is drawn as that many plates sharing the block's total
+  // height, rather than as one solid mass. The two encodings compose: height
+  // still says how much logic is here, and the plate count says how many
+  // things of one kind it is. Splitting the height rather than adding to it is
+  // what keeps them from fighting — a stack of five never outweighs a taller
+  // neighbour just for being subdivided.
+  const plates = n.stack || 1;
+  const gap = plates > 1 ? 2.5 : 0;
+  const thick = (n.h - gap * (plates - 1)) / plates;
+
+  const fTs = [], fLs = [], fRs = [];
+  for (let i = 0; i < plates; i++) {
+    const b = i * (thick + gap);   // this plate's underside
+    const u = b + thick;           // and its top
+    const top   = `${-W},${-u} 0,${-H - u} ${W},${-u} 0,${H - u}`;
+    const left  = `${-W},${-u} 0,${H - u} 0,${H - b} ${-W},${-b}`;
+    const right = `${W},${-u} 0,${H - u} 0,${H - b} ${W},${-b}`;
+
+    const fL = make("polygon", { points:left,  fill:"var(--face-left)",  stroke:"#2B3644", "stroke-width":1 });
+    const fR = make("polygon", { points:right, fill:"var(--face-right)", stroke:"#2B3644", "stroke-width":1 });
+    const fT = make("polygon", { points:top,   fill:"var(--face-top)",   stroke:"#3A4859", "stroke-width":1 });
+    // Bottom plate first, so each one paints over the one beneath it.
+    g.append(fL, fR, fT);
+    fLs.push(fL); fRs.push(fR); fTs.push(fT);
+  }
+
+  // Dashed edges for a block inside a region. Only the outline changes —
+  // the faces keep their fills, so the block still reads as solid mass on
+  // the grid rather than as a ghost or a thing that is switched off.
+  if (inRegion.has(n.id)) {
+    for (const f of [...fLs, ...fRs, ...fTs]) f.setAttribute("stroke-dasharray", REGION_DASH);
+  }
+
+  const code = make("text", { x:0, y:-n.h + 4, "text-anchor":"middle",
+    "font-family":"var(--mono)", "font-size":"11", fill:"#8FA0B5" });
+  code.textContent = n.c;
+  g.appendChild(code);
+
+  // Into the label layer at absolute position, not into this node's group:
+  // blocks are drawn back to front, so a nearer block would otherwise cover
+  // the name of the one behind it. Rendering the page is the only way this
+  // shows up — it looks like a truncated string, not a z-order problem.
+  const label = make("text", { x:x, y:y + H + 15, "text-anchor":"middle",
+    "font-family":"var(--mono)", "font-size":"10.5", fill:"#8894A6" });
+  label.textContent = n.name;
+  gLabels.appendChild(label);
+
+  g.addEventListener("click", () => select(n.id));
+  g.addEventListener("keydown", e => {
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); select(n.id); }
+  });
+  gNodes.appendChild(g);
+  nodeEls[n.id] = { g, fTs, fLs, fRs, label, code };
+}
+
+/* ------------------------------------------------------------- the flow */
+
+const dots = edgePaths.flatMap((e, i) =>
+  [0, 0.5].map(offset => {
+    const c = make("circle", { r:3, fill:"var(--orange)", class:"flow-dot" });
+    c.addEventListener("click", ev => { ev.stopPropagation(); inspect(e); });
+    gDots.appendChild(c);
+    return { e, t:(i * 0.11 + offset) % 1, c };
+  })
+);
+
+let running = true, last = performance.now();
+const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+function advance(dt) {
+  for (const d of dots) {
+    d.t = (d.t + dt * 0.055) % 1;
+    const pt = d.e.p.getPointAtLength(d.t * d.e.len);
+    d.c.setAttribute("cx", pt.x);
+    d.c.setAttribute("cy", pt.y);
+    // Brightest at the middle of the run, so the direction of travel reads.
+    d.c.setAttribute("opacity", (0.25 + 0.75 * Math.sin(Math.PI * d.t)).toFixed(3));
+  }
+}
+advance(0);
+
+function frame(now) {
+  const dt = Math.min(0.05, (now - last) / 1000);
+  last = now;
+  if (running && !reduced) advance(dt);
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+
+/* ------------------------------------------------------------ pan, zoom */
+
+const svg = document.getElementById("svg");
+const world = document.getElementById("world");
+let view = { x:0, y:0, k:1 }, home = null;
+
+function apply() {
+  world.setAttribute("transform", `translate(${view.x} ${view.y}) scale(${view.k})`);
+}
+function fit() {
+  const r = svg.getBoundingClientRect();
+  // Region outlines reach further than the blocks they hold, so their corners
+  // go in here too — otherwise a region on the edge of the graph is cut off by
+  // the panel and looks like a line that stops for no reason.
+  const pts = NODES.map(at).concat(regionPts);
+
+  // Blocks stand up out of their anchor, so the top of the tallest one is the
+  // real upper edge of the drawing, not the anchor row.
+  for (const n of NODES) {
+    const p = at(n);
+    pts.push({ x:p.x, y:p.y - n.h - H });
+  }
+
+  // Measure the labels rather than reserving a guessed margin for them. This
+  // used to be a flat 140 across and 120 down, tuned by hand against one
+  // example: labels overhang a block by roughly 60 a side, so 140 cleared the
+  // worst of them. But it is wrong in both directions — too tight for a map
+  // with long names, and on this one it wasted about a tenth of the available
+  // scale on space nothing occupied. getBBox gives the true extent, so the
+  // margin left over is a real margin instead of a fudge factor.
+  let measured = true;
+  try {
+    const texts = [...Object.values(nodeEls).map(e => e.label),
+                   ...regionEls.map(e => e.label)];
+    for (const t of texts) {
+      const b = t.getBBox();
+      // A zero-width box means the text has not been laid out. Some engines
+      // return that instead of throwing, and taking it at face value drags
+      // every bound toward the origin — which on a graph that does not
+      // contain the origin silently zooms the whole map out.
+      if (!b.width) { measured = false; break; }
+      pts.push({ x:b.x, y:b.y }, { x:b.x + b.width, y:b.y + b.height });
+    }
+  } catch (_) {
+    measured = false;   // no layout yet — fall back to the old constants
+  }
+
+  const xs = pts.map(p => p.x), ys = pts.map(p => p.y);
+  const pad = measured ? 28 : 140;
+  const w = Math.max(...xs) - Math.min(...xs) + pad;
+  const h = Math.max(...ys) - Math.min(...ys) + (measured ? 28 : 120);
+  // The cap stops a three-node graph filling the screen with enormous blocks.
+  // It was 1.15, which left the default view marooned in the middle of a wide
+  // window, then 1.7, which this 16-node example ran straight into — it could
+  // take 1.85 before the width bound it. 2.2 leaves the binding edge to the
+  // geometry in every case seen so far.
+  view.k = Math.min(r.width / w, r.height / h, 2.2);
+  view.x = r.width / 2 - ((Math.min(...xs) + Math.max(...xs)) / 2) * view.k;
+  view.y = r.height / 2 - ((Math.min(...ys) + Math.max(...ys)) / 2) * view.k;
+  home = { ...view };
+  apply();
+}
+
+let drag = null;
+svg.addEventListener("pointerdown", e => {
+  drag = { x:e.clientX, y:e.clientY, vx:view.x, vy:view.y };
+  svg.classList.add("dragging");
+  svg.setPointerCapture(e.pointerId);
+});
+svg.addEventListener("pointermove", e => {
+  if (!drag) return;
+  view.x = drag.vx + (e.clientX - drag.x);
+  view.y = drag.vy + (e.clientY - drag.y);
+  apply();
+});
+svg.addEventListener("pointerup", e => {
+  drag = null; svg.classList.remove("dragging");
+  try { svg.releasePointerCapture(e.pointerId); } catch (_) {}
+});
+svg.addEventListener("wheel", e => {
+  e.preventDefault();
+  const r = svg.getBoundingClientRect();
+  const mx = e.clientX - r.left, my = e.clientY - r.top;
+  const k = Math.max(0.35, Math.min(2.4, view.k * (e.deltaY < 0 ? 1.08 : 0.926)));
+  view.x = mx - (mx - view.x) * (k / view.k);
+  view.y = my - (my - view.y) * (k / view.k);
+  view.k = k;
+  apply();
+}, { passive:false });
+
+/* ------------------------------------------------------------- chrome */
+
+const statsEl = document.getElementById("stats");
+for (const [k, v, lead] of STATS) {
+  const d = document.createElement("div");
+  d.className = "stat" + (lead ? " lead" : "");
+  d.innerHTML = `<div class="k"></div><div class="v"></div>`;
+  d.querySelector(".k").textContent = k;
+  d.querySelector(".v").textContent = v;
+  statsEl.appendChild(d);
+}
+const ctl = document.createElement("div");
+ctl.className = "controls";
+ctl.innerHTML =
+  `<button id="b-flow" aria-pressed="false">暂停数据流</button>` +
+  `<button id="b-step">前进一步</button>` +
+  `<button id="b-reset">重置视图</button>`;
+statsEl.appendChild(ctl);
+
+document.getElementById("b-flow").addEventListener("click", e => {
+  running = !running;
+  e.currentTarget.textContent = running ? "暂停数据流" : "继续数据流";
+  e.currentTarget.setAttribute("aria-pressed", String(!running));
+});
+document.getElementById("b-step").addEventListener("click", () => advance(0.5));
+document.getElementById("b-reset").addEventListener("click", () => { view = { ...home }; apply(); });
+
+const indexEl = document.getElementById("index");
+let lastGrp = null;
+for (const n of NODES) {
+  if (n.grp !== lastGrp) {
+    const h = document.createElement("div");
+    h.className = "grp"; h.textContent = n.grp;
+    indexEl.appendChild(h); lastGrp = n.grp;
+  }
+  const b = document.createElement("button");
+  b.className = "row"; b.id = "row-" + n.id;
+  b.innerHTML = `<span class="c"></span><span class="n"></span><span class="t"></span>`;
+  b.querySelector(".c").textContent = n.c;
+  b.querySelector(".n").textContent = n.name;
+  b.querySelector(".t").textContent = EDGES.filter(e => e[0] === n.id || e[1] === n.id).length;
+  b.addEventListener("click", () => select(n.id));
+  indexEl.appendChild(b);
+}
+
+/* ------------------------------------------------------------ the panel */
+
+const readEl = document.getElementById("read");
+const tabDoes = document.getElementById("tab-does");
+const tabBuilt = document.getElementById("tab-built");
+// The first node, not a hard-coded id. Naming one here meant every map
+// built from this template opened with an empty panel until its author
+// noticed, because byId[<id from another project>] is undefined and
+// render() throws before it draws anything.
+let current = NODES[0].id, tab = "does";
+
+tabDoes.addEventListener("click", () => { tab = "does"; render(); });
+tabBuilt.addEventListener("click", () => { tab = "built"; render(); });
+
+function select(id) { current = id; render(); }
+
+function highlight() {
+  for (const n of NODES) {
+    const el = nodeEls[n.id], on = n.id === current;
+    // Every plate, not just the top one — a stacked node half-lit reads as a
+    // rendering fault rather than as a selection.
+    for (const f of el.fTs) {
+      f.setAttribute("fill", on ? "#1E4E82" : "var(--face-top)");
+      f.setAttribute("stroke", on ? "var(--blue)" : "#3A4859");
+    }
+    for (const f of el.fLs) f.setAttribute("fill", on ? "#14314F" : "var(--face-left)");
+    for (const f of el.fRs) f.setAttribute("fill", on ? "#0F2439" : "var(--face-right)");
+    el.label.setAttribute("fill", on ? "#BFD3EA" : "#8894A6");
+    el.code.setAttribute("fill", on ? "#9EC4EE" : "#8FA0B5");
+    const row = document.getElementById("row-" + n.id);
+    if (row) row.setAttribute("aria-current", String(on));
+  }
+  for (const e of edgePaths) {
+    const on = e.from === current || e.to === current;
+    e.p.setAttribute("stroke", on ? "var(--blue)" : "#26303D");
+    e.p.setAttribute("stroke-width", on ? 1.6 : 1);
+  }
+  for (const r of regionEls) {
+    const on = r.ids.has(current);
+    r.poly.setAttribute("stroke", on ? "var(--region-on)" : "var(--region)");
+    r.label.setAttribute("fill", on ? "var(--region-ink-on)" : "var(--region-ink)");
+  }
+  for (const d of dots) {
+    const on = d.e.from === current || d.e.to === current;
+    d.c.setAttribute("fill", on ? "var(--orange)" : "#7A5334");
+    d.c.setAttribute("r", on ? 3.6 : 2.6);
+  }
+}
+
+function render() {
+  const n = byId[current];
+  tabDoes.setAttribute("aria-selected", String(tab === "does"));
+  tabBuilt.setAttribute("aria-selected", String(tab === "built"));
+
+  const facts = (n.facts || []).map(([k, v]) =>
+    `<dt>${k}</dt><dd>${v}</dd>`).join("");
+
+  // Whose code this is, if it is not yours. Shown on both tabs: it is a fact
+  // about the component, not about how it was built.
+  const region = REGIONS.find(r => r.of.includes(n.id));
+  const origin = region
+    ? `<div class="origin"><span class="who">${esc(region.label)}</span>` +
+      (region.note ? `<span class="what">${esc(region.note)}</span>` : "") + `</div>`
+    : "";
+
+  readEl.innerHTML =
+    `<p class="eyebrow">${n.grp}</p>` +
+    `<h2>${n.name}</h2>` +
+    `<p class="sub">${n.sub}</p>` + origin +
+    (tab === "does"
+      ? `<h3>职责与边界</h3><p>${n.does}</p>` +
+        (facts ? `<h3>代码事实 / 历史观测</h3><dl class="facts">${facts}</dl>` : "")
+      : `<h3>代码与接口</h3><p>${n.built}</p>` +
+        `<h3>流入与流出</h3>` +
+        EDGES.filter(e => e[0] === n.id).map(e =>
+          `<p class="quiet">→ ${byId[e[1]].name} · <code>${esc(e[2])}</code></p>`).join("") +
+        EDGES.filter(e => e[1] === n.id).map(e =>
+          `<p class="quiet">← ${byId[e[0]].name} · <code>${esc(e[2])}</code></p>`).join(""));
+
+  highlight();
+}
+
+function esc(s) {
+  return String(s).replace(/[&<>]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;" }[c]));
+}
+
+function inspect(e) {
+  readEl.innerHTML =
+    `<p class="eyebrow">流动中的数据</p>` +
+    `<h2>${byId[e.from].name} → ${byId[e.to].name}</h2>` +
+    `<p class="sub">该逻辑关系上传递的值或协议摘录</p>` +
+    `<div class="snippet">` +
+      `<div class="lbl">数据片段</div>` +
+      `<div class="val">${esc(e.datum)}</div>` +
+      `<div class="whence">${e.whence}</div>` +
+    `</div>` +
+    `<p class="quiet">片段来自当前源码、协议注释或合成测试夹具，来源逐条注明。连线是逻辑依赖与数据流，可折叠 API/适配器，不表示所有模块直接网络连接。默认值不代表已部署配置；历史观测未在本次重跑。</p>`;
+}
+
+document.addEventListener("keydown", e => {
+  if (e.code === "Space" && e.target === document.body) {
+    e.preventDefault();
+    document.getElementById("b-flow").click();
+  }
+});
+
+addEventListener("resize", fit);
+fit();
+render();
+</script>
+
+</html>

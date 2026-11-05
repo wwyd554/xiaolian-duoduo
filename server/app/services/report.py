@@ -2,14 +2,12 @@
 
 端点契约（前端 ResultPage）：先查 analysis-status，再调 analysis-results。
 报告按 session_id 持久化（analysis_reports 表），避免重复消耗模型额度。
-开发期采用同步生成：analysis-results / feedback 端点首次命中即现场生成并缓存。
+任务持久化至 jobs；报告结果由带租约校验的 Worker 原子提交。
 """
 from __future__ import annotations
 
 import json
 import logging
-import threading
-import uuid
 from datetime import datetime, timezone
 from typing import Any
 
@@ -18,6 +16,8 @@ from ..agents.llm import call_model
 from ..agents.prompts import REPORT_SYSTEM_PROMPT, build_report_prompt
 from ..agents.scoring import _extract_json
 from ..config import settings
+from ..workers.jobs import enqueue_review
+from .business_review import evaluate_business_review, build_rubric_snapshot
 
 logger = logging.getLogger("report")
 
@@ -45,32 +45,19 @@ def get_analysis_status(session_id: str) -> str:
         trigger_async(session_id)
         return "processing"
     status = row["status"]
+    if status == "completed" and get_cached_report(session_id) is None:
+        return trigger_async(session_id)
     if status in ("pending", "processing"):
         trigger_async(session_id)
         return "processing"
     return status
 
 
-def trigger_async(session_id: str) -> None:
-    """后台异步生成报告（不阻塞请求线程）。幂等：已在生成中则跳过。"""
+def trigger_async(session_id: str, *, retry: bool = False) -> str:
+    """持久化入队；查询不自动重置已耗尽重试次数的任务。"""
     with db() as conn:
-        row = conn.execute(
-            "SELECT status FROM analysis_reports WHERE session_id = ?", (session_id,)
-        ).fetchone()
-        if row and row["status"] in ("pending", "processing"):
-            return
-    _upsert_status(session_id, "pending")
-    threading.Thread(target=_run_generate, args=(session_id,), daemon=True).start()
-
-
-def _run_generate(session_id: str) -> None:
-    try:
-        _upsert_status(session_id, "processing")
-        report = _generate(session_id)
-        _upsert_status(session_id, "completed", json.dumps(report, ensure_ascii=False))
-    except Exception as exc:  # noqa: BLE001
-        logger.error("[report] 异步生成失败 session=%s: %s", session_id, exc)
-        _upsert_status(session_id, "failed", error=str(exc))
+        conn.execute("BEGIN IMMEDIATE")
+        return enqueue_review(conn, session_id, retry=retry)
 
 
 def build_processing_skeleton(session_id: str) -> dict:
@@ -79,7 +66,7 @@ def build_processing_skeleton(session_id: str) -> dict:
         sess = conn.execute(
             "SELECT * FROM sessions WHERE id = ?", (session_id,)
         ).fetchone()
-        scenario_doc = _load_scenario_doc(conn, sess["scenario_id"]) if sess else {}
+        scenario_doc = _session_scenario(conn, sess) if sess else {}
     npc = scenario_doc.get("npc") or {}
     return {
         "success": True,
@@ -113,31 +100,11 @@ def get_cached_report(session_id: str) -> dict | None:
         ).fetchone()
         if row and row["status"] == "completed" and row["report_json"]:
             try:
-                return json.loads(row["report_json"])
+                result = json.loads(row["report_json"])
+                return result if isinstance(result, dict) else None
             except json.JSONDecodeError:
                 return None
     return None
-
-
-def _upsert_status(session_id: str, status: str, report_json: str | None = None,
-                   error: str | None = None) -> None:
-    now = _now()
-    with db() as conn:
-        exists = conn.execute(
-            "SELECT 1 FROM analysis_reports WHERE session_id = ?", (session_id,)
-        ).fetchone()
-        if exists:
-            conn.execute(
-                "UPDATE analysis_reports SET status=?, report_json=?, error=?, updated_at=? "
-                "WHERE session_id=?",
-                (status, report_json, error, now, session_id),
-            )
-        else:
-            conn.execute(
-                "INSERT INTO analysis_reports (session_id, status, report_json, error, created_at, updated_at) "
-                "VALUES (?, ?, ?, ?, ?, ?)",
-                (session_id, status, report_json, error, now, now),
-            )
 
 
 # ============================================================
@@ -160,10 +127,18 @@ def _load_scenario_doc(conn, scenario_id: str) -> dict:
         return {}
 
 
+def _session_scenario(conn, session) -> dict:
+    snapshot = conn.execute("SELECT state_json FROM session_states WHERE session_id=?", (session["id"],)).fetchone()
+    if snapshot:
+        from ..harness.state import PracticeState
+        return PracticeState.model_validate_json(snapshot["state_json"]).scenario
+    return _load_scenario_doc(conn, session["scenario_id"])
+
+
 def _load_messages(conn, session_id: str) -> list[dict]:
     rows = conn.execute(
         "SELECT id, role, content, metrics, meta, created_at FROM messages "
-        "WHERE session_id = ? ORDER BY created_at ASC",
+        "WHERE session_id = ? ORDER BY created_at ASC, rowid ASC",
         (session_id,),
     ).fetchall()
     out = []
@@ -254,9 +229,13 @@ def _final_goal_statuses(conn, session_id: str, scenario_doc: dict) -> tuple[lis
             progress = 0
         goal_statuses.append({
             "goalId": gid,
+            "description": g.get("description", ""),
             "achieved": is_achieved,
             "achievedAt": None,
             "progress": progress,
+            "evidence": upd.get("evidence", []),
+            "verified": upd.get("verified", False),
+            "reason": upd.get("reason", ""),
         })
 
     goal_score = round(achieved / len(scenario_goals) * 100) if scenario_goals else 0
@@ -271,16 +250,33 @@ def _parse_report_json(text: str) -> dict:
     data = _extract_json(text)
     if not isinstance(data, dict):
         raise ValueError("报告输出非 JSON 对象")
+    scores = data.get("scores")
+    required_scores = (
+        "overall", "communication", "needsAnalysis", "proposalQuality", "flexibility",
+        "trustBuilding", "objectionHandling", "closingSkill", "listeningSkill",
+        "productKnowledge", "customerFocus", "goalAchievement",
+    )
+    if not isinstance(scores, dict) or any(
+        type(scores.get(key)) not in (int, float) or not 0 <= scores[key] <= 100
+        for key in required_scores
+    ):
+        raise ValueError("报告评分字段缺失或超出范围")
+    for key in ("strengths", "improvements", "keyInsights"):
+        if not isinstance(data.get(key), list) or any(not isinstance(v, str) for v in data[key]):
+            raise ValueError("报告分析字段不完整")
+    if not isinstance(data.get("nextSteps"), str) or not data["nextSteps"].strip():
+        raise ValueError("报告缺少下一步建议")
+    feedback = data.get("goalFeedback")
+    if feedback is not None and (not isinstance(feedback, dict) or any(
+        not isinstance(feedback.get(key, []), list) or any(not isinstance(v, str) for v in feedback.get(key, []))
+        for key in ("achievedGoals", "partiallyAchievedGoals", "missedGoals", "recommendations")
+    )):
+        raise ValueError("报告目标反馈格式无效")
     return data
 
 
 def _fill_report(core: dict, goal_statuses: list[dict], scenario_goals: list[dict]) -> dict:
-    """补全 reasoner 可能遗漏/留空的字段（goalFeedback / detailedAnalysis），保证结构完整。
-
-    策略：reasoner 给了真实内容则保留；若整块缺失或实质为空（空列表/空 dict），
-    则用 goalResults / scores 推导，避免前端拿到空壳。
-    """
-    sc = core.get("scores", {})
+    """目标反馈可由已保存目标状态补齐；缺失细分评分标记不可用，不伪造。"""
 
     # ---- goalFeedback 兜底合并 ----
     gf = core.get("goalFeedback")
@@ -309,60 +305,62 @@ def _fill_report(core: dict, goal_statuses: list[dict], scenario_goals: list[dic
         gf["recommendations"] = core.get("improvements", [])[:4]
     core["goalFeedback"] = gf
 
-    # ---- detailedAnalysis 兜底合并 ----
+    # Missing sub-scores are unavailable, never inferred from unrelated scores.
     da = core.get("detailedAnalysis")
     da = da if isinstance(da, dict) else {}
-    defaults = {
-        "communicationPatterns": {
-            "questionFrequency": sc.get("listeningSkill", 60),
-            "responseQuality": sc.get("communication", 60),
-            "clarityOfExplanation": sc.get("proposalQuality", 60),
-        },
-        "customerInteraction": {
-            "empathyLevel": sc.get("customerFocus", 60),
-            "respectShown": sc.get("communication", 60),
-            "engagementQuality": sc.get("trustBuilding", 60),
-        },
-        "salesTechniques": {
-            "valuePropositionClarity": sc.get("proposalQuality", 60),
-            "needsAlignment": sc.get("needsAnalysis", 60),
-            "painPointIdentification": sc.get("needsAnalysis", 60),
-        },
+    groups = {
+        "communicationPatterns": ("questionFrequency", "responseQuality", "clarityOfExplanation"),
+        "customerInteraction": ("empathyLevel", "respectShown", "engagementQuality"),
+        "salesTechniques": ("valuePropositionClarity", "needsAlignment", "painPointIdentification"),
     }
-    for grp, val in defaults.items():
-        if not isinstance(da.get(grp), dict):
-            da[grp] = dict(val)
-        else:
-            for k, v in val.items():
-                if not isinstance(da[grp].get(k), (int, float)):
-                    da[grp][k] = v
-    core["detailedAnalysis"] = da
+    valid = all(isinstance(da.get(group), dict) and all(
+        type(da[group].get(key)) in (int, float) and 0 <= da[group][key] <= 100
+        for key in keys
+    ) for group, keys in groups.items())
+    if valid:
+        core["detailedAnalysis"] = da
+    else:
+        core.pop("detailedAnalysis", None)
+        core["analysisWarnings"] = ["本次未生成完整的细分能力评分"]
 
     return core
 
 
-def _default_report() -> dict:
-    return {
-        "scores": {
-            "overall": 60, "communication": 60, "needsAnalysis": 60,
-            "proposalQuality": 60, "flexibility": 60, "trustBuilding": 60,
-            "objectionHandling": 60, "closingSkill": 60, "listeningSkill": 60,
-            "productKnowledge": 60, "customerFocus": 60, "goalAchievement": 60,
-        },
-        "strengths": [],
-        "improvements": ["（本次未能生成详细分析，请稍后重试或联系管理员）"],
-        "keyInsights": [],
-        "nextSteps": "建议重新进行一次完整陪练，以便系统生成针对性复盘。",
-        "goalFeedback": {
-            "achievedGoals": [], "partiallyAchievedGoals": [],
-            "missedGoals": [], "recommendations": [],
-        },
-        "detailedAnalysis": {
-            "communicationPatterns": {"questionFrequency": 60, "responseQuality": 60, "clarityOfExplanation": 60},
-            "customerInteraction": {"empathyLevel": 60, "respectShown": 60, "engagementQuality": 60},
-            "salesTechniques": {"valuePropositionClarity": 60, "needsAlignment": 60, "painPointIdentification": 60},
-        },
-    }
+def _feedback_from_business(review: dict, goal_statuses: list[dict], goals: list[dict]) -> dict:
+    """Compatibility fields contain real outputs only; no synthetic legacy sub-scores."""
+    coaching = review.get("coaching") or {}
+    statuses = {item["goalId"]: item for item in goal_statuses}
+    grouped = {"achievedGoals": [], "partiallyAchievedGoals": [], "missedGoals": []}
+    for goal in goals:
+        status = statuses.get(goal["id"], {})
+        key = ("achievedGoals" if status.get("achieved") else
+               "partiallyAchievedGoals" if status.get("progress") == 50 else "missedGoals")
+        grouped[key].append(goal.get("description") or goal["id"])
+    return {"scores": {"overall": review.get("totalScore")},
+            "strengths": [coaching["keep"]] if coaching.get("keep") else [],
+            "improvements": [coaching["fix"]] if coaching.get("fix") else [],
+            "keyInsights": [], "nextSteps": coaching.get("nextPractice") or "请先核对未完成评估的项目。",
+            "goalFeedback": {**grouped, "recommendations": [coaching["nextPractice"]] if coaching.get("nextPractice") else []}}
+
+
+def _practice_comparison(focus: dict, current: dict, snapshot: dict, previous_report: dict | None) -> dict | None:
+    if not focus.get("sourceSessionId"):
+        return None
+    criterion_id = focus.get("criterionId")
+    previous = (previous_report or {}).get("businessReview") or {}
+    old_item = next((i for i in previous.get("criteria", []) if i.get("id") == criterion_id), {})
+    new_item = next((i for i in current.get("criteria", []) if i.get("id") == criterion_id), {})
+    compatible = bool(previous_report and previous_report.get("rubricSnapshot") == snapshot
+                      and previous.get("rubricVersion") == current.get("rubricVersion"))
+    comparable = compatible and all(i.get("status") == "assessed" and type(i.get("score")) is int
+                                    for i in (old_item, new_item))
+    return {"sourceSessionId": focus["sourceSessionId"], "criterionId": criterion_id,
+            "previousScore": old_item.get("score") if old_item.get("status") == "assessed" else None,
+            "currentScore": new_item.get("score") if new_item.get("status") == "assessed" else None,
+            "delta": new_item["score"] - old_item["score"] if comparable else None,
+            "comparable": comparable,
+            "reason": "同一规则下的单项表现对比，不代表长期能力或成交效果。" if comparable else
+                      "规则或可用证据不同，本次不计算分数变化。"}
 
 
 def _generate(session_id: str) -> dict:
@@ -371,40 +369,57 @@ def _generate(session_id: str) -> dict:
         session = _load_session(conn, session_id)
         if session is None:
             raise ValueError("会话不存在")
-        scenario_doc = _load_scenario_doc(conn, session["scenario_id"])
+        if session["status"] != "completed":
+            raise ValueError("请先结束陪练再生成复盘")
+        scenario_doc = _session_scenario(conn, session)
         messages = _load_messages(conn, session_id)
-        metrics_history = _metrics_history(messages)
+        imported = conn.execute("SELECT source,context FROM review_imports WHERE session_id=?", (session_id,)).fetchone()
+        state_row = conn.execute("SELECT state_json FROM session_states WHERE session_id=?", (session_id,)).fetchone()
+        state_data = json.loads(state_row["state_json"]) if state_row else {}
+        if imported:
+            scenario_doc = {"title": session["title"], "description": imported["context"]}
+        rubric_snapshot = state_data.get("rubricSnapshot") or build_rubric_snapshot(scenario_doc)
+        if not state_data.get("rubricSnapshot"):
+            # Freeze once for legacy sessions too. Subsequent retries use the same version.
+            from ..harness.state import PracticeState, load_state, save_state
+            if imported:
+                state = PracticeState(sessionId=session_id, userId=session["user_id"],
+                    scenarioId=session["scenario_id"], scenario=scenario_doc,
+                    stage="completed", terminationReason="legacy_completed")
+            else:
+                state = load_state(conn, session)
+            state.rubricSnapshot = rubric_snapshot
+            save_state(conn, state)
+        practice_focus = state_data.get("practiceFocus") or {}
+        previous_report = None
+        if practice_focus.get("sourceSessionId"):
+            previous = conn.execute(
+                "SELECT a.report_json FROM analysis_reports a JOIN sessions s ON s.id=a.session_id "
+                "WHERE a.session_id=? AND s.user_id=? AND a.status='completed'",
+                (practice_focus["sourceSessionId"], session["user_id"])).fetchone()
+            if previous and previous["report_json"]:
+                previous_report = json.loads(previous["report_json"])
         goal_statuses, scenario_goals, goal_score = _final_goal_statuses(
             conn, session_id, scenario_doc
         )
 
-    transcript = _build_transcript(messages)
-    npc = scenario_doc.get("npc") or {}
+    if imported:
+        from .imported_review import generate_imported_review
+        return generate_imported_review(imported, messages, rubric_snapshot=rubric_snapshot)
 
-    # ---- reasoner 生成核心报告（不稳定时重试一次）----
-    core: dict | None = None
-    last_raw = ""
-    for attempt in range(2):
-        try:
-            prompt = build_report_prompt(scenario_doc, transcript, metrics_history, goal_statuses)
-            raw = call_model(
-                system=REPORT_SYSTEM_PROMPT,
-                messages=[{"role": "user", "content": prompt}],
-                model=settings.llm_reasoner_model,
-                max_tokens=8192,
-                label="feedback-report",
-            )
-            last_raw = raw
-            core = _parse_report_json(raw)
-            break
-        except Exception as exc:  # noqa: BLE001
-            logger.warning("[report] session=%s reasoner 解析失败 attempt %d: %s", session_id, attempt, exc)
-    if core is None:
-        logger.warning("[report] session=%s reasoner 最终失败，原始输出前300: %s", session_id, last_raw[:300])
-        core = _default_report()
-    else:
-        core = _fill_report(core, goal_statuses, scenario_goals)
-        logger.info("[report] session=%s reasoner 输出解析成功", session_id)
+    if not any(m["role"] == "user" and m["content"].strip() for m in messages):
+        raise ValueError("没有可复盘的学员发言")
+    npc = scenario_doc.get("npc") or {}
+    # The opening is rendered by the client but is not stored as a messages row.
+    # Keep its authoritative scenario text and stable ID in both evidence and UI.
+    if isinstance(scenario_doc.get("initialMessage"), str) and scenario_doc["initialMessage"].strip():
+        messages = [{"id": f"opening:{session_id}", "role": "npc",
+                     "content": scenario_doc["initialMessage"], "metrics": None,
+                     "meta": None, "created_at": session["created_at"]}, *messages]
+    business_review = evaluate_business_review(
+        scenario_doc, messages, rubric_snapshot=rubric_snapshot)
+    core = _feedback_from_business(business_review, goal_statuses, scenario_goals)
+    comparison = _practice_comparison(practice_focus, business_review, rubric_snapshot, previous_report)
 
     # ---- 组装完整响应 ----
     # realtimeMetrics：每轮 NPC 消息一个时间点（字符串数值，对齐前端 RawMetricsInfo）
@@ -477,6 +492,9 @@ def _generate(session_id: str) -> dict:
         "videoUrl": None,
         "createdAt": _now(),
         "feedback": core,
+        "businessReview": business_review,
+        "rubricSnapshot": rubric_snapshot,
+        "practiceComparison": comparison,
         "finalMetrics": {
             "angerLevel": final_metrics["angerLevel"],
             "trustLevel": final_metrics["trustLevel"],
@@ -504,5 +522,8 @@ def get_or_generate(session_id: str) -> dict:
     cached = get_cached_report(session_id)
     if cached is not None:
         return cached
-    trigger_async(session_id)
-    return build_processing_skeleton(session_id)
+    status = trigger_async(session_id)
+    result = build_processing_skeleton(session_id)
+    if status == "failed":
+        result.update(success=False, status="failed", error="复盘生成失败，请手动重试")
+    return result

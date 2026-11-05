@@ -1,0 +1,44 @@
+{
+  "date": "2026-11-05",
+  "audience": "面试官：产品思路与实际效果",
+  "url": "http://127.0.0.1:5174/demo",
+  "scenarioId": "demo-store-value-v1",
+  "existingScenariosPreserved": 19,
+  "scenarioCountAfter": 20,
+  "dataDecision": "补齐一个原创模拟案例；未整包替换上游模板，未训练模型",
+  "syntheticExamples": {
+    "authorship": "预写双方对话",
+    "evaluation": "当前模型实际评价，程序校验引文与总分",
+    "scores": {
+      "before": 18,
+      "after": 100
+    },
+    "notLearningOutcome": true
+  },
+  "dynamicSmoke": {
+    "sessionId": "87d84e63-cf0a-46ec-a91c-74dda4a4fc6d",
+    "turns": 3,
+    "businessScore": 70,
+    "reportVisible": true,
+    "focusedPracticePreparationReachable": true
+  },
+  "checks": {
+    "backendTests": 190,
+    "newFrontendTests": 7,
+    "typescriptAndViteBuild": "pass",
+    "changedFrontendEslint": "pass",
+    "staticDemoWithoutBackendAndLogin": "pass",
+    "desktop": "pass",
+    "mobileWidth": 390,
+    "mobileHorizontalOverflow": false,
+    "evidenceNavigation": "pass",
+    "exampleSwitching": "pass"
+  },
+  "remaining": [
+    "旧场景产品资料与本地化逐条完善",
+    "独立人工标注评测集",
+    "真实用户试用与教学效果验证"
+  ],
+  "homeDemoEntry": false,
+  "demoEntry": "左侧产品演示"
+}

@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import json
 import logging
+import math
 import re
 from typing import Any
 
@@ -19,13 +20,15 @@ def _clamp_int(value: Any, default: int, lo: int = 1, hi: int = 10) -> int:
     try:
         v = int(float(value))
         return max(lo, min(hi, v))
-    except (TypeError, ValueError):
+    except (TypeError, ValueError, OverflowError):
         return default
 
 
 def _clamp_float(value: Any, default: float, lo: float = 0.0, hi: float = 1.0) -> float:
     try:
         v = float(value)
+        if not math.isfinite(v):
+            return default
         return max(lo, min(hi, v))
     except (TypeError, ValueError):
         return default
@@ -90,14 +93,11 @@ def parse_scoring_output(
     """
     data = _extract_json(model_text)
     if data is None:
-        logger.warning("评分输出无法解析为 JSON，沿用当前分数。原始输出: %s", model_text[:200])
+        logger.warning("评分输出无法解析为 JSON，沿用当前分数")
         return _empty_result(fallback_scores)
 
-    scores = {
-        "angerLevel": _clamp_int(data.get("angerLevel"), DEFAULT_SCORES["angerLevel"]),
-        "trustLevel": _clamp_int(data.get("trustLevel"), DEFAULT_SCORES["trustLevel"]),
-        "progressLevel": _clamp_int(data.get("progressLevel"), DEFAULT_SCORES["progressLevel"]),
-    }
+    defaults = _empty_result(fallback_scores)["scores"]
+    scores = {key: _clamp_int(data.get(key), defaults[key]) for key in DEFAULT_SCORES}
 
     analysis = str(data.get("analysis", ""))[:200]
 
@@ -105,7 +105,8 @@ def parse_scoring_output(
     raw_updates = data.get("goalUpdates")
     if isinstance(raw_updates, list):
         for upd in raw_updates:
-            if not isinstance(upd, dict) or not upd.get("goalId"):
+            if (not isinstance(upd, dict) or not upd.get("goalId")
+                    or type(upd.get("achieved")) is not bool):
                 continue
             goal_updates.append({
                 "goalId": str(upd["goalId"]),

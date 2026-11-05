@@ -14,7 +14,8 @@ COPY . .
 # 种子场景数据放在镜像内固定路径（与持久化数据卷 /app/data 分离，避免被卷覆盖）
 ENV SCENARIOS_SEED_PATH=/app/seed/scenarios.json
 RUN mkdir -p /app/seed /app/data \
-    && cp data/scenarios.json /app/seed/scenarios.json
+    && cp data/scenarios.json /app/seed/scenarios.json \
+    && cp data/curated_scenarios.json /app/seed/curated_scenarios.json
 
 EXPOSE 8000
 

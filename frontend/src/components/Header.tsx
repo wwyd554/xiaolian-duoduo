@@ -16,6 +16,11 @@ import {
   ListItemIcon,
   ListItemText,
   Divider,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
   useMediaQuery,
   useTheme,
 } from "@mui/material";
@@ -26,10 +31,13 @@ import HomeIcon from "@mui/icons-material/Home";
 import HistoryIcon from "@mui/icons-material/History";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import PersonIcon from "@mui/icons-material/Person";
-import AudiotrackRoundedIcon from "@mui/icons-material/AudiotrackRounded";
+import AutoStoriesOutlinedIcon from "@mui/icons-material/AutoStoriesOutlined";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 import { AuthService } from "../services/AuthService";
 import { useTranslation } from "react-i18next";
 import LanguageSwitcher from "./LanguageSwitcher";
+import { designTokens as d } from "../theme/designTokens";
 
 interface HeaderProps {
   // showBackButton?: boolean; // 当前未使用
@@ -54,13 +62,14 @@ const Header: React.FC<HeaderProps> = ({ pageTitle, variant = "app" }) => {
   const [loading, setLoading] = useState<boolean>(true);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [productInfoOpen, setProductInfoOpen] = useState(false);
   const isMenuOpen = Boolean(anchorEl);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const isLanding = variant === "landing";
   const isHomeRoute = location.pathname === "/";
   const isScenariosRoute = location.pathname.startsWith("/scenarios");
-  const isAudioAnalysisRoute = location.pathname.startsWith("/audio-analysis");
   const isHistoryRoute = location.pathname.startsWith("/history");
 
   // 异步获取用户信息
@@ -138,11 +147,6 @@ const Header: React.FC<HeaderProps> = ({ pageTitle, variant = "app" }) => {
     setDrawerOpen(false);
   };
 
-  const handleAudioAnalysisClick = () => {
-    navigate("/audio-analysis");
-    setDrawerOpen(false);
-  };
-
   // 抽屉的开合
   const toggleDrawer = () => {
     setDrawerOpen((current) => !current);
@@ -163,6 +167,13 @@ const Header: React.FC<HeaderProps> = ({ pageTitle, variant = "app" }) => {
       onClick: handleHomeClick,
     },
     {
+      id: "demo",
+      label: "产品演示",
+      icon: <AutoStoriesOutlinedIcon />,
+      active: location.pathname === "/demo",
+      onClick: () => { navigate("/demo"); setDrawerOpen(false); },
+    },
+    {
       id: "scenarios",
       label: t("navigation.scenarios"),
       icon: <PlayArrowIcon />,
@@ -176,13 +187,6 @@ const Header: React.FC<HeaderProps> = ({ pageTitle, variant = "app" }) => {
       active: isHistoryRoute,
       onClick: handleHistoryClick,
     },
-    {
-      id: "audio-analysis",
-      label: t("home.audioAnalysisButton"),
-      icon: <AudiotrackRoundedIcon />,
-      active: isAudioAnalysisRoute,
-      onClick: handleAudioAnalysisClick,
-    },
   ];
 
   const accountMenu = (
@@ -193,13 +197,100 @@ const Header: React.FC<HeaderProps> = ({ pageTitle, variant = "app" }) => {
       open={isMenuOpen}
       onClose={handleMenuClose}
       transformOrigin={{ horizontal: "left", vertical: "bottom" }}
-      anchorOrigin={{ horizontal: "right", vertical: "top" }}
+      anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
     >
+      <MenuItem
+        onClick={() => {
+          handleMenuClose();
+          setSettingsOpen(true);
+        }}
+      >
+        <ListItemIcon>
+          <SettingsOutlinedIcon fontSize="small" />
+        </ListItemIcon>
+        {t("navigation.settings", "设置")}
+      </MenuItem>
+      <MenuItem
+        onClick={() => {
+          handleMenuClose();
+          setProductInfoOpen(true);
+        }}
+      >
+        <ListItemIcon>
+          <InfoOutlinedIcon fontSize="small" />
+        </ListItemIcon>
+        {t("navigation.productInfo", "产品说明")}
+      </MenuItem>
+      <Divider />
       <MenuItem onClick={handleProfileClick}>
         {t("navigation.profile")}
       </MenuItem>
       <MenuItem onClick={handleLogout}>{t("auth.signOut")}</MenuItem>
     </Menu>
+  );
+
+  const utilityDialogs = (
+    <>
+      <Dialog
+        open={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        fullWidth
+        maxWidth="xs"
+        aria-labelledby="app-settings-title"
+      >
+        <DialogTitle id="app-settings-title">
+          {t("navigation.settings", "设置")}
+        </DialogTitle>
+        <DialogContent dividers>
+          <Typography variant="subtitle2" sx={{ mb: 2 }}>
+            {t("settings.language")}
+          </Typography>
+          <LanguageSwitcher />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setSettingsOpen(false)}>
+            {t("common.close", "关闭")}
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog
+        open={productInfoOpen}
+        onClose={() => setProductInfoOpen(false)}
+        fullWidth
+        maxWidth="sm"
+        aria-labelledby="product-info-title"
+      >
+        <DialogTitle id="product-info-title">
+          {t("navigation.productInfo", "产品说明")}
+        </DialogTitle>
+        <DialogContent dividers>
+          <Typography variant="h6" sx={{ mb: 1 }}>
+            销练多多 · AI 销售陪练
+          </Typography>
+          <Typography color="text.secondary" sx={{ lineHeight: 1.9 }}>
+            选择销售场景，与 AI
+            模拟客户练习沟通；结束后查看对话记录与复盘建议，找到下一次可以改进的地方。
+          </Typography>
+          <Typography variant="subtitle2" sx={{ mt: 3, mb: 1 }}>
+            如何使用
+          </Typography>
+          <Typography color="text.secondary" sx={{ lineHeight: 1.9 }}>
+            开始练习：选择场景，使用文字或语音进行对话。
+            <br />
+            销售复盘：查看练习记录，也可导入聊天记录，或上传录音并在本地转写后进行分析。
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 3 }}>
+            AI
+            反馈仅供训练参考，请结合实际业务判断。导入真实沟通记录前，请先去除客户的敏感信息。
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setProductInfoOpen(false)}>
+            {t("common.close", "关闭")}
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
   );
 
   const drawerContent = (
@@ -255,8 +346,8 @@ const Header: React.FC<HeaderProps> = ({ pageTitle, variant = "app" }) => {
             px: 1.75,
             py: 2,
             color: "text.primary",
-            bgcolor: "#f7f7f4",
-            borderRight: "1px solid rgba(30,36,48,.09)",
+            bgcolor: d.colors.surface,
+            borderRight: `1px solid ${d.colors.border}`,
           }}
         >
           <ButtonBase
@@ -322,17 +413,19 @@ const Header: React.FC<HeaderProps> = ({ pageTitle, variant = "app" }) => {
                     minHeight: 46,
                     px: 1.4,
                     borderRadius: "13px",
-                    color: item.active ? "#fff" : "#5d626c",
-                    bgcolor: item.active ? "#222321" : "transparent",
+                    color: item.active ? d.colors.primaryHover : d.colors.muted,
+                    bgcolor: item.active ? d.colors.primarySoft : "transparent",
                     "&:hover": {
-                      bgcolor: item.active ? "#222321" : "rgba(30,36,48,.055)",
-                      color: item.active ? "#fff" : "text.primary",
+                      bgcolor: item.active
+                        ? d.colors.primarySoft
+                        : d.colors.surfaceSoft,
+                      color: item.active ? d.colors.primaryHover : d.colors.ink,
                     },
                     "&.Mui-selected": {
-                      bgcolor: "#222321",
-                      color: "#fff",
+                      bgcolor: d.colors.primarySoft,
+                      color: d.colors.primaryHover,
                     },
-                    "&.Mui-selected:hover": { bgcolor: "#222321" },
+                    "&.Mui-selected:hover": { bgcolor: d.colors.primarySoft },
                     "&.Mui-focusVisible": {
                       outline: "3px solid rgba(43,89,209,.28)",
                       outlineOffset: 2,
@@ -354,8 +447,8 @@ const Header: React.FC<HeaderProps> = ({ pageTitle, variant = "app" }) => {
                     slotProps={{
                       primary: {
                         sx: {
-                          fontSize: 13,
-                          fontWeight: item.active ? 700 : 600,
+                          fontSize: 14,
+                          fontWeight: item.active ? 600 : 500,
                         },
                       },
                     }}
@@ -367,19 +460,6 @@ const Header: React.FC<HeaderProps> = ({ pageTitle, variant = "app" }) => {
 
           <Box sx={{ mt: "auto", pt: 2 }}>
             <Divider sx={{ mb: 1.75 }} />
-            <Box
-              sx={{
-                minHeight: 48,
-                display: "flex",
-                alignItems: "center",
-                px: 0.75,
-                mb: 1.25,
-                color: "text.secondary",
-              }}
-            >
-              <LanguageSwitcher />
-            </Box>
-
             {loading ? (
               <Box
                 role="status"
@@ -395,13 +475,10 @@ const Header: React.FC<HeaderProps> = ({ pageTitle, variant = "app" }) => {
                 aria-haspopup="true"
                 aria-expanded={isMenuOpen ? "true" : undefined}
                 sx={{
-                  width: "100%",
-                  minHeight: 62,
-                  justifyContent: "flex-start",
-                  gap: 1.1,
-                  p: 1,
-                  borderRadius: "14px",
-                  textAlign: "left",
+                  width: 48,
+                  height: 48,
+                  ml: 0.5,
+                  borderRadius: "50%",
                   "&:hover": { bgcolor: "rgba(30,36,48,.055)" },
                   "&.Mui-focusVisible": {
                     outline: "3px solid rgba(43,89,209,.28)",
@@ -419,22 +496,8 @@ const Header: React.FC<HeaderProps> = ({ pageTitle, variant = "app" }) => {
                     fontSize: 14,
                   }}
                 >
-                  {displayName.charAt(0).toUpperCase()}
+                  <PersonIcon fontSize="small" />
                 </Avatar>
-                <Box sx={{ minWidth: 0 }}>
-                  <Typography
-                    noWrap
-                    sx={{ fontSize: 12.5, fontWeight: 700, lineHeight: 1.35 }}
-                  >
-                    {displayName}
-                  </Typography>
-                  <Typography
-                    noWrap
-                    sx={{ mt: 0.2, color: "text.secondary", fontSize: 10.5 }}
-                  >
-                    {currentUser.email}
-                  </Typography>
-                </Box>
               </ButtonBase>
             ) : (
               <Box
@@ -454,6 +517,7 @@ const Header: React.FC<HeaderProps> = ({ pageTitle, variant = "app" }) => {
           </Box>
         </Box>
         {accountMenu}
+        {utilityDialogs}
       </>
     );
   }
@@ -466,7 +530,7 @@ const Header: React.FC<HeaderProps> = ({ pageTitle, variant = "app" }) => {
         sx={{
           top: 0,
           bgcolor: isLanding
-            ? "rgba(247, 247, 248, 0.82)"
+            ? "rgba(255, 255, 255, 0.92)"
             : "background.default",
           color: "text.primary",
           backdropFilter: isLanding ? "blur(18px)" : "none",
@@ -550,23 +614,10 @@ const Header: React.FC<HeaderProps> = ({ pageTitle, variant = "app" }) => {
           </Box>
 
           <Box sx={{ display: "flex", alignItems: "center" }}>
-            <Box sx={{ mr: 2 }}>
-              <LanguageSwitcher />
-            </Box>
-
             {loading ? (
               <CircularProgress size={24} color="inherit" />
             ) : currentUser ? (
               <>
-                <Typography
-                  variant="body2"
-                  sx={{
-                    mr: 1,
-                    display: { xs: "none", sm: "block" },
-                  }}
-                >
-                  {displayName}
-                </Typography>
                 <IconButton
                   size="large"
                   edge="end"
@@ -586,7 +637,7 @@ const Header: React.FC<HeaderProps> = ({ pageTitle, variant = "app" }) => {
                       fontSize: 14,
                     }}
                   >
-                    {displayName.charAt(0).toUpperCase()}
+                    <PersonIcon fontSize="small" />
                   </Avatar>
                 </IconButton>
                 <Menu
@@ -598,6 +649,22 @@ const Header: React.FC<HeaderProps> = ({ pageTitle, variant = "app" }) => {
                   transformOrigin={{ horizontal: "right", vertical: "top" }}
                   anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
                 >
+                  <MenuItem
+                    onClick={() => {
+                      handleMenuClose();
+                      setSettingsOpen(true);
+                    }}
+                  >
+                    {t("navigation.settings", "设置")}
+                  </MenuItem>
+                  <MenuItem
+                    onClick={() => {
+                      handleMenuClose();
+                      setProductInfoOpen(true);
+                    }}
+                  >
+                    {t("navigation.productInfo", "产品说明")}
+                  </MenuItem>
                   <MenuItem onClick={handleProfileClick}>
                     {t("navigation.profile")}
                   </MenuItem>
@@ -629,6 +696,7 @@ const Header: React.FC<HeaderProps> = ({ pageTitle, variant = "app" }) => {
       >
         {drawerContent}
       </Drawer>
+      {utilityDialogs}
     </>
   );
 };

@@ -17,10 +17,13 @@ import json
 import logging
 import time
 
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect, HTTPException
 
 from ..auth.jwt import decode_token
 from ..services.asr import WhisperASR, pcm_rms
+from ..database import independent_db
+from ..config import settings
+from ..harness.resource_limits import acquire, release, consume_audio
 
 logger = logging.getLogger("app.asr")
 
@@ -46,15 +49,26 @@ async def transcribe_ws(websocket: WebSocket, session: str = "", token: str = ""
             user_id = payload.get("sub", "")
         except Exception:  # noqa: BLE001
             user_id = ""
-    # 开发直登关闭且无有效 token 时拒绝；开发期放行（前端可能匿名连接失败重试）
     if not user_id:
         await websocket.close(code=4401)
         return
 
-    await websocket.accept()
-    logger.info("[asr] WebSocket 建立 user=%s session=%s", user_id, session)
+    origin = websocket.headers.get("origin")
+    if origin and origin not in settings.cors_origins:
+        await websocket.close(code=4403)
+        return
+    with independent_db() as conn:
+        owned = conn.execute("SELECT status FROM sessions WHERE id=? AND user_id=?", (session, user_id)).fetchone()
+    if not owned or owned["status"] != "active":
+        await websocket.close(code=4403)
+        return
+    try:
+        lease = acquire(user_id, "asr")
+    except HTTPException:
+        await websocket.close(code=4429)
+        return
 
-    asr = WhisperASR.get()
+    asr = None
     language = "zh"
 
     utterance = bytearray()        # 当前语音段（含说话期间的全部音频）
@@ -64,23 +78,18 @@ async def transcribe_ws(websocket: WebSocket, session: str = "", token: str = ""
     last_partial_at = 0.0
     loop = asyncio.get_running_loop()
 
-    def _send(transcript: str, is_partial: bool) -> None:
-        """同步发送（在事件循环内调用）。"""
-        try:
-            data = json.dumps({"transcript": transcript, "isPartial": is_partial}, ensure_ascii=False)
-            asyncio.ensure_future(websocket.send_text(data))
-        except Exception:  # noqa: BLE001
-            pass
+    async def _send(transcript: str, is_partial: bool) -> None:
+        await websocket.send_json({"transcript": transcript, "isPartial": is_partial})
 
     async def _finalize() -> None:
-        nonlocal utterance, speaking, silence_ms
+        nonlocal utterance, pre_roll, speaking, silence_ms
         dur_ms = len(utterance) / (SAMPLE_RATE * BYTES_PER_SAMPLE) * 1000
         if dur_ms >= MIN_UTTERANCE_MS:
             pcm = bytes(utterance)
             text = await loop.run_in_executor(None, asr.transcribe_pcm16, pcm, language)
             if text:
-                _send(text, False)
-                logger.info("[asr] final (%.1fs): %s", dur_ms / 1000, text)
+                await _send(text, False)
+                logger.info("[asr] final duration_seconds=%.1f", dur_ms / 1000)
         utterance = bytearray()
         pre_roll = bytearray()
         speaking = False
@@ -94,16 +103,37 @@ async def transcribe_ws(websocket: WebSocket, session: str = "", token: str = ""
         pcm = bytes(utterance)
         text = await loop.run_in_executor(None, asr.transcribe_pcm16, pcm, language)
         if text:
-            _send(text, True)
+            await _send(text, True)
         last_partial_at = time.monotonic()
 
     try:
+        await websocket.accept()
+        asr = WhisperASR.get()
+        started = time.monotonic()
+        last_access_check = started
         while True:
-            raw = await websocket.receive_text()
+            raw = await asyncio.wait_for(websocket.receive_text(), timeout=60)
+            if time.monotonic() - started > 900 or time.time() >= payload["exp"]:
+                await websocket.close(code=4401)
+                return
+            if time.monotonic() - last_access_check > 5:
+                with independent_db() as conn:
+                    owned = conn.execute("SELECT status FROM sessions WHERE id=? AND user_id=?", (session, user_id)).fetchone()
+                if not owned or owned["status"] != "active":
+                    await websocket.close(code=4403)
+                    return
+                last_access_check = time.monotonic()
+            if len(raw) > 100000:
+                await websocket.close(code=1009)
+                return
             try:
                 msg = json.loads(raw)
             except json.JSONDecodeError:
-                continue
+                await websocket.close(code=1008)
+                return
+            if not isinstance(msg, dict):
+                await websocket.close(code=1008)
+                return
             if msg.get("action") != "sendAudio":
                 continue
             if msg.get("language"):
@@ -111,11 +141,16 @@ async def transcribe_ws(websocket: WebSocket, session: str = "", token: str = ""
 
             audio_b64 = msg.get("audio") or ""
             try:
-                pcm = base64.b64decode(audio_b64)
+                pcm = base64.b64decode(audio_b64, validate=True)
             except Exception:  # noqa: BLE001
-                continue
+                await websocket.close(code=1008)
+                return
             if not pcm:
                 continue
+            if len(pcm) > 65536 or len(pcm) % 2:
+                await websocket.close(code=1009)
+                return
+            consume_audio(user_id, len(pcm))
 
             rms = pcm_rms(pcm)
             is_voice = rms > VAD_VOICE_RMS
@@ -134,7 +169,7 @@ async def transcribe_ws(websocket: WebSocket, session: str = "", token: str = ""
                     await _partial()
             else:
                 if speaking:
-                    silence_ms += CHUNK_MS
+                    silence_ms += len(pcm) / (SAMPLE_RATE * BYTES_PER_SAMPLE) * 1000
                     utterance.extend(pcm)
                     if silence_ms >= VAD_SILENCE_MS:
                         await _finalize()
@@ -144,8 +179,17 @@ async def transcribe_ws(websocket: WebSocket, session: str = "", token: str = ""
                     keep = SAMPLE_RATE * BYTES_PER_SAMPLE // 2
                     if len(pre_roll) > keep:
                         del pre_roll[: len(pre_roll) - keep]
+            if len(utterance) >= SAMPLE_RATE * BYTES_PER_SAMPLE * 20:
+                await _finalize()
 
     except WebSocketDisconnect:
-        logger.info("[asr] WebSocket 断开 user=%s session=%s", user_id, session)
-    except Exception:  # noqa: BLE001
-        logger.exception("[asr] WebSocket 异常")
+        logger.info("[asr] WebSocket 断开")
+    except HTTPException:
+        await websocket.close(code=4429)
+    except asyncio.TimeoutError:
+        await websocket.close(code=1000)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("[asr] WebSocket 异常 error_type=%s", type(exc).__name__)
+        await websocket.close(code=1011)
+    finally:
+        release(lease)

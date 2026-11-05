@@ -9,12 +9,14 @@ import json
 import logging
 import uuid
 from concurrent.futures import ThreadPoolExecutor
+from contextvars import copy_context
 from datetime import datetime, timezone
 
 from ..agents.llm import call_model
 from ..agents.prompts import build_npc_system_prompt, build_scoring_prompt
 from ..agents.scoring import parse_scoring_output
 from ..config import settings
+from ..workers.jobs import enqueue_review
 
 logger = logging.getLogger("conversation")
 
@@ -158,9 +160,18 @@ def _run_scoring(
 
 
 def run_conversation_turn(conn, session_row, body, user_id: str) -> dict:
+    if settings.harness_runtime_enabled:
+        from ..harness.runtime import run_turn
+        return run_turn(conn, session_row, body, user_id)
+    return _run_legacy_conversation_turn(conn, session_row, body, user_id)
+
+
+def _run_legacy_conversation_turn(conn, session_row, body, user_id: str) -> dict:
     """执行一轮对话。返回发给前端的响应体。"""
+    from ..harness.state import load_state, save_state
+    authority = load_state(conn, session_row)
     session_id = session_row["id"]
-    scenario_doc = _load_scenario_doc(conn, session_row["scenario_id"])
+    scenario_doc = authority.scenario
     if not scenario_doc:
         raise ValueError("场景数据不存在或已损坏")
 
@@ -171,35 +182,22 @@ def run_conversation_turn(conn, session_row, body, user_id: str) -> dict:
         "SELECT COUNT(*) AS c FROM messages WHERE session_id = ? AND role = 'user'",
         (session_id,),
     ).fetchone()["c"]
-    if turns_used >= max_turns:
+    if session_row["status"] == "completed" or turns_used >= max_turns:
         return _session_completed_response(session_id, turns_used, max_turns)
 
-    # ---- NPC 信息：请求传入优先，否则会话 npc_info，否则场景 npc ----
-    npc_info = body.npcInfo
-    if npc_info is None and session_row["npc_info"]:
-        try:
-            npc_info = json.loads(session_row["npc_info"])
-        except json.JSONDecodeError:
-            npc_info = None
-    if npc_info is None:
-        npc_info = scenario_doc.get("npc") or {}
+    # Rollback changes orchestration, never resource ownership or authoritative state.
+    npc_info = scenario_doc.get("npc") or {}
 
     # ---- 当前情绪 & 目标 ----
-    current_metrics = _get_current_metrics(conn, session_id, scenario_doc)
-    if body.emotionParams:
-        current_metrics = {k: body.emotionParams.get(k, current_metrics[k]) for k in _EMOTION_KEYS}
+    current_metrics = authority.customerState
 
     # ---- 目标状态：后端从 meta 自恢复，前端显式回传则覆盖 ----
     goals = scenario_doc.get("goals") or []
-    if body.goals:
-        goals = body.goals
     restored_updates = _load_last_npc_meta(conn, session_id).get("goalUpdates") or []
     if restored_updates:
         goals = _merge_goal_statuses(goals, restored_updates)
-    if body.goalStatuses:
-        goals = _merge_goal_statuses(goals, body.goalStatuses)
 
-    scenario_description = body.scenarioDescription or scenario_doc.get("description") or ""
+    scenario_description = scenario_doc.get("description") or ""
     initial_message = scenario_doc.get("initialMessage") or ""
     language = body.language or "zh"
 
@@ -212,6 +210,14 @@ def run_conversation_turn(conn, session_row, body, user_id: str) -> dict:
         scenario_description=scenario_description,
         initial_message=initial_message,
     )
+    if authority.practiceFocus:
+        from .practice_plan import focus_context
+        focus = focus_context(authority.practiceFocus)
+        if focus:
+            npc_system_prompt += ("\n本次为针对一个能力的复练。你仍是客户，不替销售作答，不提及训练目标或上次得分。"
+                                  "以原场景事实为准，不补造产品、价格或客户背景。客户回应方向："
+                                  + focus["customerBehavior"])
+            scenario_description += "\n本次复练重点：" + focus["label"]
     user_message = body.content
     scoring_history = history
     if initial_message:
@@ -221,9 +227,9 @@ def run_conversation_turn(conn, session_row, body, user_id: str) -> dict:
 
     # ---- 并行调用：NPC 回复 + 实时评分 ----
     with ThreadPoolExecutor(max_workers=2) as pool:
-        npc_future = pool.submit(_run_npc_turn, npc_system_prompt, history, user_message)
+        npc_future = pool.submit(copy_context().run, _run_npc_turn, npc_system_prompt, history, user_message)
         scoring_future = pool.submit(
-            _run_scoring,
+            copy_context().run, _run_scoring,
             user_message,
             scoring_history,
             current_metrics,
@@ -234,6 +240,20 @@ def run_conversation_turn(conn, session_row, body, user_id: str) -> dict:
         npc_response = npc_future.result()
         scoring = scoring_future.result()
 
+    # A manual completion or competing turn may have committed while models ran.
+    # Recheck under the write lock so a late turn never mutates an already queued review.
+    conn.execute("BEGIN IMMEDIATE")
+    latest = conn.execute("SELECT status FROM sessions WHERE id=?", (session_id,)).fetchone()
+    if latest is None:
+        raise ValueError("会话已删除，无法继续练习")
+    latest_turns = conn.execute(
+        "SELECT COUNT(*) FROM messages WHERE session_id=? AND role='user'", (session_id,)
+    ).fetchone()[0]
+    if latest["status"] == "completed":
+        return _session_completed_response(session_id, latest_turns, max_turns)
+    if latest_turns != turns_used:
+        raise ValueError("上一条消息已更新会话，请刷新后再发送")
+
     # ---- 写入消息 ----
     now = _now()
     user_msg_id = str(uuid.uuid4())
@@ -242,6 +262,8 @@ def run_conversation_turn(conn, session_row, body, user_id: str) -> dict:
     suggestions = scoring["suggestions"]
     goal_updates = scoring["goalUpdates"]
 
+    if not goal_updates and restored_updates:
+        goal_updates = restored_updates
     npc_meta = json.dumps({
         "metrics": metrics,
         "goalUpdates": goal_updates,
@@ -249,10 +271,6 @@ def run_conversation_turn(conn, session_row, body, user_id: str) -> dict:
         "npcEmotionIntensity": scoring["npcEmotionIntensity"],
         "gesture": scoring["gesture"],
     }, ensure_ascii=False)
-    # 兜底：模型省略未变化目标导致空数组时，恢复上次持久化的目标状态（保证前端拿到完整快照）
-    if not goal_updates and restored_updates:
-        goal_updates = restored_updates
-        logger.info("[conversation] session=%s goalUpdates 为空，已从 meta 恢复 %d 条", session_id, len(goal_updates))
     metrics_json = json.dumps(metrics, ensure_ascii=False)
     suggestions_json = json.dumps(suggestions, ensure_ascii=False)
 
@@ -275,6 +293,12 @@ def run_conversation_turn(conn, session_row, body, user_id: str) -> dict:
         "UPDATE sessions SET updated_at = ?, status = ? WHERE id = ?",
         (now, new_status, session_id),
     )
+    authority = load_state(conn, conn.execute("SELECT * FROM sessions WHERE id=?", (session_id,)).fetchone())
+    if session_completed:
+        authority.terminationReason = "max_turns"
+    save_state(conn, authority)
+    if session_completed:
+        enqueue_review(conn, session_id)
 
     logger.info(
         "[conversation] session=%s turn=%d/%d len=%d scoring=%s",
@@ -297,6 +321,7 @@ def run_conversation_turn(conn, session_row, body, user_id: str) -> dict:
         "turnsUsed": turns_used,
         "maxTurns": max_turns,
         "npcMeta": json.loads(npc_meta),
+        "terminationReason": authority.terminationReason,
     }
 
 
@@ -317,4 +342,5 @@ def _session_completed_response(session_id: str, turns_used: int, max_turns: int
         "turnsUsed": turns_used,
         "maxTurns": max_turns,
         "npcMeta": None,
+        "terminationReason": "max_turns" if turns_used >= max_turns else "legacy_completed",
     }

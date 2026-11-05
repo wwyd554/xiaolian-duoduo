@@ -1,5 +1,5 @@
 import React from "react";
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import MessageList from "../../components/conversation/MessageList";
 import type { Scenario, Metrics } from "../../types/index";
 
@@ -70,6 +70,19 @@ describe("MessageList - 视频录制开/关对开始按钮的影响", () => {
     jest.clearAllMocks();
   });
 
+  test("开始前直接确认练习，不再要求预选输入方式", () => {
+    render(<MessageList {...defaultProps} />);
+    expect(
+      screen.queryByRole("button", { name: "语音练习" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "文字练习" }),
+    ).not.toBeInTheDocument();
+    expect(defaultProps.onStartConversation).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByTestId("start-conversation-button"));
+    expect(defaultProps.onStartConversation).toHaveBeenCalledTimes(1);
+  });
+
   describe("录制开启时（videoRecordingEnabled = true）", () => {
     test("摄像头未初始化且无错误时，开始按钮禁用并显示摄像头初始化中标签", () => {
       render(
@@ -113,7 +126,7 @@ describe("MessageList - 视频录制开/关对开始按钮的影响", () => {
 
       const button = screen.getByTestId("start-conversation-button");
       expect(button).toBeEnabled();
-      expect(button).toHaveTextContent("开始商谈（无录制）");
+      expect(button).toHaveTextContent("开始商谈");
     });
   });
 
@@ -130,18 +143,13 @@ describe("MessageList - 视频录制开/关对开始按钮的影响", () => {
 
       const button = screen.getByTestId("start-conversation-button");
       expect(button).toBeEnabled();
-      expect(button).toHaveTextContent("开始商谈（无录制）");
+      expect(button).toHaveTextContent("开始商谈");
     });
 
-    test("显示录制关闭的消息", () => {
-      render(
-        <MessageList
-          {...defaultProps}
-          videoRecordingEnabled={false}
-        />,
-      );
+    test("不显示无关的录制关闭消息", () => {
+      render(<MessageList {...defaultProps} videoRecordingEnabled={false} />);
 
-      expect(screen.getByText("视频录制已关闭")).toBeInTheDocument();
+      expect(screen.queryByText("视频录制已关闭")).not.toBeInTheDocument();
     });
 
     test("录制关闭时不显示摄像头初始化中消息", () => {
@@ -154,9 +162,7 @@ describe("MessageList - 视频录制开/关对开始按钮的影响", () => {
         />,
       );
 
-      expect(
-        screen.queryByText("正在初始化摄像头..."),
-      ).not.toBeInTheDocument();
+      expect(screen.queryByText("正在初始化摄像头...")).not.toBeInTheDocument();
     });
   });
 
@@ -172,7 +178,7 @@ describe("MessageList - 视频录制开/关对开始按钮的影响", () => {
 
       const button = screen.getByTestId("start-conversation-button");
       expect(button).not.toBeDisabled();
-      expect(button).toHaveTextContent("开始商谈（无录制）");
+      expect(button).toHaveTextContent("开始商谈");
     });
   });
 });

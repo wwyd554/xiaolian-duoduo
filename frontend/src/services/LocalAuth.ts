@@ -81,9 +81,17 @@ export async function registerWithInviteCode(
  * 开发期直登：调用后端 /auth/dev-login（需服务器开启 AUTH_DEV_BYPASS=1）。
  */
 export async function devLogin(): Promise<LocalAuthData> {
-  const response = await fetch(`${LOCAL_BACKEND_URL}/auth/dev-login`, {
-    method: "POST",
-  });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 10000);
+  let response: Response;
+  try {
+    response = await fetch(`${LOCAL_BACKEND_URL}/auth/dev-login`, {
+      method: "POST",
+      signal: controller.signal,
+    });
+  } finally {
+    clearTimeout(timeout);
+  }
 
   const data = await response.json().catch(() => ({}));
   if (!response.ok || !data.token) {

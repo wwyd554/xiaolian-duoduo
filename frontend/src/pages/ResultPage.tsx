@@ -1,3 +1,6 @@
+import BusinessReviewPanel from "../components/review/BusinessReviewPanel";
+import type { BusinessReview, CriterionId, PracticeComparison } from "../types/businessReview";
+import { customerAvatar } from "../utils/customerAvatar";
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -18,7 +21,11 @@ import {
   AlertTitle,
   Divider,
   Stack,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
 } from "@mui/material";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import GoalResultsSection from "../components/conversation/GoalResultsSection";
 import {
   Home as HomeIcon,
@@ -30,8 +37,9 @@ import {
   Assessment as AssessmentIcon,
   Lightbulb as LightbulbIcon,
   Gavel as GavelIcon,
-  Videocam as VideocamIcon,
+
   Description as DescriptionIcon,
+  FaceRounded as FaceIcon,
 } from "@mui/icons-material";
 import {
   Chart as ChartJS,
@@ -48,9 +56,9 @@ import {
 } from "chart.js";
 import { Line, Radar } from "react-chartjs-2";
 import type { Session, Metrics, GoalStatus, Goal } from "../types/index";
-import type { RealtimeMetric, ReferenceCheckResult, VideoAnalysisResult } from "../types/api";
+import type { RealtimeMetric, ReferenceCheckResult } from "../types/api";
 import { addMetricsChangesToMessages } from "../utils/dialogueEngine";
-import VideoFeedback from "../components/recording/VideoFeedback";
+
 import ReferenceCheck from "../components/referenceCheck/ReferenceCheck";
 import type { ScenarioInfo } from "../types/api";
 import type { SlideImageInfo } from "../types/api";
@@ -59,7 +67,7 @@ import ComplianceViolationsList from "../components/compliance/ComplianceViolati
 
 // 服务的导入
 import { ApiService } from "../services/ApiService";
-import type { FeedbackAnalysisResult } from "../types/api";
+import type { FeedbackAnalysisResult, SessionCompleteDataResponse } from "../types/api";
 
 // Chart.js 的注册
 ChartJS.register(
@@ -97,16 +105,42 @@ const TabPanel = (props: TabPanelProps) => {
   );
 };
 
+// Rubric reports have their own contract; they do not require legacy sub-scores.
+function sessionFromBusinessReport(data: SessionCompleteDataResponse): Session {
+  const info = data.sessionInfo;
+  return {
+    id: data.sessionId,
+    scenarioId: info.scenarioId,
+    startTime: new Date(info.startTime || info.createdAt),
+    endTime: info.endTime ? new Date(info.endTime) : undefined,
+    messages: data.messages.filter((message) => message.sender === "user" || message.sender === "npc").map((message) => ({
+      id: message.messageId,
+      sender: message.sender as "user" | "npc",
+      content: message.content,
+      timestamp: new Date(message.timestamp),
+    })),
+    finalMetrics: { angerLevel: Number(data.finalMetrics?.angerLevel ?? 0), trustLevel: Number(data.finalMetrics?.trustLevel ?? 0), progressLevel: Number(data.finalMetrics?.progressLevel ?? 0) },
+    finalScore: data.businessReview?.totalScore ?? null,
+    feedback: [], goalStatuses: [], goalScore: 0,
+  };
+}
+
 const ResultPage: React.FC = () => {
   const { t } = useTranslation();
   const { sessionId } = useParams<{ sessionId: string }>();
   const navigate = useNavigate();
+  const [reportTitle, setReportTitle] = useState("");
+  const [businessReview, setBusinessReview] = useState<BusinessReview | null>(null);
+  const [practiceComparison, setPracticeComparison] = useState<PracticeComparison | undefined>();
+  const [practicing, setPracticing] = useState(false);
+  const [practiceError, setPracticeError] = useState("");
+  const [selectedEvidenceId, setSelectedEvidenceId] = useState<string | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [feedback, setFeedback] = useState<string[]>([]);
   const [tabValue, setTabValue] = useState(0);
 
   // 会话类型的状态管理（是否为语音分析）
-  const [isAudioAnalysis, setIsAudioAnalysis] = useState(false);
+  const [, setIsAudioAnalysis] = useState(false);
 
   // 场景信息的状态管理
   const [scenario, setScenario] = useState<ScenarioInfo | null>(null);
@@ -168,7 +202,7 @@ const ResultPage: React.FC = () => {
   const [referenceCheckData, setReferenceCheckData] = useState<ReferenceCheckResult | null>(null);
 
   // 视频分析结果（Step Functions 中已获取的数据）
-  const [videoAnalysisData, setVideoAnalysisData] = useState<VideoAnalysisResult | null>(null);
+
 
   // 分析状态管理
   const [analysisStatus, setAnalysisStatus] = useState<string>("not_started");
@@ -190,16 +224,25 @@ const ResultPage: React.FC = () => {
         setAnalysisStatus(statusResponse.status);
 
         if (statusResponse.status === "completed") {
-          // 分析完成 - 停止轮询并重新获取数据
-          setIsPolling(false);
-          clearInterval(pollInterval);
-
+          // Fetch the completed payload before ending polling.
           // 重新获取完整的会话数据
           const completeData = await apiService.getSessionCompleteData(sessionId);
+          setBusinessReview(completeData.businessReview ?? null);
+          setPracticeComparison(completeData.practiceComparison);
+          setIsPolling(false);
+          clearInterval(pollInterval);
+          setError(null);
+          if (completeData.businessReview) {
+            setSession(sessionFromBusinessReport(completeData));
+            setReportTitle(completeData.sessionInfo.scenarioName || completeData.sessionInfo.title || "练习复盘");
+            setDetailedFeedback(null);
+            setAnalysisProgress(t("results.analysisCompleted"));
+            return;
+          }
 
           // 设置详细反馈
-          if (completeData.feedback) {
-            setDetailedFeedback(completeData.feedback);
+          if (!completeData.businessReview && completeData.feedback && "communication" in completeData.feedback.scores) {
+            setDetailedFeedback(completeData.feedback as FeedbackAnalysisResult);
           }
 
           // 设置参考检查结果
@@ -207,10 +250,7 @@ const ResultPage: React.FC = () => {
             setReferenceCheckData(completeData.referenceCheck);
           }
 
-          // 设置视频分析结果
-          if (completeData.videoAnalysis) {
-            setVideoAnalysisData(completeData.videoAnalysis);
-          }
+
 
           // 设置目标结果（反映首次获取时未完成的情况）
           if (completeData.goalResults) {
@@ -256,7 +296,7 @@ const ResultPage: React.FC = () => {
           }
 
           // 更新最终分数（反馈的 overall 分数）
-          if (completeData.feedback?.scores?.overall) {
+          if (completeData.feedback?.scores?.overall !== undefined) {
             setSession((prev) => {
               if (!prev) return prev;
               return {
@@ -277,6 +317,9 @@ const ResultPage: React.FC = () => {
         }
       } catch (err) {
         console.error("状态轮询错误:", err);
+        setIsPolling(false);
+        clearInterval(pollInterval);
+        setError("复盘结果暂时加载失败，请重新加载页面。已保存的对话不会丢失。");
       }
     }, 3000); // 以 3 秒间隔轮询
 
@@ -326,7 +369,7 @@ const ResultPage: React.FC = () => {
         endTime: new Date((completeData.sessionInfo?.createdAt as string) || new Date().toISOString()),
         messages: messages,
         finalMetrics: completeData.finalMetrics as Metrics,
-        finalScore: (completeData.feedback?.scores?.overall as number) || 0,
+        finalScore: completeData.feedback?.scores?.overall ?? null,
         feedback: [],
         goalStatuses: (completeData.goalResults?.goalStatuses as GoalStatus[]) || [],
         goalScore: (completeData.goalResults?.goalScore as number) || 0,
@@ -346,12 +389,7 @@ const ResultPage: React.FC = () => {
         setReferenceCheckData((completeData as any).referenceCheck as ReferenceCheckResult);
       }
 
-      // 设置视频分析结果（语音分析会话）
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      if ((completeData as any).videoAnalysis) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        setVideoAnalysisData((completeData as any).videoAnalysis as VideoAnalysisResult);
-      }
+
     } catch (err) {
       console.error("音频分析会话处理错误:", err);
       setError("加载语音分析结果时发生错误");
@@ -364,6 +402,8 @@ const ResultPage: React.FC = () => {
     const loadSessionData = async () => {
       try {
         setLoading(true);
+        setError(null);
+        setDetailedFeedback(null);
 
         // 先确认分析状态
         try {
@@ -381,6 +421,15 @@ const ResultPage: React.FC = () => {
 
         // 从 API 获取会话分析结果
         const completeData = await apiService.getSessionCompleteData(sessionId);
+        setBusinessReview(completeData.businessReview ?? null);
+        setPracticeComparison(completeData.practiceComparison);
+        if (completeData.businessReview) {
+          setSession(sessionFromBusinessReport(completeData));
+          setReportTitle(completeData.sessionInfo.scenarioName || completeData.sessionInfo.title || "练习复盘");
+          setIsPolling(false);
+          setAnalysisStatus("completed");
+          return;
+        }
 
         // 判断是否为语音分析会话
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -505,13 +554,13 @@ const ResultPage: React.FC = () => {
         }
 
         // 决定最终分数（仅使用 Bedrock 的 overall 分数）
-        let finalScore = 0;
+        let finalScore: number | null = null;
 
         // 已获取详细反馈时使用其 overall 分数
         if (
           completeData.feedback &&
           completeData.feedback.scores &&
-          completeData.feedback.scores.overall
+          completeData.feedback.scores.overall !== undefined
         ) {
           finalScore = completeData.feedback.scores.overall;
         }
@@ -584,8 +633,8 @@ const ResultPage: React.FC = () => {
         setFeedback([]);
 
         // 设置详细反馈（已从 API 获取 - 已通过 complete-data 整合）
-        if (completeData.feedback) {
-          setDetailedFeedback(completeData.feedback);
+        if (!completeData.businessReview && completeData.feedback && "communication" in completeData.feedback.scores) {
+          setDetailedFeedback(completeData.feedback as FeedbackAnalysisResult);
         }
 
         // 设置参考检查结果（已通过 Step Functions 获取）
@@ -593,10 +642,7 @@ const ResultPage: React.FC = () => {
           setReferenceCheckData(completeData.referenceCheck);
         }
 
-        // 设置视频分析结果（已通过 Step Functions 获取）
-        if (completeData.videoAnalysis) {
-          setVideoAnalysisData(completeData.videoAnalysis);
-        }
+
       } catch (err) {
         console.error("会话数据加载错误:", err);
         setError(t("errors.sessionLoadFailed"));
@@ -778,6 +824,41 @@ const ResultPage: React.FC = () => {
     );
   }
 
+  const startFocusedPractice = async (criterionId: CriterionId) => {
+    if (!sessionId || practicing) return;
+    setPracticing(true);
+    setPracticeError("");
+    try {
+      const plan = await apiService.getPracticePlan(sessionId, criterionId);
+      const query = new URLSearchParams({ sourceSessionId: plan.sourceSessionId, criterionId: plan.criterionId });
+      navigate(`/conversation/${encodeURIComponent(plan.scenarioId)}?${query}`);
+    } catch (err) {
+      setPracticeError(err instanceof Error ? err.message : "暂时无法准备专项练习，请重试。");
+    } finally {
+      setPracticing(false);
+    }
+  };
+
+  if (businessReview) {
+    const showEvidence = (messageId: string) => {
+      setSelectedEvidenceId(messageId);
+      document.getElementById(`review-message-${messageId}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+    };
+    return <Container maxWidth="md" sx={{ py: 4 }}>
+      <Button onClick={() => navigate("/history")} sx={{ mb: 2 }}>← 返回陪练复盘</Button>
+      <Typography variant="h4" component="h1" sx={{ mb: 1 }}>{reportTitle || "练习复盘"}</Typography>
+      <Typography color="text.secondary" sx={{ mb: 3 }}>从原话看表现，带着一个明确的目标再练。</Typography>
+      <BusinessReviewPanel review={businessReview} comparison={practiceComparison} onPractice={startFocusedPractice} onEvidence={showEvidence} practicing={practicing} practiceError={practiceError} />
+      <Box sx={{ mt: 4 }}>
+        <Typography variant="h6" sx={{ mb: 2 }}>原始对话 · {session.messages.length} 条</Typography>
+        <Stack spacing={1.5}>{session.messages.map((message) => <Paper id={`review-message-${message.id}`} key={message.id} variant="outlined" sx={{ p: 2.5, borderRadius: 3, borderColor: selectedEvidenceId === message.id ? "primary.main" : "divider", bgcolor: message.sender === "user" ? "rgba(43,89,209,.035)" : "background.paper", scrollMarginTop: 24 }}>
+          <Typography variant="caption" color="text.secondary">{message.sender === "user" ? "我（销售）" : "客户"}</Typography>
+          <Typography sx={{ whiteSpace: "pre-wrap", lineHeight: 1.8 }}>{message.content}</Typography>
+        </Paper>)}</Stack>
+      </Box>
+    </Container>;
+  }
+
   const duration =
     session.endTime && session.startTime
       ? Math.round(
@@ -816,24 +897,45 @@ const ResultPage: React.FC = () => {
               id="result-tab-2"
               aria-controls="result-tabpanel-2"
             />
-            {!isAudioAnalysis && (
-              <Tab
-                icon={<VideocamIcon />}
-                label={t("videoAnalysis.title")}
-                id="result-tab-3"
-                aria-controls="result-tabpanel-3"
-              />
-            )}
-            <Tab
+
+            {referenceCheckData && <Tab
+              value={3}
               icon={<DescriptionIcon />}
               label={t("referenceCheck.title")}
-              id={isAudioAnalysis ? "result-tab-3" : "result-tab-4"}
-              aria-controls={isAudioAnalysis ? "result-tabpanel-3" : "result-tabpanel-4"}
-            />
+              id="result-tab-3"
+              aria-controls="result-tabpanel-3"
+            />}
           </Tabs>
         </Box>
 
         <TabPanel value={tabValue} index={0}>
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="overline" color="primary.main">练习复盘</Typography>
+            <Typography variant="h4" component="h1">{scenario?.title || "把这次对话，变成下次的进步"}</Typography>
+            <Typography color="text.secondary" sx={{ mt: 1 }}>先看关键反馈，再回到原话核对，最后带着一个目标重新练习。</Typography>
+          </Box>
+          {detailedFeedback && (
+            <Paper variant="outlined" sx={{ p: { xs: 2.5, md: 3.5 }, mb: 3, borderRadius: 4 }}>
+              <Typography variant="h6" gutterBottom>这次最值得改进的一点</Typography>
+              <Typography sx={{ lineHeight: 1.9, mb: 2 }}>{detailedFeedback.improvements?.[0] || "本次报告没有提供具体改进建议，请结合对话记录核对。"}</Typography>
+              {detailedFeedback.strengths?.[0] && <Box sx={{ bgcolor: "action.hover", borderRadius: 2, p: 2, mb: 2 }}>
+                <Typography variant="subtitle2" gutterBottom>值得保留的做法</Typography>
+                <Typography variant="body2" sx={{ lineHeight: 1.8 }}>{detailedFeedback.strengths[0]}</Typography>
+              </Box>}
+              {detailedFeedback.nextSteps && <Box sx={{ borderLeft: "3px solid", borderColor: "primary.main", pl: 2, my: 2 }}>
+                <Typography variant="subtitle2" gutterBottom>下一次怎么练</Typography>
+                <Box component="ul" sx={{ m: 0, pl: 2.5, "& li": { mb: 1, lineHeight: 1.8 } }}>
+                  {detailedFeedback.nextSteps.split(/(?<=[。！？])\s*|\n+/).filter((part) => part.trim()).map((part, index) => <li key={index}>{part}</li>)}
+                </Box>
+              </Box>}
+              <Stack direction={{ xs: "column", sm: "row" }} spacing={1} sx={{ mt: 2 }}>
+                <Button variant="contained" onClick={() => navigate(`/conversation/${session.scenarioId}`)}>带着目标再练一次</Button>
+                <Button variant="outlined" onClick={() => setTabValue(1)}>查看原始对话，核对反馈</Button>
+                <Button onClick={() => navigate("/history")}>返回复盘列表</Button>
+              </Stack>
+              <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 2 }}>以下是 AI 基于本次对话的反馈，请结合原文判断。技能评分采用百分制，客户实时状态采用十分制。</Typography>
+            </Paper>
+          )}
           {/* 综合分数 */}
           <Card sx={{ mb: 4, textAlign: "center", p: 3 }}>
             <CardContent>
@@ -976,10 +1078,10 @@ const ResultPage: React.FC = () => {
                             scales: {
                               r: {
                                 beginAtZero: true,
-                                max: 10,
+                                max: 100,
                                 min: 0,
                                 ticks: {
-                                  stepSize: 2,
+                                  stepSize: 20,
                                 },
                                 pointLabels: {
                                   font: {
@@ -1072,7 +1174,7 @@ const ResultPage: React.FC = () => {
                 )}
 
                 {/* 关键点分析 */}
-                <Card sx={{ mb: 3, p: 2 }}>
+                <Accordion sx={{ mb: 3 }}><AccordionSummary expandIcon={<ExpandMoreIcon />}><Typography variant="h6">完整反馈与分析</Typography></AccordionSummary><AccordionDetails>
                   <CardContent>
                     <Box display="flex" alignItems="center" mb={1}>
                       <LightbulbIcon color="warning" sx={{ mr: 1 }} />
@@ -1139,7 +1241,7 @@ const ResultPage: React.FC = () => {
                       </Alert>
                     )}
                   </CardContent>
-                </Card>
+                </AccordionDetails></Accordion>
 
                 {/* 詳細評価 */}
                 <Card sx={{ mb: 3 }}>
@@ -1257,13 +1359,13 @@ const ResultPage: React.FC = () => {
                             {t("results.skillLabels.communication")}
                           </Typography>
                           <Typography variant="body2" fontWeight="bold">
-                            {detailedFeedback.scores.communication}/10
+                            {detailedFeedback.scores.communication}/100
                           </Typography>
                         </Box>
                         <LinearProgress
                           variant="determinate"
                           value={
-                            (detailedFeedback.scores.communication / 10) * 100
+                            detailedFeedback.scores.communication
                           }
                           color="primary"
                           sx={{ height: 8, borderRadius: 4 }}
@@ -1282,13 +1384,13 @@ const ResultPage: React.FC = () => {
                             {t("results.skillLabels.needsAnalysis")}
                           </Typography>
                           <Typography variant="body2" fontWeight="bold">
-                            {detailedFeedback.scores.needsAnalysis}/10
+                            {detailedFeedback.scores.needsAnalysis}/100
                           </Typography>
                         </Box>
                         <LinearProgress
                           variant="determinate"
                           value={
-                            (detailedFeedback.scores.needsAnalysis / 10) * 100
+                            detailedFeedback.scores.needsAnalysis
                           }
                           color="info"
                           sx={{ height: 8, borderRadius: 4 }}
@@ -1307,13 +1409,13 @@ const ResultPage: React.FC = () => {
                             {t("results.skillLabels.proposalQuality")}
                           </Typography>
                           <Typography variant="body2" fontWeight="bold">
-                            {detailedFeedback.scores.proposalQuality}/10
+                            {detailedFeedback.scores.proposalQuality}/100
                           </Typography>
                         </Box>
                         <LinearProgress
                           variant="determinate"
                           value={
-                            (detailedFeedback.scores.proposalQuality / 10) * 100
+                            detailedFeedback.scores.proposalQuality
                           }
                           color="success"
                           sx={{ height: 8, borderRadius: 4 }}
@@ -1332,12 +1434,12 @@ const ResultPage: React.FC = () => {
                             {t("results.skillLabels.flexibility")}
                           </Typography>
                           <Typography variant="body2" fontWeight="bold">
-                            {detailedFeedback.scores.flexibility}/10
+                            {detailedFeedback.scores.flexibility}/100
                           </Typography>
                         </Box>
                         <LinearProgress
                           variant="determinate"
-                          value={(detailedFeedback.scores.flexibility / 10) * 100}
+                          value={detailedFeedback.scores.flexibility}
                           color="warning"
                           sx={{ height: 8, borderRadius: 4 }}
                         />
@@ -1355,13 +1457,13 @@ const ResultPage: React.FC = () => {
                             {t("results.skillLabels.trustBuilding")}
                           </Typography>
                           <Typography variant="body2" fontWeight="bold">
-                            {detailedFeedback.scores.trustBuilding}/10
+                            {detailedFeedback.scores.trustBuilding}/100
                           </Typography>
                         </Box>
                         <LinearProgress
                           variant="determinate"
                           value={
-                            (detailedFeedback.scores.trustBuilding / 10) * 100
+                            detailedFeedback.scores.trustBuilding
                           }
                           color="secondary"
                           sx={{ height: 8, borderRadius: 4 }}
@@ -1380,13 +1482,13 @@ const ResultPage: React.FC = () => {
                             {t("results.skillLabels.objectionHandling")}
                           </Typography>
                           <Typography variant="body2" fontWeight="bold">
-                            {detailedFeedback.scores.objectionHandling}/10
+                            {detailedFeedback.scores.objectionHandling}/100
                           </Typography>
                         </Box>
                         <LinearProgress
                           variant="determinate"
                           value={
-                            (detailedFeedback.scores.objectionHandling / 10) * 100
+                            detailedFeedback.scores.objectionHandling
                           }
                           color="error"
                           sx={{ height: 8, borderRadius: 4 }}
@@ -1405,13 +1507,13 @@ const ResultPage: React.FC = () => {
                             {t("results.skillLabels.closingSkill")}
                           </Typography>
                           <Typography variant="body2" fontWeight="bold">
-                            {detailedFeedback.scores.closingSkill}/10
+                            {detailedFeedback.scores.closingSkill}/100
                           </Typography>
                         </Box>
                         <LinearProgress
                           variant="determinate"
                           value={
-                            (detailedFeedback.scores.closingSkill / 10) * 100
+                            detailedFeedback.scores.closingSkill
                           }
                           color="info"
                           sx={{ height: 8, borderRadius: 4 }}
@@ -1430,13 +1532,13 @@ const ResultPage: React.FC = () => {
                             {t("results.skillLabels.listeningSkill")}
                           </Typography>
                           <Typography variant="body2" fontWeight="bold">
-                            {detailedFeedback.scores.listeningSkill}/10
+                            {detailedFeedback.scores.listeningSkill}/100
                           </Typography>
                         </Box>
                         <LinearProgress
                           variant="determinate"
                           value={
-                            (detailedFeedback.scores.listeningSkill / 10) * 100
+                            detailedFeedback.scores.listeningSkill
                           }
                           color="success"
                           sx={{ height: 8, borderRadius: 4 }}
@@ -1455,13 +1557,13 @@ const ResultPage: React.FC = () => {
                             {t("results.skillLabels.productKnowledge")}
                           </Typography>
                           <Typography variant="body2" fontWeight="bold">
-                            {detailedFeedback.scores.productKnowledge}/10
+                            {detailedFeedback.scores.productKnowledge}/100
                           </Typography>
                         </Box>
                         <LinearProgress
                           variant="determinate"
                           value={
-                            (detailedFeedback.scores.productKnowledge / 10) * 100
+                            detailedFeedback.scores.productKnowledge
                           }
                           color="primary"
                           sx={{ height: 8, borderRadius: 4 }}
@@ -1480,13 +1582,13 @@ const ResultPage: React.FC = () => {
                             {t("results.skillLabels.customerFocus")}
                           </Typography>
                           <Typography variant="body2" fontWeight="bold">
-                            {detailedFeedback.scores.customerFocus}/10
+                            {detailedFeedback.scores.customerFocus}/100
                           </Typography>
                         </Box>
                         <LinearProgress
                           variant="determinate"
                           value={
-                            (detailedFeedback.scores.customerFocus / 10) * 100
+                            detailedFeedback.scores.customerFocus
                           }
                           color="warning"
                           sx={{ height: 8, borderRadius: 4 }}
@@ -1527,11 +1629,11 @@ const ResultPage: React.FC = () => {
                       </Typography>
                       <Box display="flex" alignItems="center" gap={2} mb={2}>
                         <Avatar
-                          sx={{ width: 40, height: 40, fontSize: "1.2rem" }}
+                          src={customerAvatar(scenario.npc?.name || scenario.npcInfo?.name, scenario.npc?.avatar || scenario.npcInfo?.avatar)}
+                          alt={scenario.npc?.name || scenario.npcInfo?.name}
+                          sx={{ width: 40, height: 40, fontSize: "1.2rem", bgcolor: "#edf2ff", color: "primary.main" }}
                         >
-                          {scenario.npc?.avatar ||
-                            scenario.npcInfo?.avatar ||
-                            "👤"}
+                          <FaceIcon sx={{ fontSize: 26 }} />
                         </Avatar>
                         <Box>
                           <Typography variant="body1" fontWeight="bold">
@@ -1804,26 +1906,10 @@ const ResultPage: React.FC = () => {
           </Box>
         </TabPanel>
 
-        {/* 视频分析标签页（语音分析会话中不显示） */}
-        {!isAudioAnalysis && (
-          <TabPanel value={tabValue} index={3}>
-            <Box sx={{ maxWidth: 900, mx: "auto" }}>
-              <Card sx={{ mb: 3 }}>
-                <CardContent>
-                  {sessionId && (
-                    <VideoFeedback
-                      isVisible={true}
-                      initialData={videoAnalysisData}
-                    />
-                  )}
-                </CardContent>
-              </Card>
-            </Box>
-          </TabPanel>
-        )}
+
 
         {/* 参考检查标签页 */}
-        <TabPanel value={tabValue} index={isAudioAnalysis ? 3 : 4}>
+        <TabPanel value={tabValue} index={3}>
           <Box sx={{ maxWidth: 900, mx: "auto" }}>
             <Card sx={{ mb: 3 }}>
               <CardContent>
